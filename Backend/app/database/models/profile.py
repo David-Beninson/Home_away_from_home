@@ -76,6 +76,8 @@ class GuestProfile(Base):
     kosher_food: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
     gender: Mapped[Optional[str]]
     guest_address: Mapped[Optional[str]]
+    # Legacy field used by admin moderation and verification flows
+    is_soldier_or_national_service: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
 
     # --- PRESERVED SYSTEM FIELDS ---
     preference_vector: Mapped[Optional[List[float]]] = mapped_column(Vector(1536))
