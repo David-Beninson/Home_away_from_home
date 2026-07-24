@@ -22,6 +22,7 @@ import Register from '../pages/Register/Register'
 import AdminLayout from '../pages/Admin/Admin'
 import AdminDashboard from '../components/Admin/AdminDashboard'
 import AdminUsers from '../components/Admin/AdminUsers'
+import AdminVerificationRequests from '../components/Admin/AdminVerificationRequests'
 import AdminBookings from '../components/Admin/AdminBookings'
 import AdminListings from '../components/Admin/AdminListings'
 
@@ -157,6 +158,7 @@ export function useAppLogic() {
             children: [
               { index: true, element: <AdminDashboard /> },
               { path: 'users', element: <AdminUsers /> },
+              { path: 'verifications', element: <AdminVerificationRequests /> },
               { path: 'bookings', element: <AdminBookings /> },
               { path: 'listings', element: <AdminListings /> }
             ]

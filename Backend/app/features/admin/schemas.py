@@ -90,3 +90,6 @@ class MatchModerationResponse(ORMResponse):
 class AdminBookingsResponse(ORMResponse):
     matches: List[MatchModerationResponse]
     posts: List[PostModerationResponse]
+
+class VerificationRejectRequest(BaseModel):
+    rejection_reason: str

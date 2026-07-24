@@ -152,6 +152,7 @@ class UserMeResponse(BaseModel):
     phone_number: Optional[str] = None
     full_name: str
     user_type: UserType
+    verification_status: Optional[str] = "pending_submission"
     biography: Optional[str] = None
     is_email_verified: bool = False
     is_phone_verified: bool = False
@@ -166,6 +167,8 @@ class UserMeResponse(BaseModel):
             p = getattr(data, "host_profile", None) if u_type == UserType.HOST else getattr(data, "guest_profile", None)
 
             data_dict = {k: v for k, v in data.__dict__.items() if not k.startswith('_')}
+            v_status = getattr(data, "verification_status", None)
+            data_dict["verification_status"] = v_status.value if hasattr(v_status, "value") else str(v_status) if v_status else "pending_submission"
             
             if p and hasattr(p, "__dict__"):
                 data_dict["profile"] = {k: v for k, v in p.__dict__.items() if not k.startswith('_')}

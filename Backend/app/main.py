@@ -9,6 +9,7 @@ from app.features.admin.router import router as admin_router
 from app.features.chat.router import router as chat_router
 from app.features.availability.router import router as availability_router
 from app.features.notifications.router import router as notifications_router
+from app.features.verification.router import router as verification_router
 
 app = FastAPI(
     title="Hosting for Shabbat API",
@@ -33,6 +34,7 @@ app.include_router(admin_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 app.include_router(availability_router, prefix="/api")
 app.include_router(notifications_router, prefix="/api")
+app.include_router(verification_router, prefix="/api")
 
 
 

@@ -11,7 +11,8 @@ import {
   Users,
   Building,
   Inbox,
-  User
+  User,
+  ShieldCheck
 } from 'lucide-react';
 import { logout } from '../../../store/authSlice';
 import { fetchMyChats } from '../../../store/chatSlice';
@@ -50,6 +51,7 @@ export default function Navbar() {
     { path: '/chats', label: 'צ׳אטים', roles: ['guest', 'host'], hasChatBadge: true, icon: <MessageSquare className="nav-icon" /> },
     { path: '/admin', end: true, label: 'לוח בקרה', roles: ['admin'], hasBadge: true, icon: <LayoutDashboard className="nav-icon" /> },
     { path: '/admin/users', label: 'ניהול משתמשים', roles: ['admin'], icon: <Users className="nav-icon" /> },
+    { path: '/admin/verifications', label: 'אימותים וסינון', roles: ['admin'], icon: <ShieldCheck className="nav-icon" /> },
     { path: '/admin/listings', label: 'דירות ומארחים', roles: ['admin'], icon: <Building className="nav-icon" /> },
     { path: '/admin/bookings', label: 'בקשות', roles: ['admin'], icon: <Inbox className="nav-icon" /> },
     { path: '/profile', label: 'פרופיל', roles: ['guest', 'host'], icon: <User className="nav-icon" /> }

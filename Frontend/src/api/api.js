@@ -89,6 +89,11 @@ export const adminApi = {
   getBookings: () => api.get('/admin/bookings'),
   deletePost: (postId) => api.delete(`/admin/posts/${postId}`),
   deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+  getPendingVerifications: () => api.get('/admin/verifications/pending'),
+  approveVerification: (requestId) => api.post(`/admin/verifications/${requestId}/approve`),
+  rejectVerification: (requestId, reason) => api.post(`/admin/verifications/${requestId}/reject`, { rejection_reason: reason }),
+  getSupportChatHistory: (targetUserId) => api.get(`/admin/support-chats/${targetUserId}`),
+  replyToSupportChat: (targetUserId, content) => api.post(`/admin/support-chats/${targetUserId}/reply`, { content }),
 };
 
 // Host Availability API
@@ -115,6 +120,19 @@ export const availabilityApi = {
     }));
     return api.put('/availability/overrides', { overrides });
   },
+};
+
+// User Identity & Moderation Verification API
+export const verificationApi = {
+  submitDocuments: (formData) =>
+    api.post('/verification/submit', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  getStatus: () => api.get('/verification/status'),
+  getSupportMessages: (targetUserId = null) =>
+    api.get('/verification/support-messages', { params: { target_user_id: targetUserId } }),
+  sendSupportMessage: (content, targetUserId = null) =>
+    api.post('/verification/support-messages', { content, target_user_id: targetUserId }),
 };
 
 export default api;

@@ -1,5 +1,6 @@
 import uuid
 import jwt
+import asyncio
 from typing import List, Dict, Tuple
 from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
@@ -180,21 +181,20 @@ async def websocket_chat_endpoint(websocket: WebSocket, match_id: uuid.UUID, tok
         await websocket.close(code=4001, reason="Could not validate credentials")
         return
 
-    with SessionLocal() as db:
-        user = db.query(User).filter(User.id == user_uuid).first()
-        match = db.query(Match).options(joinedload(Match.guest_post)).filter(Match.id == match_id).first()
-        
-        if not user:
-            await websocket.close(code=4001, reason="User not found")
-            return
-        if not match:
-            await websocket.close(code=4004, reason="Match not found")
-            return
-        if not _verify_match_access(user, match):
-            await websocket.close(code=4003, reason="Not authorized for this chat")
-            return
-            
-        user_id = user.id
+    def _auth_check():
+        with SessionLocal() as db:
+            u = db.query(User).filter(User.id == user_uuid).first()
+            m = db.query(Match).options(joinedload(Match.guest_post)).filter(Match.id == match_id).first()
+            if not u or not m:
+                return None, None, None
+            access = _verify_match_access(u, m)
+            return u.id if access else None, m, u
+
+    user_id, match, _user = await asyncio.to_thread(_auth_check)
+
+    if user_id is None:
+        await websocket.close(code=4003, reason="Not authorized or not found")
+        return
 
     await manager.connect(match_id, websocket, user_id)
     try:
@@ -204,45 +204,63 @@ async def websocket_chat_endpoint(websocket: WebSocket, match_id: uuid.UUID, tok
             if not data:
                 continue
 
-            with SessionLocal() as db:
-                new_msg = Message(match_id=match_id, sender_id=user_id, content=data)
-                db.add(new_msg)
-                db.commit()
-                db.refresh(new_msg)
-                
-                msg_payload = MessageResponse.model_validate(new_msg).model_dump(mode="json")
-
-            # Only broadcast to OTHER participants; sender already appended locally
-            await manager.broadcast(match_id, msg_payload, sender_id=user_id)
-
-            # Send notification via notification WebSocket to recipient
+            # Handle heartbeat ping — respond immediately, no DB needed
             try:
-                from app.features.notifications.router import manager as notification_manager
+                import json as _json
+                parsed = _json.loads(data)
+                if isinstance(parsed, dict) and parsed.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+                    continue
+            except Exception:
+                pass  # not JSON, treat as plain text message
+
+            # Save message AND resolve notification recipient in ONE DB session,
+            # offloaded to a thread so the event loop is never blocked.
+            def _save_and_resolve():
                 with SessionLocal() as db:
-                    match_obj = db.query(Match).options(joinedload(Match.guest_post)).filter(Match.id == match_id).first()
+                    new_msg = Message(match_id=match_id, sender_id=user_id, content=data)
+                    db.add(new_msg)
+                    db.commit()
+                    db.refresh(new_msg)
+                    msg_dict = MessageResponse.model_validate(new_msg).model_dump(mode="json")
+
+                    # Resolve recipient in the same session
+                    match_obj = db.query(Match).options(
+                        joinedload(Match.guest_post)
+                    ).filter(Match.id == match_id).first()
                     sender_obj = db.query(User).filter(User.id == user_id).first()
+                    sender_name = sender_obj.full_name if sender_obj else "משתמש"
+
+                    recipient_id = None
                     if match_obj:
-                        recipient_id = None
                         if match_obj.host_profile and match_obj.host_profile.user_id == user_id:
-                            # Sender is host, recipient is guest
                             if match_obj.guest_post and match_obj.guest_post.guest_profile:
                                 recipient_id = match_obj.guest_post.guest_profile.user_id
                         else:
-                            # Sender is guest, recipient is host
                             if match_obj.host_profile:
                                 recipient_id = match_obj.host_profile.user_id
 
-                        if recipient_id:
-                            await notification_manager.send_personal_notification({
-                                "id": str(uuid.uuid4()),
-                                "title": f"הודעה חדשה מ{sender_obj.full_name if sender_obj else 'משתמש'}",
-                                "message": data[:60] + ("..." if len(data) > 60 else ""),
-                                "type": "message",
-                                "time": "עכשיו",
-                                "isRead": False
-                            }, str(recipient_id))
-            except Exception as e:
-                print(f"Failed to trigger chat notification: {e}")
+                    return msg_dict, sender_name, recipient_id
+
+            msg_payload, sender_name, recipient_id = await asyncio.to_thread(_save_and_resolve)
+
+            # Broadcast to other participants (non-blocking, pure async)
+            await manager.broadcast(match_id, msg_payload, sender_id=user_id)
+
+            # Fire-and-forget notification — never slow down the main message loop
+            if recipient_id:
+                try:
+                    from app.features.notifications.router import manager as notification_manager
+                    asyncio.create_task(notification_manager.send_personal_notification({
+                        "id": str(uuid.uuid4()),
+                        "title": f"הודעה חדשה מ{sender_name}",
+                        "message": data[:60] + ("..." if len(data) > 60 else ""),
+                        "type": "message",
+                        "time": "עכשיו",
+                        "isRead": False
+                    }, str(recipient_id)))
+                except Exception as e:
+                    print(f"Failed to trigger chat notification: {e}")
     except WebSocketDisconnect:
         manager.disconnect(match_id, websocket)
     except Exception as e:

@@ -2,6 +2,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Navbar from '../Navbar/Navbar';
 import Loading from '../Loading/Loading';
+import SuspendedOverlay from '../SuspendedOverlay/SuspendedOverlay';
 import { useGlobalWebSocket } from '../../../hooks/useGlobalWebSocket';
 import './Layout.css';
 
@@ -23,8 +24,13 @@ export default function Layout() {
     return <Navigate to="/login" replace />;
   }
 
+  const isApproved = userRole === 'admin' || user?.verification_status === 'approved';
+
   return (
     <div className="layout-container">
+      {/* If not approved, show the locked suspended/verification overlay */}
+      {!isApproved && <SuspendedOverlay />}
+
       {/* The Navbar stays fixed at the top */}
       <header>
         <Navbar />

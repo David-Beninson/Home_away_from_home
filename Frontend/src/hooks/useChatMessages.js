@@ -11,6 +11,7 @@ export function useChatMessages(activeChat) {
   const messagesEndRef = useRef(null);
   const wsRef = useRef(null);
   const activeChatIdRef = useRef(null);
+  const pingIntervalRef = useRef(null);
 
   // Connect WebSocket when activeChat changes
   useEffect(() => {
@@ -39,11 +40,20 @@ export function useChatMessages(activeChat) {
 
     socket.onopen = () => {
       console.log('[WS] Connected to chat', activeChat.match_id);
+      // Start heartbeat to keep connection alive through proxies/load balancers
+      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = setInterval(() => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 25000);
     };
 
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
+        // Ignore heartbeat pong
+        if (msg?.type === 'pong') return;
         setMessages(prev => [...prev, msg]);
         dispatch(receiveNewMessage({ ...msg, is_mine: false }));
 
@@ -73,6 +83,7 @@ export function useChatMessages(activeChat) {
       .catch(err => console.error('[Chat] Failed to fetch history:', err));
 
     return () => {
+      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
       socket.close();
       wsRef.current = null;
       activeChatIdRef.current = null;

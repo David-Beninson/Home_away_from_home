@@ -13,6 +13,15 @@ class UserType(str, enum.Enum):
     GUEST = "guest"
     ADMIN = "admin"
 
+class UserVerificationStatus(str, enum.Enum):
+    """User account verification lifecycle status."""
+    PENDING_SUBMISSION = "pending_submission"
+    PENDING_AI = "pending_ai"
+    PENDING_ADMIN = "pending_admin"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    SUSPENDED = "suspended"
+
 class User(Base):
     """Core credentials and identity for every system user."""
     __tablename__ = "users"
@@ -27,6 +36,11 @@ class User(Base):
     full_name: Mapped[str]
     hashed_password: Mapped[str]
     user_type: Mapped[UserType] = mapped_column(Enum(UserType, native_enum=True))
+    verification_status: Mapped[UserVerificationStatus] = mapped_column(
+        Enum(UserVerificationStatus, native_enum=False, values_callable=lambda obj: [e.value for e in obj]),
+        default=UserVerificationStatus.PENDING_SUBMISSION,
+        server_default=text("'pending_submission'"),
+    )
     is_active: Mapped[bool] = mapped_column(
         default=True, server_default=text("true")
     )
@@ -56,5 +70,8 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
     guest_profile: Mapped["GuestProfile"] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    verification_requests: Mapped[list["VerificationRequest"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )

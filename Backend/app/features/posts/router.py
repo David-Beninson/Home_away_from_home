@@ -286,62 +286,74 @@ async def websocket_posts_endpoint(
         await websocket.close(code=4001, reason="Could not validate credentials")
         return
 
-    db = SessionLocal()
-    try:
-        user = db.query(User).filter(User.id == user_uuid).first()
-        if not user:
-            await websocket.close(code=4001, reason="User not found")
-            return
-        user_id = user.id
-        user_type = user.user_type
-    finally:
-        db.close()
+    def _auth_query():
+        db = SessionLocal()
+        try:
+            u = db.query(User).filter(User.id == user_uuid).first()
+            if not u:
+                return None, None
+            return u.id, u.user_type
+        finally:
+            db.close()
+
+    user_id, user_type = await asyncio.to_thread(_auth_query)
+    if user_id is None:
+        await websocket.close(code=4001, reason="User not found")
+        return
 
     await post_manager.connect(websocket, user_id, user_type)
     
     try:
-        # Send initial list immediately
-        db = SessionLocal()
-        try:
-            if user_type == UserType.HOST:
-                today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-                current_user = db.query(User).filter(User.id == user_id).first()
-                host_profile_id = current_user.host_profile.id if (current_user and current_user.host_profile) else None
-                if host_profile_id:
-                    rejected_select = select(Match.guest_post_id).where(
-                        Match.host_profile_id == host_profile_id,
-                        Match.status == MatchStatus.REJECTED
-                    )
-
-                    posts = db.query(GuestPost).filter(
-                        GuestPost.requested_date >= today_start,
-                        ~GuestPost.id.in_(rejected_select),
-                        (
-                            (GuestPost.status == PostStatus.OPEN) | 
-                            ((GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED])) & (GuestPost.claimed_by_host_id == host_profile_id))
+        # Send initial list in a thread — sync DB must not block event loop
+        def _fetch_initial_posts():
+            db = SessionLocal()
+            try:
+                if user_type == UserType.HOST:
+                    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+                    current_user = db.query(User).filter(User.id == user_id).first()
+                    host_profile_id = current_user.host_profile.id if (current_user and current_user.host_profile) else None
+                    if host_profile_id:
+                        rejected_select = select(Match.guest_post_id).where(
+                            Match.host_profile_id == host_profile_id,
+                            Match.status == MatchStatus.REJECTED
                         )
-                    ).all()
-                else:
-                    posts = db.query(GuestPost).filter(
-                        GuestPost.status == PostStatus.OPEN,
-                        GuestPost.requested_date >= today_start
-                    ).all()
-                posts.sort(key=lambda p: (not p.is_urgent, p.requested_date))
-                posts_data = [GuestPostResponse.model_validate(p).model_dump(mode="json") for p in posts]
-                await websocket.send_json(posts_data)
-            elif user_type == UserType.GUEST:
-                posts = db.query(GuestPost).join(GuestPost.guest_profile).filter(
-                    GuestPost.guest_profile.has(user_id=user_id)
-                ).order_by(GuestPost.created_at.desc()).all()
-                posts_data = [GuestPostResponse.model_validate(p).model_dump(mode="json") for p in posts]
-                await websocket.send_json(posts_data)
-        finally:
-            db.close()
+                        posts = db.query(GuestPost).filter(
+                            GuestPost.requested_date >= today_start,
+                            ~GuestPost.id.in_(rejected_select),
+                            (
+                                (GuestPost.status == PostStatus.OPEN) |
+                                ((GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED])) & (GuestPost.claimed_by_host_id == host_profile_id))
+                            )
+                        ).all()
+                    else:
+                        posts = db.query(GuestPost).filter(
+                            GuestPost.status == PostStatus.OPEN,
+                            GuestPost.requested_date >= today_start
+                        ).all()
+                    posts.sort(key=lambda p: (not p.is_urgent, p.requested_date))
+                    return [GuestPostResponse.model_validate(p).model_dump(mode="json") for p in posts]
+                elif user_type == UserType.GUEST:
+                    posts = db.query(GuestPost).join(GuestPost.guest_profile).filter(
+                        GuestPost.guest_profile.has(user_id=user_id)
+                    ).order_by(GuestPost.created_at.desc()).all()
+                    return [GuestPostResponse.model_validate(p).model_dump(mode="json") for p in posts]
+                return []
+            finally:
+                db.close()
 
+        posts_data = await asyncio.to_thread(_fetch_initial_posts)
+        await websocket.send_json(posts_data)
 
         while True:
-            # Maintain the connection open
-            await websocket.receive_text()
+            # Keep connection alive and handle heartbeat pings
+            raw = await websocket.receive_text()
+            try:
+                import json as _json
+                parsed = _json.loads(raw)
+                if isinstance(parsed, dict) and parsed.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+            except Exception:
+                pass
     except WebSocketDisconnect:
         post_manager.disconnect(websocket)
     except Exception as e:

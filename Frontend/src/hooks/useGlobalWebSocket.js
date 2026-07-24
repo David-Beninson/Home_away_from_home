@@ -69,8 +69,16 @@ export function useGlobalWebSocket(userRole) {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.onclose = null; // Prevent reconnect loop
-        socketRef.current.close();
+        const ws = socketRef.current;
+        ws.onclose = null;
+        ws.onerror = null;
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        } else if (ws.readyState === WebSocket.CONNECTING) {
+          ws.onopen = () => {
+            try { ws.close(); } catch {}
+          };
+        }
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);

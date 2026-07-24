@@ -43,15 +43,23 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
 
 
-def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """Validate token and eager-load profiles to prevent N+1 queries."""
+from fastapi import Query
+
+def get_current_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    token_param: Optional[str] = Query(None, alias="token"),
+    db: Session = Depends(get_db)
+) -> User:
+    """Validate token (from Bearer header or token query parameter) and eager-load profiles."""
     exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    if not token:
+    effective_token = token or token_param
+    if not effective_token:
         raise exc
+    token = effective_token
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")
@@ -61,16 +69,28 @@ def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session 
             admin_db = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
             if admin_db:
                 return admin_db
-            return User(
+            admin_db = User(
                 id=uuid.UUID("00000000-0000-0000-0000-000000000000"),
                 email=settings.ADMIN_EMAIL,
-                phone_number="",
+                phone_number="0000000000",
+                hashed_password="admin_dummy_hash",
                 full_name="System Administrator",
                 user_type=UserType.ADMIN,
                 is_active=True,
                 is_email_verified=True,
                 is_phone_verified=True,
             )
+            try:
+                db.add(admin_db)
+                db.commit()
+                db.refresh(admin_db)
+                return admin_db
+            except Exception:
+                db.rollback()
+                admin_db = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
+                if admin_db:
+                    return admin_db
+                raise exc
         validated_uuid = uuid.UUID(user_id)
     except (jwt.PyJWTError, ValueError):
         raise exc
@@ -85,16 +105,29 @@ def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session 
             admin_db = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
             if admin_db:
                 return admin_db
-            return User(
+            admin_db = User(
                 id=uuid.UUID("00000000-0000-0000-0000-000000000000"),
                 email=settings.ADMIN_EMAIL,
-                phone_number="",
+                phone_number="0000000000",
+                hashed_password="admin_dummy_hash",
                 full_name="System Administrator",
                 user_type=UserType.ADMIN,
                 is_active=True,
                 is_email_verified=True,
                 is_phone_verified=True,
             )
+            try:
+                db.add(admin_db)
+                db.commit()
+                db.refresh(admin_db)
+                return admin_db
+            except Exception:
+                db.rollback()
+                admin_db = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
+                if admin_db:
+                    return admin_db
+                raise exc
+        raise exc
     return user
 
 
