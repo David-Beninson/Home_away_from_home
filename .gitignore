@@ -3,6 +3,11 @@ PROJECT_CONTEXT.md
 *.agents/
 skills-lock.json
 
+# Uploaded user media & files
+uploads/
+**/uploads/
+Backend/uploads/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

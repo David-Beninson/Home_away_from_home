@@ -88,38 +88,49 @@ export default function AdminVerificationRequests() {
     loadRequests();
   }, []);
 
+  const [processingId, setProcessingId] = useState(null);
+
   const handleOpenSupportChat = (userId, userName) => {
     setActiveChatUser({ userId, userName });
   };
 
   const handleApprove = async (id) => {
+    if (processingId) return;
     try {
       setError('');
       setSuccessMsg('');
+      setProcessingId(id);
       await adminApi.approveVerification(id);
-      setSuccessMsg('בקשת האימות אושרה בהצלחה והמשתמש הועבר לסטטוס מאושר.');
+      setSuccessMsg('✓ בקשת האימות אושרה בהצלחה והמשתמש הועבר לסטטוס מאושר!');
       setRequests((prev) => prev.filter((r) => r.id !== id));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Failed to approve verification:', err);
       setError('אישור הבקשה נכשל.');
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleRejectSubmit = async (e) => {
     e.preventDefault();
-    if (!rejectingId || !rejectionReason.trim()) return;
+    if (!rejectingId || !rejectionReason.trim() || processingId) return;
 
     try {
       setError('');
       setSuccessMsg('');
+      setProcessingId(rejectingId);
       await adminApi.rejectVerification(rejectingId, rejectionReason.trim());
-      setSuccessMsg('הבקשה נדחתה בהצלחה והודעה נשלחה למשתמש.');
+      setSuccessMsg('✓ הבקשה נדחתה בהצלחה והודעה נשלחה למשתמש.');
       setRequests((prev) => prev.filter((r) => r.id !== rejectingId));
       setRejectingId(null);
       setRejectionReason('');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Failed to reject verification:', err);
       setError('דחיית הבקשה נכשלה.');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -250,6 +261,7 @@ export default function AdminVerificationRequests() {
 
                 <button
                   onClick={() => setRejectingId(req.id)}
+                  disabled={processingId === req.id}
                   style={{
                     backgroundColor: 'var(--spot-full-bg)',
                     color: 'var(--spot-full-color)',
@@ -257,7 +269,8 @@ export default function AdminVerificationRequests() {
                     padding: '0.65rem 1.25rem',
                     borderRadius: '8px',
                     fontWeight: 600,
-                    cursor: 'pointer'
+                    cursor: processingId === req.id ? 'not-allowed' : 'pointer',
+                    opacity: processingId === req.id ? 0.6 : 1
                   }}
                 >
                   דחה בקשה ❌
@@ -265,18 +278,31 @@ export default function AdminVerificationRequests() {
 
                 <button
                   onClick={() => handleApprove(req.id)}
+                  disabled={processingId === req.id}
                   style={{
-                    backgroundColor: 'var(--match-high-color)',
+                    backgroundColor: processingId === req.id ? '#15803d' : 'var(--match-high-color)',
                     color: '#ffffff',
                     border: 'none',
                     padding: '0.65rem 1.5rem',
                     borderRadius: '8px',
                     fontWeight: 700,
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.25)'
+                    cursor: processingId === req.id ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.25)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    opacity: processingId === req.id ? 0.8 : 1,
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  אישור והפעלת חשבון ✓
+                  {processingId === req.id ? (
+                    <>
+                      <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid #ffffff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      <span>מאשר בקשה...</span>
+                    </>
+                  ) : (
+                    <span>אישור והפעלת חשבון ✓</span>
+                  )}
                 </button>
               </div>
             </div>
@@ -325,6 +351,7 @@ export default function AdminVerificationRequests() {
                 <button
                   type="button"
                   onClick={() => { setRejectingId(null); setRejectionReason(''); }}
+                  disabled={Boolean(processingId)}
                   style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'transparent', color: 'var(--text)', cursor: 'pointer' }}
                 >
                   ביטול
@@ -332,9 +359,21 @@ export default function AdminVerificationRequests() {
 
                 <button
                   type="submit"
-                  style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--spot-full-color)', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+                  disabled={Boolean(processingId)}
+                  style={{
+                    padding: '0.65rem 1.25rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: processingId ? '#9ca3af' : 'var(--spot-full-color)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    cursor: processingId ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
                 >
-                  שלח דחייה
+                  {processingId === rejectingId ? 'שולח דחייה... ⏳' : 'שלח דחייה'}
                 </button>
               </div>
             </form>

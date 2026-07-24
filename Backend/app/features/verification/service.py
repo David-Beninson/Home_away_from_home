@@ -53,20 +53,6 @@ async def verify_documents_mock(
         sec_mime = secondary_document_file.content_type or "image/jpeg"
         sec_b64 = f"data:{sec_mime};base64,{base64.b64encode(sec_bytes).decode('utf-8')}"
         sec_filename = f"db_sec_doc_{user.id}_{uuid.uuid4().hex[:8]}{sec_ext}"
-        try:
-            with open(os.path.join(UPLOAD_DIR, sec_filename), "wb") as f:
-                f.write(sec_bytes)
-        except Exception as e:
-            print(f"Disk fallback warning: {e}")
-
-    # Also save fallback to disk for backwards compatibility
-    try:
-        with open(os.path.join(UPLOAD_DIR, selfie_filename), "wb") as f:
-            f.write(selfie_bytes)
-        with open(os.path.join(UPLOAD_DIR, doc_filename), "wb") as f:
-            f.write(doc_bytes)
-    except Exception as e:
-        print(f"Disk fallback warning: {e}")
 
     # 2. Simulate AI Processing Delay (3 seconds)
     user.verification_status = UserVerificationStatus.PENDING_AI
