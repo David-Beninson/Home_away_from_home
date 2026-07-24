@@ -9,9 +9,10 @@ export default function SuspendedOverlay() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   
-  const [verificationType, setVerificationType] = useState('civilian');
+  const [verificationType, setVerificationType] = useState(() => (user?.user_type === 'host' ? 'civilian' : 'lone_soldier'));
   const [selfieFile, setSelfieFile] = useState(null);
   const [docFile, setDocFile] = useState(null);
+  const [secondaryDocFile, setSecondaryDocFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStep, setSubmitStep] = useState(0); // 0: Idle, 1: Uploading, 2: AI Scanning, 3: Completed
   const [verificationDetails, setVerificationDetails] = useState(null);
@@ -29,6 +30,14 @@ export default function SuspendedOverlay() {
   const status = user?.verification_status || 'pending_submission';
 
   useEffect(() => {
+    if (user?.user_type === 'host') {
+      setVerificationType('civilian');
+    } else if (user?.user_type === 'guest') {
+      setVerificationType('lone_soldier');
+    }
+  }, [user?.user_type]);
+
+  useEffect(() => {
     verificationApi.getStatus().then((res) => {
       setVerificationDetails(res.data);
     }).catch(() => {});
@@ -39,13 +48,19 @@ export default function SuspendedOverlay() {
     if (file) {
       if (type === 'selfie') setSelfieFile(file);
       if (type === 'doc') setDocFile(file);
+      if (type === 'secondary_doc') setSecondaryDocFile(file);
     }
   };
 
   const handleSubmitDocuments = async (e) => {
     e.preventDefault();
     if (!selfieFile || !docFile) {
-      setErrorMsg('אנא בחר גם תמונת סלפי וגם תמונת תעודה.');
+      setErrorMsg('אנא העלה גם תמונת פרופיל / סלפי וגם תעודת זהות / חוגר.');
+      return;
+    }
+
+    if (verificationType === 'lone_soldier' && !secondaryDocFile) {
+      setErrorMsg('חובה להעלות תעודת בודד או עולה חדש.');
       return;
     }
 
@@ -58,6 +73,9 @@ export default function SuspendedOverlay() {
       formData.append('verification_type', verificationType);
       formData.append('selfie', selfieFile);
       formData.append('document', docFile);
+      if (secondaryDocFile) {
+        formData.append('secondary_document', secondaryDocFile);
+      }
 
       setTimeout(() => setSubmitStep(2), 1000);
 
@@ -117,7 +135,7 @@ export default function SuspendedOverlay() {
                 {status === 'suspended' && 'חשבונך מושהה מהמערכת'}
               </h2>
               <p className="status-subtitle">
-                {status === 'pending_submission' && 'כדי להבטיח את ביטחון הקהילה, אנא העלה סלפי ותעודה לאימות.'}
+                {status === 'pending_submission' && 'כדי להבטיח את ביטחון הקהילה, אנא העלה מסמכי אימות מתאימים.'}
                 {status === 'pending_admin' && 'המסמכים שלך נסרקו בהצלחה והועברו לאישור סופי. תקבל עדכון מנהל בהקדם.'}
                 {status === 'rejected' && (verificationDetails?.rejection_reason || 'התמונה לא הייתה קריאה. אנא העלה מסמכים מחדש.')}
                 {status === 'suspended' && 'לצערנו חשבונך מושהה מהמערכת. אנא פנו למנהלים דרך הצ\'אט למטה.'}
@@ -129,51 +147,49 @@ export default function SuspendedOverlay() {
           {(status === 'pending_submission' || status === 'rejected') && submitStep === 0 && (
             <form onSubmit={handleSubmitDocuments}>
               <div style={{ marginBottom: '1.25rem' }}>
-                <span className="verification-type-label">סוג האימות:</span>
-                <div className="verification-type-pills">
-                  <button
-                    type="button"
-                    className={`type-pill-btn ${verificationType === 'civilian' ? 'active' : ''}`}
-                    onClick={() => setVerificationType('civilian')}
-                  >
-                    <span>🏠</span>
-                    <span>אזרח / אורח</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`type-pill-btn ${verificationType === 'lone_soldier' ? 'active' : ''}`}
-                    onClick={() => setVerificationType('lone_soldier')}
-                  >
-                    <span>🪖</span>
-                    <span>חייל בודד / סדיר</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`type-pill-btn ${verificationType === 'new_immigrant' ? 'active' : ''}`}
-                    onClick={() => setVerificationType('new_immigrant')}
-                  >
-                    <span>✈️</span>
-                    <span>עולה חדש</span>
-                  </button>
+                <span className="verification-type-label">סוג אימות נדרש:</span>
+                <div style={{ marginTop: '0.5rem' }}>
+                  {user?.user_type === 'host' ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', backgroundColor: 'var(--primary-blue-light)', border: '1px solid var(--primary-blue-border)', borderRadius: '12px', fontWeight: 600, color: 'var(--primary-blue)' }}>
+                      <span>🏠</span>
+                      <span>אימות מארח</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', backgroundColor: 'var(--primary-blue-light)', border: '1px solid var(--primary-blue-border)', borderRadius: '12px', fontWeight: 600, color: 'var(--primary-blue)' }}>
+                      <span>🪖</span>
+                      <span>אימות משרת בודד/ה (צבא / שירות לאומי)</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="upload-grid">
+              <div className="upload-grid" style={{ gridTemplateColumns: verificationType === 'lone_soldier' ? 'repeat(auto-fit, minmax(140px, 1fr))' : '1fr 1fr' }}>
                 <label className="upload-field-box">
                   <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'selfie')} />
                   <div className="upload-icon">📸</div>
-                  <div style={{ fontWeight: 600 }}>העלה תמונת סלפי</div>
+                  <div style={{ fontWeight: 600 }}>
+                    {verificationType === 'civilian' ? 'תמונת פרופיל / סלפי' : 'תמונת סלפי'}
+                  </div>
                   {selfieFile && <div className="file-preview-name">✓ {selfieFile.name}</div>}
                 </label>
 
                 <label className="upload-field-box">
                   <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'doc')} />
                   <div className="upload-icon">🪪</div>
-                  <div style={{ fontWeight: 600 }}>העלה תעודת זהות / חוגר</div>
+                  <div style={{ fontWeight: 600 }}>
+                    {verificationType === 'civilian' ? 'תעודת זהות ' : 'ת"ז או חוגר'}
+                  </div>
                   {docFile && <div className="file-preview-name">✓ {docFile.name}</div>}
                 </label>
+
+                {verificationType === 'lone_soldier' && (
+                  <label className="upload-field-box">
+                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'secondary_doc')} />
+                    <div className="upload-icon">📄</div>
+                    <div style={{ fontWeight: 600 }}>תעודת בודד או עולה חדש</div>
+                    {secondaryDocFile && <div className="file-preview-name">✓ {secondaryDocFile.name}</div>}
+                  </label>
+                )}
               </div>
 
               {errorMsg && (
@@ -183,7 +199,7 @@ export default function SuspendedOverlay() {
               )}
 
               <button type="submit" className="submit-verify-btn">
-                שלח לבדיקת AI ואישור מנהל 🚀
+                שלח לבדיקה, ואישור מנהל 🚀
               </button>
             </form>
           )}

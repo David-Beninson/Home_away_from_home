@@ -18,11 +18,12 @@ async def verify_documents_mock(
     user: User,
     selfie_file: UploadFile,
     document_file: UploadFile,
-    verification_type: VerificationType
+    verification_type: VerificationType,
+    secondary_document_file: Optional[UploadFile] = None
 ) -> VerificationRequest:
     """
     Simulates document processing pipeline:
-    1. Reads selfie & ID files into memory, encodes as Base64 Data URIs.
+    1. Reads selfie, ID, and optional secondary doc files into memory, encodes as Base64 Data URIs.
     2. Stores image data directly into PostgreSQL database table `verification_requests`.
     3. Executes 3-second sleep simulating computer vision model scanning.
     4. Calculates mock confidence score.
@@ -43,6 +44,20 @@ async def verify_documents_mock(
 
     selfie_filename = f"db_selfie_{user.id}_{uuid.uuid4().hex[:8]}{selfie_ext}"
     doc_filename = f"db_doc_{user.id}_{uuid.uuid4().hex[:8]}{doc_ext}"
+
+    sec_filename = None
+    sec_b64 = None
+    if secondary_document_file:
+        sec_bytes = await secondary_document_file.read()
+        sec_ext = os.path.splitext(secondary_document_file.filename or "")[1] or ".jpg"
+        sec_mime = secondary_document_file.content_type or "image/jpeg"
+        sec_b64 = f"data:{sec_mime};base64,{base64.b64encode(sec_bytes).decode('utf-8')}"
+        sec_filename = f"db_sec_doc_{user.id}_{uuid.uuid4().hex[:8]}{sec_ext}"
+        try:
+            with open(os.path.join(UPLOAD_DIR, sec_filename), "wb") as f:
+                f.write(sec_bytes)
+        except Exception as e:
+            print(f"Disk fallback warning: {e}")
 
     # Also save fallback to disk for backwards compatibility
     try:
@@ -72,8 +87,10 @@ async def verify_documents_mock(
             user_id=user.id,
             selfie_image_path=selfie_filename,
             document_image_path=doc_filename,
+            secondary_document_image_path=sec_filename,
             selfie_image_data=selfie_b64,
             document_image_data=doc_b64,
+            secondary_document_image_data=sec_b64,
             verification_type=verification_type,
             status=VerificationStatus.PENDING_ADMIN,
             ai_confidence_score=ai_score,
@@ -83,8 +100,10 @@ async def verify_documents_mock(
     else:
         v_req.selfie_image_path = selfie_filename
         v_req.document_image_path = doc_filename
+        v_req.secondary_document_image_path = sec_filename
         v_req.selfie_image_data = selfie_b64
         v_req.document_image_data = doc_b64
+        v_req.secondary_document_image_data = sec_b64
         v_req.verification_type = verification_type
         v_req.status = VerificationStatus.PENDING_ADMIN
         v_req.ai_confidence_score = ai_score
@@ -130,7 +149,8 @@ def get_secure_file_response(filename: str, current_user: User, db: Session) -> 
     """Fetches image directly from PostgreSQL database with permission validation."""
     v_req = db.query(VerificationRequest).filter(
         (VerificationRequest.selfie_image_path == filename) |
-        (VerificationRequest.document_image_path == filename)
+        (VerificationRequest.document_image_path == filename) |
+        (VerificationRequest.secondary_document_image_path == filename)
     ).first()
 
     if not v_req:
@@ -145,7 +165,12 @@ def get_secure_file_response(filename: str, current_user: User, db: Session) -> 
     if current_user.user_type != UserType.ADMIN and current_user.id != v_req.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
-    raw_data = v_req.selfie_image_data if filename == v_req.selfie_image_path else v_req.document_image_data
+    if filename == v_req.selfie_image_path:
+        raw_data = v_req.selfie_image_data
+    elif filename == v_req.document_image_path:
+        raw_data = v_req.document_image_data
+    else:
+        raw_data = v_req.secondary_document_image_data
     
     if not raw_data:
         # Fallback to disk if raw_data is empty

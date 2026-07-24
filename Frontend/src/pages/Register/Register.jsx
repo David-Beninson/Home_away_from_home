@@ -141,7 +141,7 @@ export default function Register() {
             // 2. ADD 'await' right here vvv
             await dispatch(fetchCurrentUser());
             
-            navigate('/complete-profile');
+            navigate('/');
           }, 1500);
         }
       } catch (err) {

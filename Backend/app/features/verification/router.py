@@ -1,3 +1,4 @@
+from typing import Optional, List, Dict, Tuple
 from fastapi import APIRouter, Depends, File, Form, UploadFile, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -31,6 +32,7 @@ async def submit_verification_documents(
     verification_type: VerificationType = Form(VerificationType.CIVILIAN),
     selfie: UploadFile = File(...),
     document: UploadFile = File(...),
+    secondary_document: Optional[UploadFile] = File(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -50,12 +52,25 @@ async def submit_verification_documents(
             detail="Document must be an image file."
         )
 
+    if verification_type == VerificationType.LONE_SOLDIER:
+        if not secondary_document or not secondary_document.filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="חובה להעלות תעודת בודד או עולה חדש."
+            )
+        if not secondary_document.content_type or not secondary_document.content_type.startswith("image/"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="תעודת בודד או עולה חדש חייבת להיות קובץ תמונה."
+            )
+
     req = await verify_documents_mock(
         db=db,
         user=current_user,
         selfie_file=selfie,
         document_file=document,
-        verification_type=verification_type
+        verification_type=verification_type,
+        secondary_document_file=secondary_document
     )
 
     return VerificationSubmitResponse(

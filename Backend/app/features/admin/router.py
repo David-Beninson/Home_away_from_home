@@ -179,6 +179,7 @@ def get_pending_verifications(admin_user: User = Depends(require_admin), db: Ses
             "status": req.status.value if hasattr(req.status, 'value') else str(req.status),
             "selfie_url": f"/api/verification/files/{req.selfie_image_path}",
             "document_url": f"/api/verification/files/{req.document_image_path}",
+            "secondary_document_url": f"/api/verification/files/{req.secondary_document_image_path}" if req.secondary_document_image_path else None,
             "ai_confidence_score": req.ai_confidence_score,
             "created_at": req.created_at,
         }

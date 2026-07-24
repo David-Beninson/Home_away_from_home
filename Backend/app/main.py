@@ -38,6 +38,18 @@ app.include_router(verification_router, prefix="/api")
 
 
 
+@app.on_event("startup")
+def ensure_db_schema():
+    try:
+        from app.database.session import engine
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_path VARCHAR(512) DEFAULT '';"))
+            conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_data TEXT;"))
+            conn.commit()
+    except Exception as e:
+        print(f"Startup DB migration warning: {e}")
+
 @app.get("/")
 def read_root():
     return {"message": "Hosting for Shabbat API is running"}

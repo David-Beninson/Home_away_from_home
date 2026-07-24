@@ -124,9 +124,8 @@ export default function AdminVerificationRequests() {
   };
 
   const getTypeName = (type) => {
-    if (type === 'lone_soldier') return '🪖 חייל בודד / סדיר';
-    if (type === 'new_immigrant') return '✈️ עולה חדש';
-    return '🏠 אזרח / אורח';
+    if (type === 'lone_soldier') return 'משרת בודד/ה';
+    return '🏠 מארח';
   };
 
   const token = localStorage.getItem('token') || '';
@@ -189,7 +188,7 @@ export default function AdminVerificationRequests() {
               </div>
 
               {/* Side-by-side Image Inspection Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', margin: '1.25rem 0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: req.secondary_document_url ? 'repeat(auto-fit, minmax(200px, 1fr))' : '1fr 1fr', gap: '1rem', margin: '1.25rem 0' }}>
                 <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.75rem', textAlign: 'center' }}>
                   <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-h)', fontSize: '0.9rem' }}>תמונת סלפי 📸</div>
                   <img
@@ -213,6 +212,20 @@ export default function AdminVerificationRequests() {
                     }}
                   />
                 </div>
+
+                {req.secondary_document_url && (
+                  <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.75rem', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-h)', fontSize: '0.9rem' }}>תעודת בודד או עולה חדש 📄</div>
+                    <img
+                      src={getFullUrl(req.secondary_document_url)}
+                      alt="Secondary Document"
+                      style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', borderRadius: '8px' }}
+                      onError={(e) => {
+                        console.error("Failed to load secondary document image:", req.secondary_document_url);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
