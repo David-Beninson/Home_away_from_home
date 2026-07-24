@@ -41,6 +41,15 @@ export default function SuspendedOverlay() {
     verificationApi.getStatus().then((res) => {
       setVerificationDetails(res.data);
     }).catch(() => {});
+
+    const handleStatusChange = (e) => {
+      verificationApi.getStatus().then((res) => {
+        setVerificationDetails(res.data);
+      }).catch(() => {});
+    };
+
+    window.addEventListener('verification_status_changed', handleStatusChange);
+    return () => window.removeEventListener('verification_status_changed', handleStatusChange);
   }, [user]);
 
   const handleFileChange = (e, type) => {

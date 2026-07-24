@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { receiveNotification, markAllAsRead, markAsRead } from '../../../store/notificationsSlice';
+import { fetchCurrentUser } from '../../../store/authSlice';
 import { Bell, CheckCircle2, MessageSquare, AlertCircle, Check } from 'lucide-react';
 import './NotificationBell.css';
 
@@ -64,6 +65,17 @@ export default function NotificationBell() {
           if (incomingData?.type === 'pong') return;
 
           dispatch(receiveNotification(incomingData));
+
+          // If this is a live verification approval or rejection event from admin:
+          if (
+            incomingData?.verification_status ||
+            incomingData?.id?.startsWith('approved_') ||
+            incomingData?.id?.startsWith('rejected_')
+          ) {
+            console.log("⚡ Real-time verification status change received via WS! Updating user state...");
+            dispatch(fetchCurrentUser());
+            window.dispatchEvent(new CustomEvent('verification_status_changed', { detail: incomingData }));
+          }
         } catch (err) {
           console.error("Error parsing WS notification:", err);
         }

@@ -214,6 +214,7 @@ def approve_verification_request(request_id: str, admin_user: User = Depends(req
                     "title": "חשבונך אושר בהצלחה! 🎉",
                     "message": "פרופיל המשתמש שלך אושר כראוי וכל חסמי הגישה הוסרו.",
                     "type": "success",
+                    "verification_status": "approved",
                     "time": datetime.now().strftime("%H:%M")
                 },
                 str(req.user_id)
@@ -257,6 +258,8 @@ def reject_verification_request(
                     "title": "בקשת האימות נדחתה ⚠️",
                     "message": f"סיבת הדחייה: {payload.rejection_reason}",
                     "type": "alert",
+                    "verification_status": "rejected",
+                    "rejection_reason": payload.rejection_reason,
                     "time": datetime.now().strftime("%H:%M")
                 },
                 str(req.user_id)
