@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 from sqlalchemy import DateTime, ForeignKey, text
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 from app.database.base import Base
@@ -27,6 +28,14 @@ class HostProfile(Base):
     
     # --- NEW QUESTIONNAIRE FIELDS ---
     residential_address: Mapped[Optional[str]]
+
+    @hybrid_property
+    def city(self) -> Optional[str]:
+        return self.residential_address
+
+    @city.expression
+    def city(cls):
+        return cls.residential_address
     max_guests: Mapped[int] = mapped_column(default=1, server_default=text("1"))
     neighborhood_type: Mapped[Optional[str]]
     kashrut_level: Mapped[KashrutLevel] = mapped_column(
