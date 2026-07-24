@@ -37,10 +37,11 @@ export function useAppLogic() {
 
   // Check if the user has completed their profile data
   // Check if the user has actually filled out their core profile fields
+  // Check if the user has actually filled out their core profile fields based on the NEW field names
   const hasProfile = Boolean(
     user?.profile && (
-      (userRole === 'host' && user.profile.city && user.profile.city.trim() !== '') ||
-      (userRole === 'guest' && user.profile.origin_city && user.profile.origin_city.trim() !== '')
+      (userRole === 'host' && user.profile.residential_address && user.profile.residential_address.trim() !== '') ||
+      (userRole === 'guest' && user.profile.guest_address && user.profile.guest_address.trim() !== '')
     )
   );
 

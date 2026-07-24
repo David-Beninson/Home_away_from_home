@@ -31,7 +31,6 @@ export const HOST_FIELDS = {
     min: 0,
     icon: '✨'
   },
-
   num_bedrooms: {
     label: 'מספר חדרי שינה / אירוח',
     type: 'number',
@@ -49,7 +48,6 @@ export const HOST_FIELDS = {
       { value: 'none', label: 'ללא תעודה / לא מקפידים' }
     ]
   },
-
   religious_orientation: {
     label: 'זיקה דתית / אורח חיים',
     type: 'text',
@@ -89,18 +87,6 @@ export const HOST_FIELDS = {
 };
 
 export const GUEST_FIELDS = {
-  origin_city: {
-    label: 'עיר מגורים (מקור)',
-    type: 'text',
-    icon: '📍',
-    placeholder: 'למשל: חיפה, באר שבע...'
-  },
-  unit_name: {
-    label: 'שם יחידה / בסיס',
-    type: 'text',
-    icon: '🛡️',
-    placeholder: 'למשל: גולני, 8200, בסיס חצרים...'
-  },
   service_type: {
     label: 'סוג שירות',
     type: 'select',
@@ -112,11 +98,6 @@ export const GUEST_FIELDS = {
       { value: 'OTHER', label: 'אחר' }
     ]
   },
-  is_soldier_or_national_service: {
-    label: 'חייל / משרת שירות לאומי פעיל',
-    type: 'boolean',
-    icon: '🪖'
-  },
   release_date: {
     label: 'תאריך שחרור צפוי',
     type: 'date',
@@ -126,14 +107,6 @@ export const GUEST_FIELDS = {
     label: 'פרופיל אנונימי (הסתרת פרטים מזהים)',
     type: 'boolean',
     icon: '🕵️'
-  },
-  food_preferences_allergies: {
-    label: 'העדפות מזון / אלרגיות',
-    type: 'textarea',
-    rows: 2,
-    fullWidth: true,
-    icon: '🥗',
-    placeholder: 'צמחוני, טבעוני, אלרגיה לבוטנים/גלוטן...'
   },
   skills_give_take: {
     label: 'קצת עלייך (תחביבים, כישורים ותחומי עניין)',

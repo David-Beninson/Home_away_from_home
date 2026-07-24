@@ -67,7 +67,6 @@ class UserRegisterVerifySchema(BaseModel):
         if len(v) < 8 or not re.search(r"[A-Z]", v) or not re.search(r"\d", v):
             raise ValueError("Password must be >= 8 chars, contain an uppercase letter and a digit")
         return v
-
         
 class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
@@ -76,57 +75,48 @@ class UserResponse(UserBase):
 
 class HostProfileBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
-    city: Optional[str] = "Not Specified"
-    neighborhood: Optional[str] = None
-    kashrut_level: KashrutLevel = KashrutLevel.KOSHER
-    religious_orientation: Optional[str] = None
-    availability_windows: Optional[str] = None
-    emergency_available: bool = False
-    full_address: Optional[str] = None
+    residential_address: Optional[str] = None
     max_guests: int = 1
-    available_spots: Optional[int] = None
-    num_bedrooms: Optional[int] = None
-    has_pets: bool = False
-    accessibility: Optional[str] = None
-    free_text_notes: Optional[str] = None
+    neighborhood_type: Optional[str] = None
+    kashrut_level: Optional[str] = "כשר"
+    num_beds: int = 1
+    num_bedrooms: int = 1
+    pets_description: Optional[str] = None
+    housing_type: Optional[str] = None
+    accessibility_level: Optional[str] = None
 
     @field_validator("kashrut_level", mode="before")
     @classmethod
     def validate_kashrut_level(cls, v):
         if not v:
-            return KashrutLevel.KOSHER
-        if isinstance(v, str):
-            val_lower = v.lower()
-            if val_lower in ["glatt_kosher", "glatt_mehadrin", "mehadrin", "glatt"]:
-                return KashrutLevel.GLATT_MEHADRIN
-            if val_lower in ["not_kosher", "none"]:
-                return KashrutLevel.NONE
-            if val_lower in ["basic"]:
-                return KashrutLevel.BASIC
-            if val_lower in ["kosher"]:
-                return KashrutLevel.KOSHER
+            return "כשר"
         return v
-
-
 
 class GuestProfileBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
-    is_soldier_or_national_service: bool = False
-    skills_give_take: Optional[str] = None
-    is_anonymous: bool = False
-    service_type: Optional[str] = None
-    unit_name: Optional[str] = None
-    food_preferences_allergies: Optional[str] = None
+    service_type: Optional[str] = "סדיר"
+    unit_description: Optional[str] = None
     release_date: Optional[datetime] = None
-    origin_city: Optional[str] = None
+    is_anonymous: bool = False
+    giving_to_host: bool = False
+    food_allergies: Optional[str] = None
+    food_preferences: Optional[str] = None
+    religious_level: Optional[str] = None
+    kosher_food: bool = True
+    gender: Optional[str] = None
+    guest_address: Optional[str] = None
 
     @field_validator("release_date", mode="before")
     @classmethod
     def validate_release_date(cls, v):
         if v == "" or v is None:
             return None
+        if isinstance(v, str):
+            try:
+                return datetime.fromisoformat(v)
+            except ValueError:
+                return None
         return v
-
 
 class LoginRequest(BaseModel):
     username: str

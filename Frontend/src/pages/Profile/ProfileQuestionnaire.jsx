@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { User, Home, Shield, Utensils, Heart, Info, MapPin } from 'lucide-react';
@@ -10,47 +10,37 @@ export default function ProfileQuestionnaire() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Get the current user from Redux
   const user = useSelector((state) => state.auth.user);
   const userType = user?.user_type || 'guest';
 
-  useEffect(() => {
-    // This checks if the user actually typed a real string into a required field, 
-    // ignoring FastAPI's default null keys.
-    const isHostComplete = user?.profile?.city;
-    const isGuestComplete = user?.profile?.origin_city || user?.profile?.service_type;
-    
-    if (user && (isHostComplete || isGuestComplete)) {
-      navigate('/', { replace: true });
-    }
-  }, [user, navigate]);
-
-  // --- STATE VARIABLES ---
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Form state maps EXACTLY to FastAPI Pydantic schemas
+  // Initial state matches the FastAPI schemas exactly
   const [formData, setFormData] = useState({
     // --- Host Fields ---
-    city: '',
-    neighborhood: '',
-    full_address: '',
-    kashrut_level: 'kosher',
-    religious_orientation: '',
+    residential_address: '',
     max_guests: 1,
-    num_bedrooms: 0,
-    has_pets: false,
-    emergency_available: false,
-    accessibility: '',
-    free_text_notes: '',
+    neighborhood_type: '',
+    kashrut_level: 'כשר',
+    num_beds: 1,
+    num_bedrooms: 1,
+    pets_description: '',
+    housing_type: '',
+    accessibility_level: '',
 
     // --- Guest Fields ---
-    is_soldier_or_national_service: false,
-    service_type: '',
-    origin_city: '',
-    food_preferences_allergies: '',
+    service_type: 'סדיר',
+    unit_description: '',
     release_date: '',
-    is_anonymous: false
+    is_anonymous: false,
+    giving_to_host: false,
+    food_allergies: '',
+    food_preferences: '',
+    religious_level: '',
+    kosher_food: true,
+    gender: '',
+    guest_address: ''
   });
 
   const handleChange = (e) => {
@@ -66,23 +56,19 @@ export default function ProfileQuestionnaire() {
     setError('');
     setLoading(true);
     
-    // Filter out empty strings
+    // Filter out empty strings or null values, but keep 'false' for checkboxes
     const cleanData = Object.fromEntries(
       Object.entries(formData).filter(([_, v]) => v !== '' && v !== null)
     );
 
     try {
-      // Use authApi based on user type
       if (userType === 'host') {
         await authApi.updateHostProfile(cleanData);
       } else {
         await authApi.updateGuestProfile(cleanData);
       }
 
-      // Refresh user state in Redux
       await dispatch(fetchCurrentUser());
-
-      // Navigate to homepage on success
       navigate('/', { replace: true });
       
     } catch (err) {
@@ -94,114 +80,217 @@ export default function ProfileQuestionnaire() {
   };
 
   // ----------------------------------------
-  // HOST QUESTIONNAIRE
+  // HOST QUESTIONNAIRE (שאלון מארח)
   // ----------------------------------------
   const renderHostForm = () => (
     <div className="pq-form-grid">
-      <div className="pq-form-group">
-        <label><MapPin size={16}/> עיר</label>
-        <input type="text" name="city" value={formData.city} onChange={handleChange} required placeholder="לדוגמה: ירושלים" />
-      </div>
-
-      <div className="pq-form-group">
-        <label>שכונה</label>
-        <input type="text" name="neighborhood" value={formData.neighborhood} onChange={handleChange} placeholder="לדוגמה: רחביה" />
-      </div>
-
       <div className="pq-form-group full-width">
-        <label><Home size={16}/> כתובת מלאה</label>
-        <input type="text" name="full_address" value={formData.full_address} onChange={handleChange} placeholder="רחוב ומספר בית" />
+        <label><MapPin size={16}/> כתובת מגורים</label>
+        <input 
+          type="text" 
+          name="residential_address" 
+          value={formData.residential_address} 
+          onChange={handleChange} 
+          required 
+          placeholder="הכנס כתובת מלאה" 
+        />
+      </div>
+
+      <div className="pq-form-group">
+        <label>כמות אורחים (1-15)</label>
+        <select name="max_guests" value={formData.max_guests} onChange={handleChange}>
+          {[...Array(15)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="pq-form-group">
+        <label>סוג שכונה</label>
+        <select name="neighborhood_type" value={formData.neighborhood_type} onChange={handleChange}>
+          <option value="">בחר סוג שכונה</option>
+          <option value="חילונית">חילונית</option>
+          <option value="דתית">דתית</option>
+          <option value="חרדית">חרדית</option>
+        </select>
       </div>
 
       <div className="pq-form-group">
         <label><Utensils size={16}/> רמת כשרות</label>
         <select name="kashrut_level" value={formData.kashrut_level} onChange={handleChange}>
-          <option value="none">ללא תעודה</option>
-          <option value="basic">כשרות בסיסית</option>
-          <option value="kosher">כשר</option>
-          <option value="mehadrin">מהדרין</option>
-          <option value="glatt_kosher">גלאט כשר</option>
+          <option value="כלום">כלום</option>
+          <option value="בסיסי">בסיסי</option>
+          <option value="כשר">כשר</option>
+          <option value="מהדרין">מהדרין</option>
         </select>
       </div>
 
       <div className="pq-form-group">
-        <label>השתייכות דתית</label>
-        <input type="text" name="religious_orientation" value={formData.religious_orientation} onChange={handleChange} placeholder="דתי לאומי, חרדי, מסורתי..." />
+        <label>כמות מיטות (1-15)</label>
+        <select name="num_beds" value={formData.num_beds} onChange={handleChange}>
+          {[...Array(15)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          ))}
+        </select>
       </div>
 
       <div className="pq-form-group">
-        <label>מקסימום אורחים</label>
-        <input type="number" name="max_guests" min="1" value={formData.max_guests} onChange={handleChange} />
+        <label>כמות חדרי שינה (1-15)</label>
+        <select name="num_bedrooms" value={formData.num_bedrooms} onChange={handleChange}>
+          {[...Array(15)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          ))}
+        </select>
       </div>
 
       <div className="pq-form-group">
-        <label>מספר חדרי שינה פנויים</label>
-        <input type="number" name="num_bedrooms" min="0" value={formData.num_bedrooms} onChange={handleChange} />
+        <label>רמת נגישות</label>
+        <select name="accessibility_level" value={formData.accessibility_level} onChange={handleChange}>
+          <option value="">בחר נגישות</option>
+          <option value="מעלית">מעלית</option>
+          <option value="מדרגות">מדרגות</option>
+        </select>
       </div>
 
-      <div className="pq-checkbox-group full-width">
-        <label className="checkbox-label">
-          <input type="checkbox" name="has_pets" checked={formData.has_pets} onChange={handleChange} />
-          יש חיות מחמד בבית
-        </label>
-        <label className="checkbox-label">
-          <input type="checkbox" name="emergency_available" checked={formData.emergency_available} onChange={handleChange} />
-          זמינים לאירוח חירום / התראה קצרה
-        </label>
-      </div>
-
-      <div className="pq-form-group full-width">
-        <label><Info size={16}/> נגישות (אופציונלי)</label>
-        <textarea name="accessibility" value={formData.accessibility} onChange={handleChange} placeholder="קומת קרקע, מעלית, פתחים רחבים..." rows="2" />
+      <div className="pq-form-group">
+        <label>סוג מגורים</label>
+        <select name="housing_type" value={formData.housing_type} onChange={handleChange}>
+          <option value="">בחר סוג מגורים</option>
+          <option value="בניין">בניין</option>
+          <option value="בית פרטי">בית פרטי</option>
+        </select>
       </div>
 
       <div className="pq-form-group full-width">
-        <label>הערות נוספות למתארחים</label>
-        <textarea name="free_text_notes" value={formData.free_text_notes} onChange={handleChange} placeholder="ספרו קצת על המשפחה שלכם..." rows="3" />
+        <label>חיות מחמד בבית</label>
+        <textarea 
+          name="pets_description" 
+          value={formData.pets_description} 
+          onChange={handleChange} 
+          placeholder="פרט האם יש חיות מחמד, אילו סוגים וכו'..." 
+          rows="2" 
+        />
       </div>
     </div>
   );
 
   // ----------------------------------------
-  // GUEST QUESTIONNAIRE
+  // GUEST QUESTIONNAIRE (שאלון אורח)
   // ----------------------------------------
   const renderGuestForm = () => (
     <div className="pq-form-grid">
-      <div className="pq-checkbox-group full-width">
-        <label className="checkbox-label">
-          <input type="checkbox" name="is_soldier_or_national_service" checked={formData.is_soldier_or_national_service} onChange={handleChange} />
-          <Shield size={16}/> חייל/ת או משרת/ת שירות לאומי
-        </label>
+      <div className="pq-form-group">
+        <label><Shield size={16}/> סוג שירות</label>
+        <select name="service_type" value={formData.service_type} onChange={handleChange}>
+          <option value="סדיר">סדיר</option>
+          <option value="קבע">קבע</option>
+          <option value="מילואים">מילואים</option>
+          <option value="שירות לאומי">שירות לאומי</option>
+        </select>
       </div>
 
-      {formData.is_soldier_or_national_service && (
-        <div className="pq-form-group">
-          <label>סוג שירות</label>
-          <input type="text" name="service_type" value={formData.service_type} onChange={handleChange} placeholder="לדוגמה: לוחם, עורפי, שירות לאומי" />
-        </div>
-      )}
-
-      {formData.is_soldier_or_national_service && (
-        <div className="pq-form-group">
-          <label>תאריך שחרור (אופציונלי)</label>
-          <input type="date" name="release_date" value={formData.release_date} onChange={handleChange} />
-        </div>
-      )}
+      <div className="pq-form-group">
+        <label>מין</label>
+        <select name="gender" value={formData.gender} onChange={handleChange}>
+          <option value="">בחר מין</option>
+          <option value="זכר">זכר</option>
+          <option value="נקבה">נקבה</option>
+          <option value="אחר">אחר</option>
+        </select>
+      </div>
 
       <div className="pq-form-group">
-        <label><MapPin size={16}/> עיר מגורים (מקור)</label>
-        <input type="text" name="origin_city" value={formData.origin_city} onChange={handleChange} placeholder="לדוגמה: חיפה" />
+        <label>השתייכות דתית</label>
+        <input 
+          type="text" 
+          name="religious_level" 
+          value={formData.religious_level} 
+          onChange={handleChange} 
+          placeholder="דתי / חילוני..." 
+        />
+      </div>
+
+      <div className="pq-form-group">
+        <label>תאריך סיום שירות</label>
+        <input 
+          type="date" 
+          name="release_date" 
+          value={formData.release_date} 
+          onChange={handleChange} 
+        />
       </div>
 
       <div className="pq-form-group full-width">
-        <label><Heart size={16}/> רגישויות, אלרגיות או העדפות מזון</label>
-        <textarea name="food_preferences_allergies" value={formData.food_preferences_allergies} onChange={handleChange} placeholder="צמחוני, טבעוני, רגישות לגלוטן..." rows="2" />
+        <label><MapPin size={16}/> כתובת מגורים</label>
+        <input 
+          type="text" 
+          name="guest_address" 
+          value={formData.guest_address} 
+          onChange={handleChange} 
+          placeholder="הכנס את כתובת המגורים שלך" 
+        />
+      </div>
+
+      <div className="pq-form-group full-width">
+        <label>תיאור יחידה / תיאור שירות לאומי</label>
+        <textarea 
+          name="unit_description" 
+          value={formData.unit_description} 
+          onChange={handleChange} 
+          placeholder="ספר בקצרה על היחידה או מסגרת השירות שלך..." 
+          rows="2" 
+        />
+      </div>
+
+      <div className="pq-form-group full-width">
+        <label><Heart size={16}/> אלרגיות לאוכל</label>
+        <textarea 
+          name="food_allergies" 
+          value={formData.food_allergies} 
+          onChange={handleChange} 
+          placeholder="רגישויות, אלרגיות מיוחדות..." 
+          rows="2" 
+        />
+      </div>
+
+      <div className="pq-form-group full-width">
+        <label>העדפות לאוכל</label>
+        <textarea 
+          name="food_preferences" 
+          value={formData.food_preferences} 
+          onChange={handleChange} 
+          placeholder="צמחוני, טבעוני, העדפות מיוחדות..." 
+          rows="2" 
+        />
       </div>
 
       <div className="pq-checkbox-group full-width">
         <label className="checkbox-label">
-          <input type="checkbox" name="is_anonymous" checked={formData.is_anonymous} onChange={handleChange} />
-          <User size={16}/> השאר את הפרופיל שלי אנונימי (מארחים לא יראו את שמך המלא עד לאישור הבקשה)
+          <input 
+            type="checkbox" 
+            name="kosher_food" 
+            checked={formData.kosher_food} 
+            onChange={handleChange} 
+          />
+          אוכל כשר
+        </label>
+        <label className="checkbox-label">
+          <input 
+            type="checkbox" 
+            name="is_anonymous" 
+            checked={formData.is_anonymous} 
+            onChange={handleChange} 
+          />
+          <User size={16}/> תמיד אנונימי (הסתרת פרטים אישיים עד לאישור)
+        </label>
+        <label className="checkbox-label">
+          <input 
+            type="checkbox" 
+            name="giving_to_host" 
+            checked={formData.giving_to_host} 
+            onChange={handleChange} 
+          />
+          נתינה למארח (התנדבות / השתתפות)
         </label>
       </div>
     </div>
@@ -211,7 +300,7 @@ export default function ProfileQuestionnaire() {
     <div className="pq-container" dir="rtl">
       <div className="pq-header">
         <h2>השלמת פרופיל {userType === 'host' ? 'מארח' : 'מתארח'}</h2>
-        <p>אנא מלאו את הפרטים הבאים כדי שנוכל להתאים לכם את החוויה הטובה ביותר לשבת.</p>
+        <p>אנא מלאו את הפרטים הבאים כדי להשלים את ההרשמה למערכת.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="pq-form">

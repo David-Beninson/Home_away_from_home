@@ -8,6 +8,33 @@ import { getUserInitials } from '../../utils/user';
 import { getProfileFieldDefinitions, formatFieldValue } from './profileFieldsConfig';
 import './Profile.css';
 
+// Translation dictionary for dynamic fields
+const labelTranslations = {
+  // Guest Fields
+  "Giving To Host": "מביא/ה מתנה למארח",
+  "Food Preferences": "העדפות מזון",
+  "Kosher Food": "אוכל כשר",
+  "Guest Address": "כתובת מגורים",
+  "Unit Description": "יחידה צבאית",
+  "Food Allergies": "אלרגיות / רגישויות",
+  "Religious Level": "דת",
+  "Gender": "מין",
+  "Service Type": "סוג שירות",
+  "Release Date": "תאריך שחרור",
+  "Is Anonymous": "פרופיל אנונימי",
+
+  // Host Fields
+  "Residential Address": "כתובת מגורים",
+  "Neighborhood Type": "סוג שכונה",
+  "Pets Description": "חיות מחמד",
+  "Housing Type": "סוג דיור",
+  "Max Guests": "מקסימום אורחים",
+  "Kashrut Level": "רמת כשרות",
+  "Num Beds": "מספר מיטות",
+  "Num Bedrooms": "מספר חדרי שינה",
+  "Accessibility Level": "נגישות"
+};
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -85,7 +112,6 @@ export default function ProfilePage() {
     }
   };
 
-
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
@@ -106,11 +132,11 @@ export default function ProfilePage() {
   const userInitial = getUserInitials(user);
   const locationSubtext =
     user.user_type === 'guest'
-      ? profileData.unit_name || profileData.origin_city || 'טרם עודכן מיקום/יחידה'
-      : profileData.city || 'טרם עודכנה עיר מגורים';
+      ? profileData.unit_name || profileData.guest_address || 'טרם עודכן מיקום/יחידה'
+      : profileData.residential_address || 'טרם עודכנה עיר מגורים';
 
   return (
-    <div className="profile-container">
+    <div className="profile-container" dir="rtl">
       <div className="profile-card">
         {!isEditing ? (
           /* ================= VIEW MODE ================= */
@@ -146,9 +172,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="details-card">
-              <div className="details-header">
-                {user.user_type === 'host' ? 'פרופיל מארח' : 'פרופיל אורח'}
-              </div>
+
 
               {/* Base User Account Info */}
               <div className="detail-row">
@@ -169,7 +193,7 @@ export default function ProfilePage() {
                   <div className="detail-row" key={key}>
                     <span className="detail-label">
                       {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
-                      {fieldDef.label}
+                      {labelTranslations[fieldDef.label] || fieldDef.label}
                     </span>
                     <span className="detail-value">{formattedVal}</span>
                   </div>
@@ -216,69 +240,71 @@ export default function ProfilePage() {
                       className={`form-group ${isFullWidth ? 'full-width' : ''} ${fieldDef.type === 'boolean' ? 'checkbox-group' : ''}`}
                     >
                       <label htmlFor={key}>
-                        {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
-                        {fieldDef.label}
-                      </label>
+  {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
+  {labelTranslations[fieldDef.label] || fieldDef.label}
+                      </label >
 
-                      {fieldDef.type === 'textarea' ? (
-                        <textarea
-                          id={key}
-                          rows={fieldDef.rows || 3}
-                          placeholder={fieldDef.placeholder || ''}
-                          value={val}
-                          onChange={handleChange}
-                          required={fieldDef.required}
-                        />
-                      ) : fieldDef.type === 'select' ? (
-                        <select id={key} value={val} onChange={handleChange} required={fieldDef.required}>
-                          {fieldDef.options?.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      ) : fieldDef.type === 'boolean' ? (
-                        <div className="toggle-switch-container">
-                          <input
-                            type="checkbox"
-                            id={key}
-                            checked={Boolean(profileData[key])}
-                            onChange={handleChange}
-                          />
-                          <span className="checkbox-text">{profileData[key] ? 'כן' : 'לא'}</span>
-                        </div>
-                      ) : (
-                        <input
-                          type={fieldDef.type || 'text'}
-                          id={key}
-                          min={fieldDef.min}
-                          placeholder={fieldDef.placeholder || ''}
-                          value={val}
-                          onChange={handleChange}
-                          required={fieldDef.required}
-                        />
-                      )}
-                    </div>
+  {
+    fieldDef.type === 'textarea' ? (
+      <textarea
+        id={key}
+        rows={fieldDef.rows || 3}
+        placeholder={fieldDef.placeholder || ''}
+        value={val}
+        onChange={handleChange}
+        required={fieldDef.required}
+      />
+    ) : fieldDef.type === 'select' ? (
+      <select id={key} value={val} onChange={handleChange} required={fieldDef.required}>
+        {fieldDef.options?.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    ) : fieldDef.type === 'boolean' ? (
+      <div className="toggle-switch-container">
+        <input
+          type="checkbox"
+          id={key}
+          checked={Boolean(profileData[key])}
+          onChange={handleChange}
+        />
+        <span className="checkbox-text">{profileData[key] ? 'כן' : 'לא'}</span>
+      </div>
+    ) : (
+      <input
+        type={fieldDef.type || 'text'}
+        id={key}
+        min={fieldDef.min}
+        placeholder={fieldDef.placeholder || ''}
+        value={val}
+        onChange={handleChange}
+        required={fieldDef.required}
+      />
+    )
+  }
+                    </div >
                   );
-                })}
-              </div>
+})}
+              </div >
 
-              <div className="profile-actions">
-                <button
-                  type="button"
-                  className="btn-outline btn-cancel-profile"
-                  onClick={() => setIsEditing(false)}
-                >
-                  ביטול
-                </button>
-                <button type="submit" className="save-btn" disabled={saving}>
-                  {saving ? 'שומר...' : 'שמור שינויים'}
-                </button>
-              </div>
-            </form>
+  <div className="profile-actions">
+    <button
+      type="button"
+      className="btn-outline btn-cancel-profile"
+      onClick={() => setIsEditing(false)}
+    >
+      ביטול
+    </button>
+    <button type="submit" className="save-btn" disabled={saving}>
+      {saving ? 'שומר...' : 'שמור שינויים'}
+    </button>
+  </div>
+            </form >
           </>
         )}
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
