@@ -88,7 +88,11 @@ def search_hosts(
     filtered_results = []
     for idx, profile in enumerate(results):
         # Extract Vibe Tags using AI service
-        profile.vibe_tags = AgentService.extract_vibe_tags(profile.free_text_notes, profile.religious_orientation)
+        # Combine the new fields to feed the AI vibe tag extractor
+        general_notes = f"{profile.housing_type or ''} {profile.neighborhood_type or ''} {profile.pets_description or ''}".strip()
+        kashrut_info = profile.kashrut_level.value if hasattr(profile.kashrut_level, 'value') else str(profile.kashrut_level)
+    
+        profile.vibe_tags = AgentService.extract_vibe_tags(general_notes, kashrut_info)
 
         # Apply Vibe filter if specified
         if vibe:
