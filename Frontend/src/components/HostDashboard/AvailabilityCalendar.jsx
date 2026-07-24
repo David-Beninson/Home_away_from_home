@@ -1,4 +1,4 @@
-import  { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { navigateMonth, selectDate, computeDayStatus } from '../../store/availabilitySlice';
@@ -9,6 +9,7 @@ const HEBREW_MONTHS = [
 ];
 
 const DAY_HEADERS = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+const DAY_NAMES_FULL = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'יום שבת'];
 
 function toDateStr(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -44,16 +45,15 @@ export default function AvailabilityCalendar() {
     useSelector((s) => s.availability);
   const posts = useSelector((s) => s.requests?.posts || []);
 
-  const today = new Date();
-  const todayStr = toDateStr(today.getFullYear(), today.getMonth(), today.getDate());
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const today = useMemo(() => new Date(), []);
+  const todayStr = useMemo(() => toDateStr(today.getFullYear(), today.getMonth(), today.getDate()), [today]);
 
   const pendingDatesSet = useMemo(() => {
     const set = new Set();
     if (Array.isArray(posts)) {
       posts.forEach((p) => {
-        // Only trigger flashing red dot for requests that require HOST action:
-        // - OPEN posts (not claimed yet)
-        // - PENDING direct requests (guest asked host directly, host needs to respond)
         const needsHostAction = p.status === 'open' || (p.status === 'pending' && Boolean(p.is_direct_request));
         if (needsHostAction) {
           const startDateVal = p.start_date || p.requested_date || p.shabbat_date;
@@ -95,7 +95,6 @@ export default function AvailabilityCalendar() {
     const set = new Set();
     if (Array.isArray(posts)) {
       posts.forEach((p) => {
-        // Pending request waiting for guest answer: host claimed/approved, guest needs to respond
         const isWaitingGuest = p.status === 'pending' && !p.is_direct_request;
         if (isWaitingGuest) {
           const startDateVal = p.start_date || p.requested_date || p.shabbat_date;
@@ -193,16 +192,19 @@ export default function AvailabilityCalendar() {
     return cells;
   }, [currentYear, currentMonth, rules, overrides, bookings, pendingDatesSet, waitingGuestDatesSet, bookedDatesSet]);
 
-  const weekCells = useMemo(() => {
-    if (viewMode !== 'week') return null;
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const cells = [];
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(startOfToday);
-      d.setDate(d.getDate() + i);
-      const dateStr = toDateStr(d.getFullYear(), d.getMonth(), d.getDate());
-      const dayOfWeek = d.getDay();
-      const isWeekend = rules.weekendDays.includes(dayOfWeek);
+  const currentWeekDays = useMemo(() => {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const dayOfWeek = d.getDay();
+    const sunday = new Date(d);
+    sunday.setDate(d.getDate() - dayOfWeek + (weekOffset * 7));
+
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const curr = new Date(sunday);
+      curr.setDate(sunday.getDate() + i);
+      const dateStr = toDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
+      const dow = curr.getDay();
+      const isWeekend = rules.weekendDays.includes(dow);
       let status = computeDayStatus(dateStr, rules, overrides, bookings);
       if (bookedDatesSet.has(dateStr) && status !== 'past') {
         status = 'booked';
@@ -210,10 +212,52 @@ export default function AvailabilityCalendar() {
       const hasOverride = !!overrides[dateStr];
       const hasPendingRequest = pendingDatesSet.has(dateStr);
       const hasWaitingGuest = waitingGuestDatesSet.has(dateStr);
-      cells.push({ day: d.getDate(), dateStr, dayOfWeek, isWeekend, status, hasOverride, hasPendingRequest, hasWaitingGuest, key: dateStr });
+      days.push({
+        empty: false,
+        day: curr.getDate(),
+        month: curr.getMonth(),
+        year: curr.getFullYear(),
+        dateStr,
+        dayOfWeek: dow,
+        isWeekend,
+        status,
+        hasOverride,
+        hasPendingRequest,
+        hasWaitingGuest,
+        key: dateStr,
+      });
     }
-    return cells;
-  }, [viewMode, rules, overrides, bookings, pendingDatesSet, waitingGuestDatesSet, bookedDatesSet]);
+    return days;
+  }, [today, weekOffset, rules, overrides, bookings, pendingDatesSet, waitingGuestDatesSet, bookedDatesSet]);
+
+  const weekTitle = useMemo(() => {
+    if (!currentWeekDays || currentWeekDays.length < 7) return '';
+    const start = currentWeekDays[0];
+    const end = currentWeekDays[6];
+    const startMonth = HEBREW_MONTHS[start.month];
+    const endMonth = HEBREW_MONTHS[end.month];
+    if (start.month === end.month) {
+      return `${start.day} - ${end.day} ב${startMonth} ${start.year}`;
+    } else {
+      return `${start.day} ב${startMonth} - ${end.day} ב${endMonth} ${end.year}`;
+    }
+  }, [currentWeekDays]);
+
+  const handlePrev = () => {
+    if (viewMode === 'month') {
+      dispatch(navigateMonth(-1));
+    } else {
+      setWeekOffset((w) => w - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (viewMode === 'month') {
+      dispatch(navigateMonth(1));
+    } else {
+      setWeekOffset((w) => w + 1);
+    }
+  };
 
   const handleDayClick = (dateStr, status) => {
     if (status === 'past') return;
@@ -223,12 +267,33 @@ export default function AvailabilityCalendar() {
   return (
     <div className="ac-root">
       <div className="ac-header">
-        <h2 className="ac-month-title">{HEBREW_MONTHS[currentMonth]} {currentYear}</h2>
+        <h2 className="ac-month-title">
+          {viewMode === 'month' ? `${HEBREW_MONTHS[currentMonth]} ${currentYear}` : weekTitle}
+        </h2>
         <div className="ac-nav-group">
-          <button className="ac-nav-btn" id="cal-prev-month" onClick={() => dispatch(navigateMonth(-1))} aria-label="חודש קודם">
+          {viewMode === 'week' && weekOffset !== 0 && (
+            <button
+              className="ac-today-btn"
+              onClick={() => setWeekOffset(0)}
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                color: 'var(--text)',
+                marginLeft: '4px',
+              }}
+            >
+              חזור לשבוע הנוכחי
+            </button>
+          )}
+          <button className="ac-nav-btn" id="cal-prev-nav" onClick={handlePrev} aria-label="קודם">
             <ChevronRight size={20} />
           </button>
-          <button className="ac-nav-btn" id="cal-next-month" onClick={() => dispatch(navigateMonth(1))} aria-label="חודש הבא">
+          <button className="ac-nav-btn" id="cal-next-nav" onClick={handleNext} aria-label="הבא">
             <ChevronLeft size={20} />
           </button>
         </div>
@@ -283,7 +348,7 @@ export default function AvailabilityCalendar() {
         </>
       ) : (
         <div className="ac-agenda">
-          {weekCells.map((cell) => (
+          {currentWeekDays.map((cell) => (
             <button
               key={cell.key}
               id={`cal-agenda-${cell.dateStr}`}
@@ -298,19 +363,39 @@ export default function AvailabilityCalendar() {
             >
               <div className="agenda-date-col">
                 <span className="agenda-day-num">{cell.day}</span>
-                <span className="agenda-dow">{DAY_HEADERS[cell.dayOfWeek]}</span>
+                <span className="agenda-dow">{DAY_NAMES_FULL[cell.dayOfWeek]}</span>
               </div>
               <div className="agenda-status-col">
                 <span className={`agenda-badge agenda-badge--${cell.status}`}>
                   {STATUS_LABEL[cell.status] || 'עבר'}
                 </span>
                 {cell.hasPendingRequest && (
-                  <span className="agenda-pending-tag" style={{ background: '#fee2e2', color: '#991b1b', fontSize: '11px', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                  <span
+                    className="agenda-pending-tag"
+                    style={{
+                      background: '#fee2e2',
+                      color: '#991b1b',
+                      fontSize: '12px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      fontWeight: 600,
+                    }}
+                  >
                     יש בקשה שטרם אושרה
                   </span>
                 )}
                 {cell.hasWaitingGuest && (
-                  <span className="agenda-waiting-tag" style={{ background: '#fef3c7', color: '#92400e', fontSize: '11px', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                  <span
+                    className="agenda-waiting-tag"
+                    style={{
+                      background: '#fef3c7',
+                      color: '#92400e',
+                      fontSize: '12px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      fontWeight: 600,
+                    }}
+                  >
                     מחכה לתשובת אורח
                   </span>
                 )}

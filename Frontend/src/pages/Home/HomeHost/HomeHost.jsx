@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Settings, CalendarDays, LayoutList, RefreshCw, Loader2 } from 'lucide-react';
+import { Settings, CalendarDays, LayoutList, Loader2 } from 'lucide-react';
 import {
   openRulesModal,
   setViewMode,
@@ -19,10 +19,17 @@ export default function HomeHost() {
     useSelector((s) => s.availability);
   const badgeCount = useSelector((s) => s.requests.badgeCount);
 
-  // ── Load from DB on mount ──
+  // ── Load from DB on mount & periodic auto-refresh ──
   useEffect(() => {
     dispatch(fetchAvailability());
     dispatch(fetchPosts());
+
+    const interval = setInterval(() => {
+      dispatch(fetchAvailability());
+      dispatch(fetchPosts());
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [dispatch]);
 
   // ── Auto-switch to week view on narrow screens ──
@@ -59,15 +66,6 @@ export default function HomeHost() {
         </div>
 
         <div className="hh-hero-actions">
-          <button
-            id="hh-refresh"
-            className="hh-btn-refresh"
-            onClick={() => dispatch(fetchAvailability())}
-            disabled={loading}
-            aria-label="רענן"
-          >
-            <RefreshCw size={15} className={loading ? 'hh-spin' : ''} />
-          </button>
           <button
             id="hh-open-rules"
             className="hh-btn-settings"

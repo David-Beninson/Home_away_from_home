@@ -41,23 +41,6 @@
   border-color: rgba(239, 68, 68, 0.5);
 }
 
-/* ── Refresh button ── */
-.hh-btn-refresh {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 99px;
-  color: white;
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.hh-btn-refresh:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
-.hh-btn-refresh:disabled { opacity: 0.5; cursor: default; }
-
 /* ── Loading skeleton ── */
 .hh-calendar-card--loading { pointer-events: none; }
 
