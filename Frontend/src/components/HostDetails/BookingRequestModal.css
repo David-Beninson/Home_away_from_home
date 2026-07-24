@@ -216,6 +216,7 @@
   outline: none;
   cursor: pointer;
   accent-color: #2563eb;
+  background: linear-gradient(to left, #2563eb var(--slider-fill, 0%), #e2e8f0 var(--slider-fill, 0%));
   transition: background 0.1s ease;
 }
 

@@ -168,7 +168,7 @@ export default function ProfilePage() {
                 return (
                   <div className="detail-row" key={key}>
                     <span className="detail-label">
-                      {fieldDef.icon && <span style={{ marginLeft: '6px' }}>{fieldDef.icon}</span>}
+                      {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
                       {fieldDef.label}
                     </span>
                     <span className="detail-value">{formattedVal}</span>
@@ -198,12 +198,7 @@ export default function ProfilePage() {
 
             {message.text && (
               <div
-                className="login-error"
-                style={{
-                  backgroundColor: message.type === 'success' ? 'rgba(74, 222, 128, 0.1)' : '',
-                  color: message.type === 'success' ? '#4ade80' : '',
-                  borderColor: message.type === 'success' ? 'rgba(74, 222, 128, 0.2)' : ''
-                }}
+                className={`login-error ${message.type === 'success' ? 'profile-msg-success' : ''}`}
               >
                 {message.text}
               </div>
@@ -221,7 +216,7 @@ export default function ProfilePage() {
                       className={`form-group ${isFullWidth ? 'full-width' : ''} ${fieldDef.type === 'boolean' ? 'checkbox-group' : ''}`}
                     >
                       <label htmlFor={key}>
-                        {fieldDef.icon && <span style={{ marginLeft: '6px' }}>{fieldDef.icon}</span>}
+                        {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
                         {fieldDef.label}
                       </label>
 
@@ -268,14 +263,10 @@ export default function ProfilePage() {
                 })}
               </div>
 
-              <div
-                className="profile-actions"
-                style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}
-              >
+              <div className="profile-actions">
                 <button
                   type="button"
-                  className="btn-outline"
-                  style={{ padding: '12px 24px' }}
+                  className="btn-outline btn-cancel-profile"
                   onClick={() => setIsEditing(false)}
                 >
                   ביטול

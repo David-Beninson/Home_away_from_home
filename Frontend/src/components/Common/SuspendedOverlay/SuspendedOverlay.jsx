@@ -155,16 +155,16 @@ export default function SuspendedOverlay() {
           {/* Form for pending_submission or rejected */}
           {(status === 'pending_submission' || status === 'rejected') && submitStep === 0 && (
             <form onSubmit={handleSubmitDocuments}>
-              <div style={{ marginBottom: '1.25rem' }}>
+              <div className="verify-type-section">
                 <span className="verification-type-label">סוג אימות נדרש:</span>
-                <div style={{ marginTop: '0.5rem' }}>
+                <div className="verify-type-options">
                   {user?.user_type === 'host' ? (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', backgroundColor: 'var(--primary-blue-light)', border: '1px solid var(--primary-blue-border)', borderRadius: '12px', fontWeight: 600, color: 'var(--primary-blue)' }}>
+                    <div className="verify-type-badge">
                       <span>🏠</span>
                       <span>אימות מארח</span>
                     </div>
                   ) : (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', backgroundColor: 'var(--primary-blue-light)', border: '1px solid var(--primary-blue-border)', borderRadius: '12px', fontWeight: 600, color: 'var(--primary-blue)' }}>
+                    <div className="verify-type-badge">
                       <span>🪖</span>
                       <span>אימות משרת בודד/ה (צבא / שירות לאומי)</span>
                     </div>
@@ -172,11 +172,11 @@ export default function SuspendedOverlay() {
                 </div>
               </div>
 
-              <div className="upload-grid" style={{ gridTemplateColumns: verificationType === 'lone_soldier' ? 'repeat(auto-fit, minmax(140px, 1fr))' : '1fr 1fr' }}>
+              <div className={`upload-grid ${verificationType === 'lone_soldier' ? 'grid-lone-soldier' : 'grid-default'}`}>
                 <label className="upload-field-box">
                   <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'selfie')} />
                   <div className="upload-icon">📸</div>
-                  <div style={{ fontWeight: 600 }}>
+                  <div className="upload-field-title">
                     {verificationType === 'civilian' ? 'תמונת פרופיל / סלפי' : 'תמונת סלפי'}
                   </div>
                   {selfieFile && <div className="file-preview-name">✓ {selfieFile.name}</div>}
@@ -185,7 +185,7 @@ export default function SuspendedOverlay() {
                 <label className="upload-field-box">
                   <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'doc')} />
                   <div className="upload-icon">🪪</div>
-                  <div style={{ fontWeight: 600 }}>
+                  <div className="upload-field-title">
                     {verificationType === 'civilian' ? 'תעודת זהות ' : 'ת"ז או חוגר'}
                   </div>
                   {docFile && <div className="file-preview-name">✓ {docFile.name}</div>}
@@ -195,14 +195,14 @@ export default function SuspendedOverlay() {
                   <label className="upload-field-box">
                     <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'secondary_doc')} />
                     <div className="upload-icon">📄</div>
-                    <div style={{ fontWeight: 600 }}>תעודת בודד או עולה חדש</div>
+                    <div className="upload-field-title">תעודת בודד או עולה חדש</div>
                     {secondaryDocFile && <div className="file-preview-name">✓ {secondaryDocFile.name}</div>}
                   </label>
                 )}
               </div>
 
               {errorMsg && (
-                <div style={{ color: 'var(--spot-full-color)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                <div className="verify-error-msg">
                   {errorMsg}
                 </div>
               )}
@@ -230,11 +230,11 @@ export default function SuspendedOverlay() {
 
           {/* Pending Admin State Info */}
           {status === 'pending_admin' && (
-            <div style={{ backgroundColor: 'var(--primary-blue-light)', border: '1px solid var(--primary-blue-border)', padding: '1rem', borderRadius: '10px', marginTop: '1rem' }}>
-              <div style={{ fontWeight: 600, color: 'var(--primary-blue)', marginBottom: '0.25rem' }}>
+            <div className="pending-admin-info-card">
+              <div className="pending-admin-info-title">
                 ציון התאמה וסריקת AI: {verificationDetails?.ai_confidence_score || '85.0'}%
               </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              <div className="pending-admin-info-desc">
                 הבקשה שלך נמצאת בראש תור המנהלים. הודעה תישלח ברגע שהפרופיל יאושר.
               </div>
             </div>
@@ -250,7 +250,7 @@ export default function SuspendedOverlay() {
 
           <div className="support-chat-placeholder">
             {messages.length === 0 ? (
-              <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1rem' }}>
+              <div className="support-empty-state">
                 שלום! אנו כאן לעזור לך בכל שאלה.
               </div>
             ) : (
@@ -259,23 +259,9 @@ export default function SuspendedOverlay() {
                 return (
                   <div
                     key={msg.id || Math.random()}
-                    style={{
-                      marginBottom: '0.75rem',
-                      textAlign: isMine ? 'left' : 'right',
-                    }}
+                    className={`support-msg-container ${isMine ? 'mine' : 'other'}`}
                   >
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '0.5rem 0.85rem',
-                        borderRadius: '10px',
-                        backgroundColor: isMine ? 'var(--primary-blue)' : 'var(--bg-secondary)',
-                        color: isMine ? '#ffffff' : 'var(--text-h)',
-                        border: isMine ? 'none' : '1px solid var(--border)',
-                        maxWidth: '85%',
-                        wordBreak: 'break-word'
-                      }}
-                    >
+                    <span className={`support-msg-bubble ${isMine ? 'mine' : 'other'}`}>
                       {msg.content}
                     </span>
                   </div>

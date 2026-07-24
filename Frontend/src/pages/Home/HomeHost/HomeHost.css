@@ -328,6 +328,22 @@
   border-color: var(--primary-blue-border);
 }
 
+.ac-today-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text);
+  margin-left: 4px;
+}
+.ac-today-btn:hover {
+  background: var(--primary-blue-light);
+  color: var(--primary-blue);
+}
+
 /* Legend */
 .ac-legend {
   display: flex;
@@ -602,6 +618,24 @@
 .agenda-badge--closed       { background: #e2e8f0; color: #475569; }
 .agenda-badge--booked       { background: #2563eb; color: white; }
 .agenda-badge--past         { background: #f1f5f9; color: #94a3b8; }
+
+.agenda-pending-tag {
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.agenda-waiting-tag {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
 .agenda-badge--notice_closed{ background: #f59e0b; color: white; }
 
 .agenda-override-tag {

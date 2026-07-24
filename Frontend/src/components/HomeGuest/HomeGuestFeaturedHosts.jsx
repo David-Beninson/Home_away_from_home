@@ -17,14 +17,13 @@ export default function HomeGuestFeaturedHosts({ hosts, loading }) {
         <span 
           className="gh-link-all" 
           onClick={() => navigate('/find-host')}
-          style={{ cursor: 'pointer' }}
         >
           כל המארחים
         </span>
       </div>
 
       {loading && (!topHosts || topHosts.length === 0) ? (
-        <div style={{ textAlign: 'center', padding: '2rem 0', color: '#64748b' }}>
+        <div className="gh-hosts-loading">
           טוען מארחים מומלצים...
         </div>
       ) : (
@@ -39,7 +38,6 @@ export default function HomeGuestFeaturedHosts({ hosts, loading }) {
                 className="gh-host-card" 
                 key={host.id}
                 onClick={() => navigate(`/hosts/${host.id}`)}
-                style={{ cursor: 'pointer' }}
               >
                 <div className="gh-card-image-wrapper">
                   <img 

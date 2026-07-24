@@ -158,12 +158,11 @@ export default function Register() {
         {/* Navigation Switcher Pill */}
         <div className="auth-toggle-wrapper">
           <div className="auth-toggle-pill">
-            <div className="toggle-options-container" style={{ width: '100%' }}>
+            <div className="toggle-options-container">
               <button
                 type="button"
                 className={`toggle-btn-option ${!isLoginActive ? 'active' : ''}`}
                 onClick={() => navigate('/register')}
-                style={{ flex: 1, textAlign: 'center' }}
               >
                 הרשמה
               </button>
@@ -171,7 +170,6 @@ export default function Register() {
                 type="button"
                 className={`toggle-btn-option ${isLoginActive ? 'active' : ''}`}
                 onClick={() => navigate('/login')}
-                style={{ flex: 1, textAlign: 'center' }}
               >
                 התחברות
               </button>
@@ -186,22 +184,7 @@ export default function Register() {
         </div>
 
         {error && <div className="login-error">{error}</div>}
-        {success && (
-          <div
-            style={{
-              color: '#4ade80',
-              backgroundColor: 'rgba(74, 222, 128, 0.1)',
-              border: '1px solid rgba(74, 222, 128, 0.2)',
-              padding: '12px',
-              borderRadius: '8px',
-              marginBottom: '16px',
-              textAlign: 'center',
-              fontSize: '14px'
-            }}
-          >
-            {success}
-          </div>
-        )}
+        {success && <div className="auth-success">{success}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
           {step === 1 ? (
@@ -289,13 +272,12 @@ export default function Register() {
               {/* Custom Pill Switcher for User Type */}
               <div className="form-group">
                 <label>אני רוצה להרשם כ...</label>
-                <div className="auth-toggle-pill" style={{ marginTop: '4px' }}>
-                  <div className="toggle-options-container" style={{ width: '100%' }}>
+                <div className="auth-toggle-pill">
+                  <div className="toggle-options-container">
                     <button
                       type="button"
                       className={`toggle-btn-option ${formData.user_type === 'guest' ? 'active' : ''}`}
                       onClick={() => setFormData((prev) => ({ ...prev, user_type: 'guest' }))}
-                      style={{ flex: 1, textAlign: 'center' }}
                     >
                       צבא / שירות לאומי
                     </button>
@@ -303,7 +285,6 @@ export default function Register() {
                       type="button"
                       className={`toggle-btn-option ${formData.user_type === 'host' ? 'active' : ''}`}
                       onClick={() => setFormData((prev) => ({ ...prev, user_type: 'host' }))}
-                      style={{ flex: 1, textAlign: 'center' }}
                     >
                       משפחה מארחת
                     </button>
@@ -317,19 +298,7 @@ export default function Register() {
             </>
           ) : (
             <>
-              <div
-                style={{
-                  color: '#1d4ed8',
-                  backgroundColor: 'rgba(29, 78, 216, 0.05)',
-                  border: '1px solid rgba(29, 78, 216, 0.1)',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  marginBottom: '8px',
-                  textAlign: 'center',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
+              <div className="otp-banner">
                 קוד אימות נשלח לכתובת המייל: {formData.email}
               </div>
 
@@ -341,37 +310,24 @@ export default function Register() {
                   maxLength="6"
                   required
                   placeholder="123456"
+                  className="otp-input"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                  style={{
-                    letterSpacing: '6px',
-                    fontSize: '1.25rem',
-                    textAlign: 'center',
-                    fontWeight: '600'
-                  }}
                 />
               </div>
 
               {resendCountdown > 0 ? (
-                <div style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', margin: '4px 0 12px 0' }}>
+                <div className="otp-timer-note">
                   ניתן לשלוח קוד חדש בעוד {resendCountdown} שניות
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', fontSize: '0.85rem', margin: '4px 0 12px 0' }}>
+                <div className="otp-resend-container">
                   <span>לא קיבלת את הקוד? </span>
                   <button
                     type="button"
                     onClick={handleResendOTP}
                     disabled={loading}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#1d4ed8',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      padding: '0',
-                      textDecoration: 'underline'
-                    }}
+                    className="otp-resend-btn"
                   >
                     שלח שוב
                   </button>
@@ -384,16 +340,9 @@ export default function Register() {
 
               <button
                 type="button"
-                className="role-btn"
+                className="role-btn auth-secondary-btn"
                 onClick={() => setStep(1)}
                 disabled={loading}
-                style={{
-                  marginTop: '8px',
-                  width: '100%',
-                  textAlign: 'center',
-                  border: '1px solid #cbd5e1',
-                  color: '#475569'
-                }}
               >
                 חזור לפרטים אישיים
               </button>

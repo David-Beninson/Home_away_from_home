@@ -644,6 +644,10 @@
   color: #1f2937;
 }
 
+.chat-modal-value-phone {
+  text-align: right;
+}
+
 .chat-modal-value.status-badge {
   color: #059669;
   font-weight: 700;

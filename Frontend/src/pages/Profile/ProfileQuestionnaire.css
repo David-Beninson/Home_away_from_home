@@ -115,8 +115,15 @@
   transition: background-color 0.2s;
 }
 
-.pq-submit-btn:hover {
+.pq-submit-btn:hover:not(:disabled) {
   background-color: #1d4ed8;
+}
+
+.pq-error-msg {
+  color: #ef4444;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 /* Mobile Responsiveness */

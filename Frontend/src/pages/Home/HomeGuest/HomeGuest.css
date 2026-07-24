@@ -438,6 +438,13 @@
   font-weight: 600;
   font-size: 14px;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.gh-hosts-loading {
+  text-align: center;
+  padding: 2rem 0;
+  color: #64748b;
 }
 
 .gh-hosts-grid {

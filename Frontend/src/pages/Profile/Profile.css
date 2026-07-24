@@ -276,3 +276,24 @@
   transform: none;
 }
 
+.field-icon-space {
+  margin-left: 6px;
+}
+
+.login-error.profile-msg-success {
+  background-color: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.2);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.btn-cancel-profile {
+  padding: 12px 24px;
+}
+

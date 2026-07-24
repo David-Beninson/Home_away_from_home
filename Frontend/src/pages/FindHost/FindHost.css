@@ -156,6 +156,17 @@
   flex-wrap: wrap;
 }
 
+.filter-pills-container.vibe-pills-nowrap {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.vibe-filter-group {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
 .pill-btn {
   padding: 0.375rem 0.75rem;
   border-radius: 9999px;
@@ -354,6 +365,31 @@
   font-weight: 600;
   font-size: 0.95rem;
   animation: slideInUp 0.3s ease-out;
+}
+
+.hosts-grid-error {
+  margin-bottom: 1.5rem;
+  color: #dc2626;
+  background-color: #fef2f2;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
+}
+
+.hosts-grid-retry-btn {
+  margin-right: 1rem;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  color: #dc2626;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.hosts-grid-loading {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-muted);
 }
 
 @keyframes slideInUp {

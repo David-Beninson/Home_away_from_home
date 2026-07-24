@@ -24,8 +24,8 @@ function AdminSupportChatWindow({ targetUserId, targetUserName, onClose }) {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-      <div style={{ width: '100%', maxWidth: '680px', height: '80vh', maxHeight: '700px', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--card, #ffffff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)' }}>
+    <div className="admin-chat-modal-overlay">
+      <div className="admin-chat-modal-box">
         <div className="chat-header">
           <div className="chat-header-user">
             <div className="chat-header-avatar">
@@ -37,7 +37,7 @@ function AdminSupportChatWindow({ targetUserId, targetUserName, onClose }) {
             </div>
           </div>
           <div className="chat-header-actions">
-            <button onClick={onClose} style={{ border: 'none', background: 'var(--secondary, #f3f4f6)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button onClick={onClose} className="admin-chat-close-btn">
               <X size={20} />
             </button>
           </div>
@@ -164,34 +164,34 @@ export default function AdminVerificationRequests() {
       </div>
 
       {successMsg && (
-        <div style={{ padding: '1rem', backgroundColor: 'var(--match-high-bg)', border: '1px solid var(--match-high-border)', color: 'var(--match-high-color)', borderRadius: '10px', marginBottom: '1.5rem', fontWeight: 600 }}>
+        <div className="admin-success-toast">
           ✓ {successMsg}
         </div>
       )}
 
       {requests.length === 0 ? (
-        <div className="admin-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🎉</div>
+        <div className="admin-card admin-empty-card">
+          <div className="admin-empty-icon">🎉</div>
           <h3>אין בקשות אימות ממתינות בתור</h3>
           <p>כל הבקשות נבדקו ואושרו על ידי צוות המנהלים.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="admin-req-list">
           {requests.map((req) => (
-            <div key={req.id} className="admin-card" style={{ padding: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+            <div key={req.id} className="admin-card admin-req-card">
+              <div className="admin-req-header">
                 <div>
-                  <h3 style={{ margin: '0 0 0.25rem 0', color: 'var(--text-h)' }}>{req.user_full_name}</h3>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{req.user_email}</div>
+                  <h3 className="admin-req-user-name">{req.user_full_name}</h3>
+                  <div className="admin-req-user-email">{req.user_email}</div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ padding: '0.35rem 0.85rem', borderRadius: '20px', backgroundColor: 'var(--primary-blue-light)', color: 'var(--primary-blue)', fontSize: '0.85rem', fontWeight: 600 }}>
+                <div className="admin-req-badges">
+                  <span className="admin-req-type-tag">
                     {getTypeName(req.verification_type)}
                   </span>
                   
                   {req.ai_confidence_score && (
-                    <span style={{ padding: '0.35rem 0.85rem', borderRadius: '20px', backgroundColor: 'var(--match-high-bg)', border: '1px solid var(--match-high-border)', color: 'var(--match-high-color)', fontSize: '0.85rem', fontWeight: 700 }}>
+                    <span className="admin-req-ai-tag">
                       AI: {req.ai_confidence_score}%
                     </span>
                   )}
@@ -199,25 +199,25 @@ export default function AdminVerificationRequests() {
               </div>
 
               {/* Side-by-side Image Inspection Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: req.secondary_document_url ? 'repeat(auto-fit, minmax(200px, 1fr))' : '1fr 1fr', gap: '1rem', margin: '1.25rem 0' }}>
-                <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.75rem', textAlign: 'center' }}>
-                  <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-h)', fontSize: '0.9rem' }}>תמונת סלפי 📸</div>
+              <div className={`admin-req-img-grid ${req.secondary_document_url ? 'grid-lone-soldier' : ''}`}>
+                <div className="admin-req-img-box">
+                  <div className="admin-req-img-title">תמונת סלפי 📸</div>
                   <img
                     src={getFullUrl(req.selfie_url)}
                     alt="Selfie"
-                    style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', borderRadius: '8px' }}
+                    className="admin-req-img"
                     onError={(e) => {
                       console.error("Failed to load selfie image:", req.selfie_url);
                     }}
                   />
                 </div>
 
-                <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.75rem', textAlign: 'center' }}>
-                  <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-h)', fontSize: '0.9rem' }}>תעודת זהות / חוגר 🪪</div>
+                <div className="admin-req-img-box">
+                  <div className="admin-req-img-title">תעודת זהות / חוגר 🪪</div>
                   <img
                     src={getFullUrl(req.document_url)}
                     alt="Document"
-                    style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', borderRadius: '8px' }}
+                    className="admin-req-img"
                     onError={(e) => {
                       console.error("Failed to load document image:", req.document_url);
                     }}
@@ -225,12 +225,12 @@ export default function AdminVerificationRequests() {
                 </div>
 
                 {req.secondary_document_url && (
-                  <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.75rem', textAlign: 'center' }}>
-                    <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-h)', fontSize: '0.9rem' }}>תעודת בודד או עולה חדש 📄</div>
+                  <div className="admin-req-img-box">
+                    <div className="admin-req-img-title">תעודת בודד או עולה חדש 📄</div>
                     <img
                       src={getFullUrl(req.secondary_document_url)}
                       alt="Secondary Document"
-                      style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', borderRadius: '8px' }}
+                      className="admin-req-img"
                       onError={(e) => {
                         console.error("Failed to load secondary document image:", req.secondary_document_url);
                       }}
@@ -240,21 +240,10 @@ export default function AdminVerificationRequests() {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
+              <div className="admin-req-actions">
                 <button
                   onClick={() => handleOpenSupportChat(req.user_id, req.user_full_name)}
-                  style={{
-                    backgroundColor: 'var(--primary-blue-light)',
-                    color: 'var(--primary-blue)',
-                    border: '1px solid var(--primary-blue-light)',
-                    padding: '0.65rem 1.25rem',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem'
-                  }}
+                  className="admin-req-chat-btn"
                 >
                   💬 צ'אט תמיכה
                 </button>
@@ -262,16 +251,7 @@ export default function AdminVerificationRequests() {
                 <button
                   onClick={() => setRejectingId(req.id)}
                   disabled={processingId === req.id}
-                  style={{
-                    backgroundColor: 'var(--spot-full-bg)',
-                    color: 'var(--spot-full-color)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    padding: '0.65rem 1.25rem',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: processingId === req.id ? 'not-allowed' : 'pointer',
-                    opacity: processingId === req.id ? 0.6 : 1
-                  }}
+                  className="admin-req-reject-btn"
                 >
                   דחה בקשה ❌
                 </button>
@@ -279,25 +259,11 @@ export default function AdminVerificationRequests() {
                 <button
                   onClick={() => handleApprove(req.id)}
                   disabled={processingId === req.id}
-                  style={{
-                    backgroundColor: processingId === req.id ? '#15803d' : 'var(--match-high-color)',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.65rem 1.5rem',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    cursor: processingId === req.id ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.25)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    opacity: processingId === req.id ? 0.8 : 1,
-                    transition: 'all 0.2s ease'
-                  }}
+                  className="admin-req-approve-btn"
                 >
                   {processingId === req.id ? (
                     <>
-                      <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid #ffffff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      <span className="admin-btn-spinner" />
                       <span>מאשר בקשה...</span>
                     </>
                   ) : (
@@ -321,10 +287,10 @@ export default function AdminVerificationRequests() {
 
       {/* Reject Modal */}
       {rejectingId && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.75rem', width: '90%', maxWidth: '480px', boxShadow: 'var(--shadow)' }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text-h)' }}>דחיית בקשת אימות</h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+        <div className="admin-reject-modal-overlay">
+          <div className="admin-reject-modal-box">
+            <h3 className="admin-reject-title">דחיית בקשת אימות</h3>
+            <p className="admin-reject-desc">
               אנא ציין את סיבת הדחייה שתופיע למשתמש במסך הנעילה (למשל: "התמונה מטושטשת", "תעודה לא קריאה"):
             </p>
 
@@ -334,25 +300,15 @@ export default function AdminVerificationRequests() {
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="רשום את נימוק הדחייה..."
                 required
-                style={{
-                  width: '100%',
-                  minHeight: '90px',
-                  padding: '0.75rem',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--text-h)',
-                  fontFamily: 'var(--sans)',
-                  marginBottom: '1.25rem'
-                }}
+                className="admin-reject-textarea"
               />
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <div className="admin-reject-actions">
                 <button
                   type="button"
                   onClick={() => { setRejectingId(null); setRejectionReason(''); }}
                   disabled={Boolean(processingId)}
-                  style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'transparent', color: 'var(--text)', cursor: 'pointer' }}
+                  className="admin-reject-cancel-btn"
                 >
                   ביטול
                 </button>
@@ -360,18 +316,7 @@ export default function AdminVerificationRequests() {
                 <button
                   type="submit"
                   disabled={Boolean(processingId)}
-                  style={{
-                    padding: '0.65rem 1.25rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: processingId ? '#9ca3af' : 'var(--spot-full-color)',
-                    color: '#fff',
-                    fontWeight: 700,
-                    cursor: processingId ? 'not-allowed' : 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}
+                  className="admin-reject-confirm-btn"
                 >
                   {processingId === rejectingId ? 'שולח דחייה... ⏳' : 'שלח דחייה'}
                 </button>

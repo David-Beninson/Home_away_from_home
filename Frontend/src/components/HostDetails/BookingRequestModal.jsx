@@ -150,7 +150,7 @@ export default function BookingRequestModal({
                 onChange={(e) => setGuestsCount(Number(e.target.value))}
                 className="brm-range-slider"
                 style={{
-                  background: `linear-gradient(to left, #2563eb ${maxSpots > 1 ? ((guestsCount - 1) / (maxSpots - 1)) * 100 : 100}%, #e2e8f0 ${maxSpots > 1 ? ((guestsCount - 1) / (maxSpots - 1)) * 100 : 100}%)`
+                  '--slider-fill': `${maxSpots > 1 ? ((guestsCount - 1) / (maxSpots - 1)) * 100 : 100}%`
                 }}
               />
               <div className="brm-slider-labels">

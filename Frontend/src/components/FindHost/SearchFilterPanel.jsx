@@ -109,9 +109,9 @@ export default function SearchFilterPanel({
       </div>
 
       {/* Vibe Filter Row */}
-      <div className="filter-item-group vibe-filter-group" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed #e2e8f0' }}>
+      <div className="filter-item-group vibe-filter-group">
         <span className="filter-group-label">🎭 אווירת שולחן:</span>
-        <div className="filter-pills-container scrollbar-none" style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+        <div className="filter-pills-container scrollbar-none vibe-pills-nowrap">
           {['#שולחן_תוסס', '#שקט_ורגוע', '#שירים_ורקודים', '#אוכל_עדתי', '#צעירים_וחברים'].map((vibeTag) => {
             const isActive = searchTerm === vibeTag || searchTerm.includes(vibeTag);
             return (

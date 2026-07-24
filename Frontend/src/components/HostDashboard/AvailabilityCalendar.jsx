@@ -275,17 +275,6 @@ export default function AvailabilityCalendar() {
             <button
               className="ac-today-btn"
               onClick={() => setWeekOffset(0)}
-              style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                padding: '4px 10px',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                color: 'var(--text)',
-                marginLeft: '4px',
-              }}
             >
               חזור לשבוע הנוכחי
             </button>
@@ -370,32 +359,12 @@ export default function AvailabilityCalendar() {
                   {STATUS_LABEL[cell.status] || 'עבר'}
                 </span>
                 {cell.hasPendingRequest && (
-                  <span
-                    className="agenda-pending-tag"
-                    style={{
-                      background: '#fee2e2',
-                      color: '#991b1b',
-                      fontSize: '12px',
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                    }}
-                  >
+                  <span className="agenda-pending-tag">
                     יש בקשה שטרם אושרה
                   </span>
                 )}
                 {cell.hasWaitingGuest && (
-                  <span
-                    className="agenda-waiting-tag"
-                    style={{
-                      background: '#fef3c7',
-                      color: '#92400e',
-                      fontSize: '12px',
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                    }}
-                  >
+                  <span className="agenda-waiting-tag">
                     מחכה לתשובת אורח
                   </span>
                 )}

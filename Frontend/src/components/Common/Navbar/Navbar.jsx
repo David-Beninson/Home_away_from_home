@@ -147,7 +147,7 @@ export default function Navbar() {
 
               <button className="dropdown-item" onClick={() => setIsDark(!isDark)}>
                 {isDark ? '☀️' : '🌙'}
-                <span style={{ marginRight: '8px' }}>
+                <span className="dropdown-text-space">
                   {isDark ? 'מצב בהיר' : 'מצב כהה'}
                 </span>
               </button>

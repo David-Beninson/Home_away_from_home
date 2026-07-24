@@ -218,7 +218,7 @@ export default function ProfileQuestionnaire() {
         {userType === 'host' ? renderHostForm() : renderGuestForm()}
         
         {error && (
-          <div style={{ color: '#ef4444', textAlign: 'center', marginBottom: '1rem', fontWeight: '500' }}>
+          <div className="pq-error-msg">
             {error}
           </div>
         )}

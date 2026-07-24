@@ -67,7 +67,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride }) {
             <Phone size={18} className="chat-modal-row-icon" />
             <div>
               <span className="chat-modal-label">מספר טלפון</span>
-              <p className="chat-modal-value" dir="ltr" style={{ textAlign: 'right' }}>
+              <p className="chat-modal-value chat-modal-value-phone" dir="ltr">
                 {phone || 'לא עודכן מס׳ טלפון'}
               </p>
             </div>

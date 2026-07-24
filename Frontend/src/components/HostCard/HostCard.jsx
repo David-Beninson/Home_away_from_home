@@ -55,11 +55,11 @@ export default function HostCard({ host, onBookingRequest }) {
 
         {/* Row 2.5: Upcoming Week Availability */}
         {host.upcoming_open_days && host.upcoming_open_days.length > 0 ? (
-          <div style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: '600', marginTop: '4px', textAlign: 'right' }}>
+          <div className="upcoming-open-days">
             📅 זמין השבוע ב: {host.upcoming_open_days.join(', ')}
           </div>
         ) : (
-          <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '500', marginTop: '4px', textAlign: 'right' }}>
+          <div className="upcoming-no-spots">
             אין עוד מקומות פנויים אצל מארח זה
           </div>
         )}
