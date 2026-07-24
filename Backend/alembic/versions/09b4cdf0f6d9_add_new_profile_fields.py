@@ -24,8 +24,10 @@ def upgrade() -> None:
     op.drop_index(op.f('ix_support_messages_sender_id'), table_name='support_messages')
     op.drop_index(op.f('ix_support_messages_user_id'), table_name='support_messages')
     op.drop_table('support_messages')
-    op.drop_index(op.f('ix_verification_requests_user_id'), table_name='verification_requests')
-    op.drop_table('verification_requests')
+    # NOTE: keep verification_requests and users.verification_status introduced by other migration
+    # The following drop was removed during merge resolution to preserve the verification system:
+    # op.drop_index(op.f('ix_verification_requests_user_id'), table_name='verification_requests')
+    # op.drop_table('verification_requests')
     op.add_column('guest_profiles', sa.Column('unit_description', sa.String(), nullable=True))
     op.add_column('guest_profiles', sa.Column('giving_to_host', sa.Boolean(), server_default=sa.text('false'), nullable=False))
     op.add_column('guest_profiles', sa.Column('food_allergies', sa.String(), nullable=True))
@@ -56,7 +58,7 @@ def upgrade() -> None:
     op.drop_column('host_profiles', 'accessibility')
     op.drop_column('host_profiles', 'city')
     op.drop_column('host_profiles', 'full_address')
-    op.drop_column('users', 'verification_status')
+    # Keep users.verification_status (added in a different migration) to match current models
     # ### end Alembic commands ###
 
 
