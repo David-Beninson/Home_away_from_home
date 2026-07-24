@@ -12,6 +12,7 @@ import RequestsBoard from '../pages/RequestsBoard/RequestsBoard'
 import ProfilePage from '../pages/Profile/Profile'
 import ChatsPage from '../pages/Chats/Chats'
 import NotFound from '../pages/NotFound/NotFound'
+import ProfileQuestionnaire from "../pages/Profile/ProfileQuestionnaire";
 
 // Auth Views
 import Login from '../pages/Login/Login'
@@ -33,6 +34,15 @@ export function useAppLogic() {
   const loadingAuth = useSelector((state) => state.auth.loading);
   const userRole = user?.user_type || null;
 
+  // Check if the user has completed their profile data
+  // Check if the user has actually filled out their core profile fields
+  const hasProfile = Boolean(
+    user?.profile && (
+      (userRole === 'host' && user.profile.city && user.profile.city.trim() !== '') ||
+      (userRole === 'guest' && user.profile.origin_city && user.profile.origin_city.trim() !== '')
+    )
+  );
+
   useEffect(() => {
     dispatch(fetchCurrentUser());
   }, [dispatch]);
@@ -47,7 +57,7 @@ export function useAppLogic() {
     };
   }, [dispatch]);
 
-  // Memoize router configuration to prevent unnecessary recreations unless userRole or loadingAuth changes
+  // Memoize router configuration to prevent unnecessary recreations
   const router = useMemo(() => {
     return createBrowserRouter([
       {
@@ -57,20 +67,31 @@ export function useAppLogic() {
         children: [
           {
             index: true,
-            // <-- Updated routing logic for the homepage
+            // If logged in but profile is missing, force them to questionnaire!
             element: userRole === 'admin'
               ? <Navigate to="/admin" replace />
-              : userRole === 'guest'
-                ? <HomeGuest />
-                : userRole === 'host'
-                  ? <HomeHost />
-                  : <>NotFound</>
+              : !hasProfile
+                ? <Navigate to="/complete-profile" replace />
+                : userRole === 'guest'
+                  ? <HomeGuest />
+                  : userRole === 'host'
+                    ? <HomeHost />
+                    : <NotFound />
           },
           {
             path: 'profile',
             element: (
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: 'complete-profile',
+            element: (
+              <ProtectedRoute>
+                {/* If profile is already complete, don't let them back in here */}
+                {hasProfile ? <Navigate to="/" replace /> : <ProfileQuestionnaire />}
               </ProtectedRoute>
             )
           },
@@ -167,7 +188,7 @@ export function useAppLogic() {
         element: <NotFound />
       }
     ]);
-  }, [userRole, loadingAuth]);
+  }, [userRole, loadingAuth, hasProfile]);
 
   return { router };
 }

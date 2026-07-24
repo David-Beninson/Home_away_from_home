@@ -133,9 +133,16 @@ export default function Register() {
         if (response.data && response.data.access_token) {
           setSuccess('ההרשמה והאימות בוצעו בהצלחה!');
           localStorage.setItem('token', response.data.access_token);
-          dispatch(setAuthCredentials({ token: response.data.access_token }));
-          dispatch(fetchCurrentUser());
-          setTimeout(() => navigate('/'), 1500);
+          
+          // 1. ADD 'async' right here vvv
+          setTimeout(async () => {
+            dispatch(setAuthCredentials({ token: response.data.access_token }));
+            
+            // 2. ADD 'await' right here vvv
+            await dispatch(fetchCurrentUser());
+            
+            navigate('/complete-profile');
+          }, 1500);
         }
       } catch (err) {
         setError(err.response?.data?.detail || 'קוד האימות אינו תקין או פג תוקף.');
