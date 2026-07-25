@@ -35,13 +35,14 @@ export function useAppLogic() {
   const loadingAuth = useSelector((state) => state.auth.loading);
   const userRole = user?.user_type || null;
 
-  // Check if the user has actually filled out their core profile fields
-  const hasProfile = Boolean(
-    user?.profile && (
-      (userRole === 'host' && user.profile.residential_address && user.profile.residential_address.trim() !== '') ||
-      (userRole === 'guest' && user.profile.guest_address && user.profile.guest_address.trim() !== '')
-    )
+  // Determine whether the current user still needs to complete a core profile field
+  // Requirement: only hosts must fill residential_address before using the app
+  const needsProfile = Boolean(
+    user && userRole === 'host' && (!user.profile || !user.profile.residential_address || user.profile.residential_address.trim() === '')
   );
+
+  // hasProfile kept for backwards compatibility where needed (inverse of needsProfile for hosts)
+  const hasProfile = user ? !needsProfile : false;
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
@@ -67,11 +68,14 @@ export function useAppLogic() {
         children: [
           {
             index: true,
-            // If logged in but profile is missing, force them to questionnaire!
+            // If logged in but profile is missing, show questionnaire overlay for hosts
             element: userRole === 'admin'
               ? <Navigate to="/admin" replace />
-              : !hasProfile
-                ? <Navigate to="/complete-profile" replace />
+              : (userRole === 'host' && needsProfile)
+                ? <>
+                    <HomeHost />
+                    <ProfileQuestionnaire />
+                  </>
                 : userRole === 'guest'
                   ? <HomeGuest />
                   : userRole === 'host'

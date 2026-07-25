@@ -33,7 +33,7 @@ const STATUS_META = {
   closed: { label: 'חסום / סגור', className: 'ddp-status--closed', emoji: '🔴' },
   booked: { label: 'תפוס – אורחים', className: 'ddp-status--booked', emoji: '🔵' },
   past: { label: 'תאריך עבר', className: 'ddp-status--past', emoji: '⚪' },
-  notice_closed: { label: 'חסום (עבר מועד)', className: 'ddp-status--notice', emoji: '🟡' },
+  notice_closed: { label: 'חסום (עבר הזמן)', className: 'ddp-status--notice', emoji: '🟡' },
 };
 
 import { useNavigate } from 'react-router-dom';
@@ -136,8 +136,8 @@ export default function DayDetailPanel() {
       const errorMsg = typeof detail === 'string'
         ? detail
         : Array.isArray(detail)
-        ? detail.map(e => e.msg || e.detail).join(', ')
-        : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
+          ? detail.map(e => e.msg || e.detail).join(', ')
+          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
       alert('שגיאה באישור הבקשה: ' + errorMsg);
     } finally {
       setSubmittingId(null);
@@ -159,8 +159,8 @@ export default function DayDetailPanel() {
       const errorMsg = typeof detail === 'string'
         ? detail
         : Array.isArray(detail)
-        ? detail.map(e => e.msg || e.detail).join(', ')
-        : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
+          ? detail.map(e => e.msg || e.detail).join(', ')
+          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
       alert('שגיאה בדחיית הבקשה: ' + errorMsg);
     } finally {
       setSubmittingId(null);
@@ -216,8 +216,8 @@ export default function DayDetailPanel() {
                       {isWaitingGuest
                         ? 'ממתין לאישור האורח'
                         : post.is_direct_request
-                        ? 'בקשת אירוח ישירה'
-                        : 'בקשת אירוח מלוח פוסטים'}
+                          ? 'בקשת אירוח ישירה'
+                          : 'בקשת אירוח מלוח פוסטים'}
                     </h3>
                   </div>
 
@@ -335,10 +335,10 @@ export default function DayDetailPanel() {
                 </div>
               )}
             </div>
-            
+
             <div className="ddp-matched-footer">
               <div className="ddp-matched-links">
-                <button 
+                <button
                   onClick={() => {
                     handleClose();
                     const matchId = activeBooking.match_id || activeBooking.id;
@@ -357,13 +357,13 @@ export default function DayDetailPanel() {
                         }
                       }
                     });
-                  }} 
+                  }}
                   className="ddp-chat-link"
                 >
                   <MessageSquare size={16} />
                   צ'אט
                 </button>
-                <button 
+                <button
                   className="ddp-chat-link"
                   onClick={() => setShowDetailsModal(true)}
                 >

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Shield, Utensils, Heart, MapPin } from 'lucide-react';
 import { fetchCurrentUser } from '../../store/authSlice';
 import { authApi } from '../../api/api';
+import Loading from '../../components/Common/Loading/Loading';
 import './ProfileQuestionnaire.css';
 
 export default function ProfileQuestionnaire() {
@@ -11,7 +12,8 @@ export default function ProfileQuestionnaire() {
   const dispatch = useDispatch();
 
   const user = useSelector((state) => state.auth.user);
-  const userType = user?.user_type || 'guest';
+  const loadingAuth = useSelector((state) => state.auth.loading);
+  const userType = user?.user_type; // wait for real user role instead of defaulting to guest
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -37,7 +39,7 @@ export default function ProfileQuestionnaire() {
       return !formData.residential_address.trim(); // חובה כתובת למארח
     }
     if (userType === 'guest') {
-      return !formData.guest_address.trim(); // חובה כתובת לאורח
+      return !formData.guest_address.trim();
     }
     return false;
   };
@@ -62,7 +64,13 @@ export default function ProfileQuestionnaire() {
       navigate('/', { replace: true });
     } catch (err) {
       console.error("Profile save error:", err);
-      setError(err.response?.data?.detail || 'שגיאה בשמירת הפרופיל. נסו שוב.');
+      const detail = err.response?.data?.detail;
+      const formatted = typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail)
+          ? detail.map(d => d.msg || JSON.stringify(d)).join(', ')
+          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : 'שגיאה בשמירת הפרופיל. נסו שוב.');
+      setError(formatted);
     } finally {
       setLoading(false);
     }
@@ -177,6 +185,10 @@ export default function ProfileQuestionnaire() {
       </div>
     </div>
   );
+
+  if (loadingAuth && !user) {
+    return <Loading />;
+  }
 
   return (
     <div className="pq-container" dir="rtl">

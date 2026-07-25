@@ -8,7 +8,7 @@ import './SuspendedOverlay.css';
 export default function SuspendedOverlay() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
-  
+
   const [verificationType, setVerificationType] = useState(() => (user?.user_type === 'host' ? 'civilian' : 'lone_soldier'));
   const [selfieFile, setSelfieFile] = useState(null);
   const [docFile, setDocFile] = useState(null);
@@ -40,12 +40,12 @@ export default function SuspendedOverlay() {
   useEffect(() => {
     verificationApi.getStatus().then((res) => {
       setVerificationDetails(res.data);
-    }).catch(() => {});
+    }).catch(() => { });
 
     const handleStatusChange = (e) => {
       verificationApi.getStatus().then((res) => {
         setVerificationDetails(res.data);
-      }).catch(() => {});
+      }).catch(() => { });
     };
 
     window.addEventListener('verification_status_changed', handleStatusChange);
@@ -99,7 +99,10 @@ export default function SuspendedOverlay() {
     } catch (err) {
       setIsSubmitting(false);
       setSubmitStep(0);
-      setErrorMsg(err.response?.data?.detail || 'העלאת המסמכים נכשלה. אנא נסה שוב.');
+      const { data } = err.response || {};
+      // Avoid rendering raw objects/arrays in JSX which throws React errors
+      const formatted = (data && data.detail) ? (Array.isArray(data.detail) ? data.detail.map(d => d.msg || JSON.stringify(d)).join(', ') : (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail))) : null;
+      setErrorMsg(formatted || 'העלאת המסמכים נכשלה. אנא נסה שוב.');
     }
   };
 
