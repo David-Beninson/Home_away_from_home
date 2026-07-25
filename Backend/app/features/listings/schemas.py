@@ -31,7 +31,7 @@ class HostSearchResponse(BaseModel):
     
     id: uuid.UUID
     user_id: uuid.UUID
-    city: str
+    city: Optional[str] = None
     neighborhood: Optional[str] = None
     kashrut_level: str
     religious_orientation: Optional[str] = None

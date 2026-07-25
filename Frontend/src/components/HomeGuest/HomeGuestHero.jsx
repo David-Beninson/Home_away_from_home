@@ -10,7 +10,7 @@ export default function HomeGuestHero({ shabbatInfo, availableHostsCount }) {
         <h1 className="gh-hero-title">{todayFormatted || 'שבת שלום'}</h1>
         <p className="gh-hero-info">
           {candleLighting ? `כניסת שבת (${cityName || 'ירושלים'}) בשעה ${candleLighting}` : 'שבת שלום'}
-          {availableHostsCount !== undefined && ` · ${availableHostsCount} משפחות מחכות לכם`}
+          {availableHostsCount > 0 && ` · ${availableHostsCount} משפחות מחכות לכם`}
         </p>
       </div>
     </section>

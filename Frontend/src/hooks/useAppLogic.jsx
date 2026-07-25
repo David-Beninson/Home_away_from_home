@@ -35,9 +35,7 @@ export function useAppLogic() {
   const loadingAuth = useSelector((state) => state.auth.loading);
   const userRole = user?.user_type || null;
 
-  // Check if the user has completed their profile data
   // Check if the user has actually filled out their core profile fields
-  // Check if the user has actually filled out their core profile fields based on the NEW field names
   const hasProfile = Boolean(
     user?.profile && (
       (userRole === 'host' && user.profile.residential_address && user.profile.residential_address.trim() !== '') ||

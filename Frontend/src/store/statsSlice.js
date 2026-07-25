@@ -1,30 +1,26 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import api from '../api/api'; // Uncomment this when the backend route is ready
+import api from '../api/api'; // Use real backend API client
 
 export const fetchDashboardStats = createAsyncThunk(
   'stats/fetchDashboardStats',
   async (_, { rejectWithValue }) => {
     try {
-      // TODO: Replace this simulated delay with your actual FastAPI call:
-      // const response = await api.get('/stats/guest-dashboard');
-      // return response.data;
+      const response = await api.get('/stats/guest-dashboard');
+      const d = response.data || {};
 
-      // Simulated network request for prototyping
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            availableHosts: 12,
-            availableSpots: 34,
-            openRequests: 3,
-            hostsWithSleepover: 7
-          });
-        }, 800); 
-      });
+      // Normalize backend keys to the frontend shape to avoid undefined fields
+      return {
+        availableHosts: d.availableHosts ?? d.available_hosts ?? 0,
+        availableSpots: d.availableSpots ?? d.available_spots ?? 0,
+        hostsWithSleepover: d.hostsWithSleepover ?? d.hosts_with_sleepover ?? 0,
+        totalHosts: d.total_hosts ?? d.totalHosts ?? 0,
+      };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to fetch stats');
+      return rejectWithValue(error.response?.data || error.message || 'Failed to fetch stats');
     }
   }
 );
+
 
 const statsSlice = createSlice({
   name: 'stats',
