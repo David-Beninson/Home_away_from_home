@@ -84,6 +84,7 @@ class HostProfileBase(BaseModel):
     pets_description: Optional[str] = None
     housing_type: Optional[str] = None
     accessibility_level: Optional[str] = None
+    questionnaire_answered: Optional[bool] = False
 
     @field_validator("kashrut_level", mode="before")
     @classmethod
@@ -105,6 +106,7 @@ class GuestProfileBase(BaseModel):
     kosher_food: bool = True
     gender: Optional[str] = None
     guest_address: Optional[str] = None
+    questionnaire_answered: Optional[bool] = False
 
     @field_validator("release_date", mode="before")
     @classmethod

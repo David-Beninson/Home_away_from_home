@@ -73,9 +73,9 @@ export function useAppLogic() {
               ? <Navigate to="/admin" replace />
               : (userRole === 'host' && needsProfile)
                 ? <>
-                    <HomeHost />
-                    <ProfileQuestionnaire />
-                  </>
+                  <HomeHost />
+                  <ProfileQuestionnaire />
+                </>
                 : userRole === 'guest'
                   ? <HomeGuest />
                   : userRole === 'host'

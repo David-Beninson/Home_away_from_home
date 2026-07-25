@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { User, Shield, Utensils, Heart, MapPin } from 'lucide-react';
-import { fetchCurrentUser } from '../../store/authSlice';
+import { fetchCurrentUser, setCurrentUser } from '../../store/authSlice';
 import { authApi } from '../../api/api';
 import Loading from '../../components/Common/Loading/Loading';
 import './ProfileQuestionnaire.css';
@@ -27,6 +27,22 @@ export default function ProfileQuestionnaire() {
     giving_to_host: false, food_allergies: '', food_preferences: '', religious_level: '',
     kosher_food: true, gender: '', guest_address: ''
   });
+
+  // Prefill the form with any existing profile values so host can complete/update their profile
+  useEffect(() => {
+    if (user?.profile) {
+
+      // Only copy keys that exist in formData to avoid adding unknown fields
+      // For hosts, do NOT prefill residential_address (no default city)
+      const merged = { ...formData };
+      Object.keys(merged).forEach((k) => {
+        if (k === 'residential_address' && user.user_type === 'host') return; // skip prefill for host address
+        if (user.profile[k] !== undefined && user.profile[k] !== null) merged[k] = user.profile[k];
+      });
+      setFormData(merged);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -58,9 +74,27 @@ export default function ProfileQuestionnaire() {
       Object.entries(formData).filter(([_, v]) => v !== '' && v !== null)
     );
 
+    // Ensure we persist the questionnaire flag on the backend
+    cleanData.questionnaire_answered = true;
+
     try {
-      userType === 'host' ? await authApi.updateHostProfile(cleanData) : await authApi.updateGuestProfile(cleanData);
-      await dispatch(fetchCurrentUser());
+      if (userType === 'host') {
+        await authApi.updateHostProfile(cleanData);
+      } else {
+        await authApi.updateGuestProfile(cleanData);
+      }
+
+      // Immediately mark answered locally so the overlay disappears without a page refresh
+      const updatedUser = { ...(user || {}), profile: { ...(user?.profile || {}), questionnaire_answered: true } };
+      dispatch(setCurrentUser(updatedUser));
+
+      // Also persist local fallback flag
+      const userId = user?.id || user?.user_id;
+      if (userId) localStorage.setItem(`questionnaire_answered_${userId}`, 'true');
+
+      // Refresh the current user from server to get the persisted flag (in background)
+      dispatch(fetchCurrentUser());
+
       navigate('/', { replace: true });
     } catch (err) {
       console.error("Profile save error:", err);
@@ -191,23 +225,25 @@ export default function ProfileQuestionnaire() {
   }
 
   return (
-    <div className="pq-container" dir="rtl">
-      <div className="pq-header">
-        <h2>השלמת פרופיל {userType === 'host' ? 'מארח' : 'מתארח'}</h2>
-        <p>אנא מלאו את הפרטים הבאים כדי להשלים את ההרשמה למערכת.</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="pq-form">
-        {userType === 'host' ? renderHostForm() : renderGuestForm()}
-
-        {error !== "" && <div className="pq-error-msg">{error}</div>}
-
-        <div className="pq-actions">
-          <button type="submit" className="pq-submit-btn" disabled={loading}>
-            {loading ? 'שומר נתונים...' : 'שמור פרופיל והמשך'}
-          </button>
+    <div className="pq-overlay">
+      <div className="pq-container" dir="rtl">
+        <div className="pq-header">
+          <h2>השלמת פרופיל {userType === 'host' ? 'מארח' : 'מתארח'}</h2>
+          <p>אנא מלאו את הפרטים הבאים כדי להשלים את ההרשמה למערכת.</p>
         </div>
-      </form>
+
+        <form onSubmit={handleSubmit} className="pq-form">
+          {userType === 'host' ? renderHostForm() : renderGuestForm()}
+
+          {error !== "" && <div className="pq-error-msg">{error}</div>}
+
+          <div className="pq-actions">
+            <button type="submit" className="pq-submit-btn" disabled={loading}>
+              {loading ? 'שומר נתונים...' : 'שמור פרופיל והמשך'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

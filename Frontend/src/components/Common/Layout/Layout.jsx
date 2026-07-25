@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import Navbar from '../Navbar/Navbar';
 import Loading from '../Loading/Loading';
 import SuspendedOverlay from '../SuspendedOverlay/SuspendedOverlay';
+import ProfileQuestionnaire from '../../../pages/Profile/ProfileQuestionnaire';
 import { useGlobalWebSocket } from '../../../hooks/useGlobalWebSocket';
 import './Layout.css';
 
@@ -25,6 +26,25 @@ export default function Layout() {
   }
 
   const isApproved = userRole === 'admin' || user?.verification_status === 'approved';
+  // Do not show the questionnaire to admins
+  // Also respect a per-user localStorage fallback when backend hasn't persisted the flag yet
+  const userId = user?.id || user?.user_id;
+  const localAnswered = userId && localStorage.getItem(`questionnaire_answered_${userId}`) === 'true';
+  // שולף את הערך גם אם הוא תחת profile וגם אם הוא ישירות על ה-user
+  const profileFlag = user?.profile?.questionnaire_answered ?? user?.questionnaire_answered;
+
+  // בודקים אם הוא מילא את השאלון (true). כל ערך אחר (false, null, undefined) אומר שהוא עדיין לא מילא.
+  const isAnswered = profileFlag === true || profileFlag === 'true' || profileFlag === 1 || profileFlag === '1';
+
+  const showQuestionnaire = Boolean(user && userRole !== 'admin' && !isAnswered && !localAnswered);
+  // If questionnaire must be answered, render ONLY the questionnaire (no navbar, no content underneath)
+  if (showQuestionnaire) {
+    return (
+      <div className="layout-container">
+        <ProfileQuestionnaire />
+      </div>
+    );
+  }
 
   return (
     <div className="layout-container">
@@ -35,7 +55,7 @@ export default function Layout() {
       <header>
         <Navbar />
       </header>
-      
+
       {/* Whichever child page is active gets rendered right here */}
       <main className="layout-content">
         <Outlet />

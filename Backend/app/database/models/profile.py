@@ -28,6 +28,7 @@ class HostProfile(Base):
     
     # --- NEW QUESTIONNAIRE FIELDS ---
     residential_address: Mapped[Optional[str]]
+    questionnaire_answered: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
 
     @hybrid_property
     def city(self) -> Optional[str]:
@@ -85,6 +86,7 @@ class GuestProfile(Base):
     kosher_food: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
     gender: Mapped[Optional[str]]
     guest_address: Mapped[Optional[str]]
+    questionnaire_answered: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
     # Legacy field used by admin moderation and verification flows
     is_soldier_or_national_service: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
 

@@ -1,11 +1,28 @@
+.pq-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9999;
+  padding: 1rem;
+}
+
 .pq-container {
-  max-width: 800px;
-  margin: 2rem auto;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
   padding: 2.5rem;
   font-family: system-ui, -apple-system, sans-serif;
+
+  /* Allow internal scrolling when content is taller than viewport */
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .pq-header {

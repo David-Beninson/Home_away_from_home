@@ -14,6 +14,7 @@ filelock==3.29.7
 fsspec==2026.6.0
 h11==0.16.0
 hf-xet==1.5.1
+-e file:///Users/mrjimmyy/Projects/hosting_for_shabat/Backend
 httpcore==1.0.9
 httptools==0.8.0
 httpx==0.28.1
@@ -59,7 +60,7 @@ typing-inspection==0.4.2
 urllib3==2.7.0
 uuid-utils==0.17.0
 uvicorn==0.51.0
-uvloop==0.22.1; platform_system != "Windows"
+uvloop==0.22.1
 watchfiles==1.2.0
 websockets==15.0.1
 xxhash==3.8.1
