@@ -393,18 +393,27 @@ def get_quick_icebreakers(
     user_role = "host" if (current_user and current_user.user_type == UserType.HOST) else "guest"
     if match_id:
         match = db.query(Match).filter(Match.id == match_id).first()
-        if match and match.host_profile and match.guest_post and match.guest_post.guest_profile:
+        if match:
+            host_prof = match.host_profile
+            guest_post = match.guest_post
+            guest_prof = guest_post.guest_profile if guest_post else None
+
             host_info = {
-                "city": match.host_profile.city,
-                "kashrut_level": match.host_profile.kashrut_level,
-                "religious_orientation": match.host_profile.religious_orientation,
-                "free_text_notes": match.host_profile.free_text_notes,
+                "city": getattr(host_prof, 'city', None) if host_prof else None,
+                "kashrut_level": getattr(host_prof, 'kashrut_level', None) if host_prof else None,
+                "neighborhood_type": getattr(host_prof, 'neighborhood_type', None) if host_prof else None,
+                "vibe_tags": getattr(host_prof, 'vibe_tags', None) if host_prof else None,
             }
+            
+            food_pref = getattr(guest_prof, 'food_preferences', None) if guest_prof else None
+            food_all = getattr(guest_prof, 'food_allergies', None) if guest_prof else None
+            combined_food = " ".join(filter(None, [food_pref, food_all])) or None
+
             guest_info = {
-                "is_soldier": match.guest_post.guest_profile.is_soldier_or_national_service,
-                "description": match.guest_post.description,
-                "food_preferences_allergies": match.guest_post.guest_profile.food_preferences_allergies,
-                "skills_give_take": match.guest_post.guest_profile.skills_give_take
+                "is_soldier": getattr(guest_prof, 'is_soldier_or_national_service', False) if guest_prof else False,
+                "description": getattr(guest_post, 'description', "") if guest_post else "",
+                "food_preferences_allergies": combined_food,
+                "skills_give_take": getattr(guest_prof, 'unit_description', None) if guest_prof else None
             }
             return {"icebreakers": AgentService.generate_icebreakers(host_info, guest_info, user_role=user_role)}
 

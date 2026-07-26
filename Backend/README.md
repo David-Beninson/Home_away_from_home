@@ -1,4 +1,4 @@
-# Hosting for Shabbat - Backend API
+# Home Away From Home - Backend API
 
 This is the backend service for the **Hosting for Shabbat** platform, built using Python, FastAPI, SQLAlchemy ORM, PostgreSQL, and LangGraph.
 

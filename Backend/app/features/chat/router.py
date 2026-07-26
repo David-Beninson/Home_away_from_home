@@ -92,7 +92,7 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
     if current_user.user_type == UserType.HOST and current_user.host_profile:
         matches = db.query(Match).join(GuestPost).join(GuestProfile).filter(
             Match.host_profile_id == current_user.host_profile.id,
-            Match.status.in_([MatchStatus.MATCHED, MatchStatus.PENDING])
+            Match.status == MatchStatus.MATCHED
         ).all()
         for match in matches:
             last_message = db.query(Message).filter(Message.match_id == match.id).order_by(desc(Message.created_at)).first()
@@ -123,7 +123,7 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
     elif current_user.user_type == UserType.GUEST and current_user.guest_profile:
         matches = db.query(Match).join(GuestPost).join(HostProfile, Match.host_profile_id == HostProfile.id).filter(
             GuestPost.guest_profile_id == current_user.guest_profile.id,
-            Match.status.in_([MatchStatus.MATCHED, MatchStatus.PENDING])
+            Match.status == MatchStatus.MATCHED
         ).all()
         for match in matches:
             last_message = db.query(Message).filter(Message.match_id == match.id).order_by(desc(Message.created_at)).first()
@@ -170,6 +170,9 @@ def mark_chat_read(match_id: uuid.UUID, current_user: User = Depends(get_current
 @router.websocket("/matches/{match_id}/chat/ws")
 async def websocket_chat_endpoint(websocket: WebSocket, match_id: uuid.UUID, token: str = Query(...)):
     """WebSocket endpoint for real-time messaging between host and guest."""
+    # Must accept BEFORE any close — ASGI state machine requires accept first
+    await websocket.accept()
+
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         user_id_str = payload.get("sub")
@@ -196,7 +199,8 @@ async def websocket_chat_endpoint(websocket: WebSocket, match_id: uuid.UUID, tok
         await websocket.close(code=4003, reason="Not authorized or not found")
         return
 
-    await manager.connect(match_id, websocket, user_id)
+    # Already accepted above — just register in manager without calling accept() again
+    manager.active_connections[match_id].append((websocket, user_id))
     try:
         while True:
             data = await websocket.receive_text()
