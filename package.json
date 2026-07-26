@@ -4,9 +4,9 @@
   "description": "A platform connecting hosts and guests (soldiers, national service volunteers, students, and families) for Shabbat hosting. The application combines rigid factual search filters with semantic vector matches, a multi-stage AI Agent for expectation alignment, and real-time in-app chat.",
   "main": "index.js",
   "scripts": {
-    "dev:frontend": "npm run dev --prefix Frontend",
     "dev:backend": "uv --directory Backend run uvicorn app.main:app --reload",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\""
+    "dev:frontend": "pnpm --prefix frontend dev",
+    "dev": "pnpm run /^dev:/"
   },
   "repository": {
     "type": "git",
