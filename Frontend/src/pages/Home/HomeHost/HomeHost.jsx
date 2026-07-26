@@ -6,7 +6,7 @@ import {
   setViewMode,
   fetchAvailability,
 } from '../../../store/availabilitySlice';
-import { fetchPosts } from '../../../store/requestsSlice';
+import { fetchPosts, fetchAllRequests } from '../../../store/requestsSlice';
 import AvailabilityCalendar from '../../../components/HostDashboard/AvailabilityCalendar';
 import DayDetailPanel from '../../../components/HostDashboard/DayDetailPanel';
 import RulesSettingsModal from '../../../components/HostDashboard/RulesSettingsModal';
@@ -22,11 +22,11 @@ export default function HomeHost() {
   // ── Load from DB on mount & periodic auto-refresh ──
   useEffect(() => {
     dispatch(fetchAvailability());
-    dispatch(fetchPosts());
+    dispatch(fetchAllRequests());
 
     const interval = setInterval(() => {
       dispatch(fetchAvailability());
-      dispatch(fetchPosts());
+      dispatch(fetchAllRequests());
     }, 30000);
 
     return () => clearInterval(interval);
@@ -42,8 +42,8 @@ export default function HomeHost() {
   }, [dispatch]);
 
   const totalOverrides = Object.keys(overrides).length;
-  const totalBookings  = Object.keys(bookings).length;
-  const firstName      = user?.full_name?.split(' ')[0] || 'מארח';
+  const totalBookings = Object.keys(bookings).length;
+  const firstName = user?.full_name?.split(' ')[0] || 'מארח';
 
   return (
     <div className="hh-container">

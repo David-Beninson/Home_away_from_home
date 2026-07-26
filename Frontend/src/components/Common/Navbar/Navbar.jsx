@@ -20,6 +20,7 @@ import { Logo, LogOutIcon } from '../Icons';
 import { getUserInitials } from '../../../utils/user';
 import NotificationBell from "../NotificationBell/NotificationBell";
 import './Navbar.css';
+import { BRAND_TITLE, BRAND_SUBTITLE } from '../../../config/brand';
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -109,12 +110,19 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-right">
-        <div className="logo-icon-container">
+        <div
+          className="logo-icon-container"
+          onClick={() => navigate('/')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/'); }}
+          role="button"
+          tabIndex={0}
+          aria-label="העבר לדף הבית"
+        >
           <Logo size={32} className="logo-icon" />
         </div>
         <div className="logo-text">
-          <span className="logo-title">שבת שלום</span>
-          <span className="logo-subtitle">אירוח חיילים</span>
+          <span className="logo-title">{BRAND_TITLE}</span>
+          <span className="logo-subtitle">{BRAND_SUBTITLE}</span>
         </div>
       </div>
 

@@ -8,7 +8,7 @@ import {
   computeDayStatus,
   fetchAvailability,
 } from '../../store/availabilitySlice';
-import { fetchPosts } from '../../store/requestsSlice';
+import { fetchPosts, fetchAllRequests } from '../../store/requestsSlice';
 import { postsApi, bookingsApi } from '../../api/api';
 
 const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
