@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { fetchPosts } from '../../store/requestsSlice';
+import { fetchPosts, fetchAllRequests } from '../../store/requestsSlice';
 import { listingsApi, bookingsApi } from '../../api/api';
 import HostDetailsHeader from '../../components/HostDetails/HostDetailsHeader';
 import HostDetailsHero from '../../components/HostDetails/HostDetailsHero';
@@ -110,7 +110,7 @@ export default function HostDetails() {
             shabbat_date: found.shabbat_date || found.requested_date || found.available_date || null
           };
           setHost(mapped);
-          
+
           try {
             const res = await bookingsApi.checkGuestStatus(found.id);
             if (isMounted && res.data) {
@@ -164,7 +164,8 @@ export default function HostDetails() {
           guests_count: guestsCount,
           description: notes
         });
-        dispatch(fetchPosts());
+        // Refresh posts + incoming bookings so host sees this request even if calendar is closed
+        dispatch(fetchAllRequests());
         setRequestStatus('success');
         setToastMessage(`בקשת אירוח נשלחה בהצלחה אל ${hostName}!`);
       }
@@ -226,7 +227,7 @@ export default function HostDetails() {
   return (
     <main className="host-details-page">
       <div className="host-details-container">
-        
+
         {/* Breadcrumb Header Component */}
         <HostDetailsHeader hostName={hostName} onBack={handleBack} />
 
@@ -242,7 +243,7 @@ export default function HostDetails() {
 
         {/* Grid Content */}
         <div className="host-details-grid">
-          
+
           {/* Main Content (2 cols on md) */}
           <div className="host-details-main-content">
             {/* 3 Summary Info Cards Component */}

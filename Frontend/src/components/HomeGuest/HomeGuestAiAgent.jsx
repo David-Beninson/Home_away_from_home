@@ -1,5 +1,6 @@
 
 import { Sparkles, Send, Check, Bot } from 'lucide-react';
+import { BRAND_TITLE, BRAND_SUBTITLE } from '../../config/brand';
 
 export default function HomeGuestAiAgent() {
   return (
@@ -20,7 +21,7 @@ export default function HomeGuestAiAgent() {
                 <Bot size={20} />
               </div>
               <div>
-                <h4>עוזר חכם - שבת שלום</h4>
+                <h4>עוזר חכם - {BRAND_TITLE}</h4>
                 <p>
                   מענה מיידי לכל שאלה <span className="gh-online-dot"></span> פעיל
                 </p>
@@ -34,7 +35,7 @@ export default function HomeGuestAiAgent() {
                 <Bot size={16} />
               </div>
               <div className="gh-message-bubble">
-                שלום! אני העוזר החכם של שבת שלום 👋<br />
+                שלום! אני העוזר החכם של {BRAND_TITLE} 👋<br />
                 אני יכול לעזור למצוא מארח, להסביר ציוני התאמה, ולענות על כל שאלה. במה אוכל לעזור?
               </div>
             </div>

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { receiveNotification, markAllAsRead, markAsRead } from '../../../store/notificationsSlice';
 import { fetchCurrentUser } from '../../../store/authSlice';
+import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCircle2, MessageSquare, AlertCircle, Check } from 'lucide-react';
 import './NotificationBell.css';
 
@@ -13,7 +14,7 @@ export default function NotificationBell() {
   // 1. Pull the current user from Redux so we know who to connect as
   const user = useSelector((state) => state.auth.user);
   // (Make sure this matches exactly how the ID is stored in your auth object, e.g., user.id or user._id)
-  const userId = user?.id || user?.user_id; 
+  const userId = user?.id || user?.user_id;
 
   // 2. Pull notification data straight from Redux
   const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
@@ -127,9 +128,56 @@ export default function NotificationBell() {
     dispatch(markAllAsRead());
   };
 
-  const handleNotificationClick = (id) => {
-    dispatch(markAsRead(id));
+  const navigate = useNavigate();
+
+  const handleNotificationClick = (note) => {
+    // Mark as read and close dropdown
+    if (note?.id) dispatch(markAsRead(note.id));
     setIsOpen(false);
+
+    // Prefer explicit path/url fields if provided by the backend
+    const targetPath = note?.path || note?.url || note?.targetPath || note?.target_path || note?.data?.path || note?.meta?.path;
+    const targetState = note?.state || note?.targetState || note?.data?.state || null;
+
+    if (targetPath) {
+      // If it's an absolute URL (starts with http), open in new tab
+      if (typeof targetPath === 'string' && /^https?:\/\//.test(targetPath)) {
+        window.open(targetPath, '_blank');
+        return;
+      }
+      navigate(targetPath, { state: targetState });
+      return;
+    }
+
+    // Fallbacks based on type or content
+    // Message -> open chats; prefer passing match/chat identifiers if available
+    if (note?.type === 'message' || /צ'אט|chat|message/i.test(note?.title + ' ' + note?.message)) {
+      const matchId = note?.match_id || note?.data?.match_id || note?.meta?.match_id || note?.payload?.match_id;
+      const chatId = note?.chat_id || note?.data?.chat_id || note?.meta?.chat_id || note?.payload?.chat_id;
+      if (matchId || chatId) {
+        navigate('/chats', { state: { matchId, chatId } });
+      } else {
+        navigate('/chats');
+      }
+      return;
+    }
+
+    // Verification / admin related -> verifications page
+    if (note?.type === 'verification' || /אימות|אימותים|verificat/i.test(note?.title + ' ' + note?.message)) {
+      navigate('/admin/verifications');
+      return;
+    }
+
+    // Requests / bookings -> route to requests board or my-requests
+    if (note?.type === 'request' || /בקשה|בקשות|request/i.test(note?.title + ' ' + note?.message)) {
+      // If admin/host path provided, go to board; otherwise to my requests
+      const isAdmin = note?.meta?.for === 'admin' || note?.target_role === 'admin';
+      navigate(isAdmin ? '/admin/bookings' : '/my-requests');
+      return;
+    }
+
+    // Generic fallback: open notifications page or home
+    navigate('/');
   };
 
   const getIcon = (type) => {
@@ -184,7 +232,10 @@ export default function NotificationBell() {
                 <div
                   key={note.id}
                   className={`nb-item ${!note.isRead ? 'unread' : ''}`}
-                  onClick={() => handleNotificationClick(note.id)}
+                  onClick={() => handleNotificationClick(note)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNotificationClick(note); }}
                 >
                   <div className="nb-item-icon">
                     {getIcon(note.type)}

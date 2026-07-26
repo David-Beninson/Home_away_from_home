@@ -1,9 +1,10 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../../store/authSlice';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 import './Login.css';
+import { BRAND_TITLE, BRAND_SUBTITLE } from '../../config/brand';
 
 export default function Login() {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -106,8 +107,8 @@ export default function Login() {
 
         <div className="login-header">
           <Shield size={48} color="#2563eb" className="login-shield-icon" fill="#2563eb" />
-          <h2>שבת שלום</h2>
-          <p>מערכת אירוח חיילים בסופי שבוע</p>
+          <h2>{BRAND_TITLE}</h2>
+          <p>{BRAND_SUBTITLE}</p>
         </div>
 
         {error && <div className="login-error">{error}</div>}

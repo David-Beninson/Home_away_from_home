@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { setPosts, setLoading, fetchPosts } from '../store/requestsSlice';
+import { setPosts, setLoading, fetchPosts, fetchAllRequests } from '../store/requestsSlice';
 
 export function useGlobalWebSocket(userRole) {
   const dispatch = useDispatch();
@@ -14,8 +14,13 @@ export function useGlobalWebSocket(userRole) {
       return;
     }
 
-    // Fetch initial posts instantly via HTTP REST API
-    dispatch(fetchPosts());
+    // Fetch initial posts / requests instantly via HTTP REST API
+    // If hook caller passes userRole as 'host' we want incoming bookings too
+    if (userRole === 'host') {
+      dispatch(fetchAllRequests());
+    } else {
+      dispatch(fetchPosts());
+    }
 
     let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     baseUrl = baseUrl.replace(/\/+$/, '').replace(/\/api$/, '');
@@ -76,7 +81,7 @@ export function useGlobalWebSocket(userRole) {
           ws.close();
         } else if (ws.readyState === WebSocket.CONNECTING) {
           ws.onopen = () => {
-            try { ws.close(); } catch {}
+            try { ws.close(); } catch { }
           };
         }
       }
