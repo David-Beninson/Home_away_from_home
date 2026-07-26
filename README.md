@@ -1,56 +1,97 @@
-# Hosting for Shabbat (אירוח לשבת)
+# Home Away From Home (אירוח לשבת)
 
-A platform connecting hosts and guests (soldiers, national service volunteers, students, and families) for Shabbat hosting. The application combines rigid factual search filters with semantic vector matches, a multi-stage AI Agent for expectation alignment, and real-time in-app chat.
+A platform connecting hosts and guests (soldiers, national service volunteers, students, and families) for Shabbat hosting. The application combines strict factual filters with semantic vector matches, a multi-stage AI agent for expectation alignment, and real-time in-app chat.
 
 ## Project Structure
 
-This project is organized as a monorepo consisting of the backend API and frontend client:
+This repository is organized as a monorepo with separate Backend and Frontend packages:
 
 ```text
 hosting_for_shabat/
 ├── Backend/                 # FastAPI (Python) backend application
 │   ├── app/                 # Source code (feature-driven structure)
-│   │   ├── core/            # Configuration and core environment loaders
-│   │   ├── database/        # Centralized DB models (User, Profile, Match, Message, Post)
-│   │   ├── features/        # API routers (auth, listings, posts, bookings, chat)
-│   │   └── agent/           # AI Agent (embeddings, LangGraph Icebreaker workflow)
-│   │   main.py              # Application entry point
 │   ├── alembic/             # Database migration configurations
-│   └── pyproject.toml       # Python package dependencies
-├── Frontend/                # React (TypeScript) client application built with Vite
+│   ├── pyproject.toml       # Python package / dependency metadata
+│   └── requirements.txt     # Pinning for development
+├── Frontend/                # React (TypeScript) client application (Vite)
 │   ├── src/                 # Client UI components, stylesheets, and utilities
-│   └── package.json         # JavaScript dependencies
-└── PROJECT_CONTEXT.md       # Project milestone specifications and MVP context
+│   └── package.json         # JavaScript dependencies and scripts
+├── package.json             # Root convenience scripts (start both services)
+└── PROJECT_CONTEXT.md       # Project roadmap and MVP context
 ```
 
 ## Core Features
 
-1. **Hybrid Matchmaking (`pgvector`):** Matches guests to hosts by combining rigid requirements (city, kashrut level) with semantic vector similarity computed over free-text household atmosphere profiles.
-2. **AI Shabbat Icebreakers (LangGraph):** Automates personalized icebreaker questions based on host notes, guest description, and give-and-take skills, executed via a 4-node LangGraph pipeline with quality guardrails and parsed dynamically.
-3. **LangSmith Monitoring:** Complete tracing of LLM nodes, token consumption, and execution paths for performance auditing.
-4. **Concurrent Booking Controls:** Implements database row-locking (`with_for_update`) during post-claiming transactions to prevent double-booking.
-5. **Real-Time Chat (WebSockets):** Booking-specific secure chat rooms built with FastAPI WebSockets and database persistence, restricted to the matched host and guest.
-6. **Off-Platform Handshake:** Dynamic click-to-chat WhatsApp link generation pre-filled with matched booking coordinates.
+- Hybrid matchmaking combining rigid filters (city, kashrut, availability) with semantic ranking using `pgvector` embeddings.
+- Multi-stage AI "icebreaker" generation (LangGraph) that creates personalized, guard-railed questions for matched host/guest pairs.
+- LangSmith tracing for LLM observability and cost auditing.
+- Concurrency-safe booking flows (database row locking) to prevent double-booking.
+- Real-time in-app chat (FastAPI WebSockets) and optional off-platform WhatsApp handshakes.
 
 ## Tech Stack
 
-### Backend
-* **Framework:** FastAPI
-* **Workflow Engine:** LangGraph (with LangChain Core & LangChain Hugging Face)
-* **Database:** PostgreSQL (with `pgvector` extension for semantic AI matching)
-* **ORM:** SQLAlchemy (v2.0)
-* **Migrations:** Alembic
-* **Authentication:** JWT (JSON Web Tokens) & Passwords hashing (bcrypt)
-* **Package Management:** `uv`
+Backend
+- FastAPI (Python >= 3.11)
+- SQLAlchemy (v2.x), Alembic migrations
+- PostgreSQL with `pgvector` extension
+- LangGraph / LangChain integrations for LLM workflows
 
-### Frontend
-* **Framework:** React with TypeScript
-* **Build System:** Vite
-* **Styles:** Vanilla CSS for customized layout styling
-* **Package Management:** `pnpm`
+Frontend
+- React (TypeScript) with Vite
+- Uses `pnpm` as package manager (project is compatible with npm/yarn too)
 
-## Getting Started
+## Running the project (local development)
 
-Refer to individual READMEs in each package directory for specific setup and execution instructions:
-* **Backend Setup:** See [Backend/README.md](file:///Users/mrjimmyy/Projects/hosting_for_shabat/Backend/README.md)
-* **Frontend Setup:** See [Frontend/README.md](file:///Users/mrjimmyy/Projects/hosting_for_shabat/Frontend/README.md)
+There are multiple ways to run the system. Choose the one that fits your environment.
+
+A. Start services separately
+
+1. Frontend
+   - cd Frontend
+   - pnpm install
+   - pnpm run dev
+   - App will be served by Vite (default port 5173)
+
+2. Backend
+   - Ensure Python 3.11+ is installed
+   - cd Backend
+   - Create and activate a virtual environment (recommended):
+     ```bash
+     python -m venv .venv
+     source .venv/bin/activate  # macOS / Linux
+     .\.venv\Scripts\activate # Windows (PowerShell)
+     ```
+   - Install dependencies:
+     ```bash
+     pip install -r requirements.txt
+     ```
+   - Create a `.env` file (see `.env.example`) and set DATABASE_URL, JWT_SECRET, HF access tokens, etc.
+   - Run migrations:
+     ```bash
+     alembic upgrade head
+     ```
+   - Start the development server:
+     ```bash
+     uv run uvicorn app.main:app --reload
+     ```
+   - Backend API docs: http://localhost:8000/docs
+
+B. Start both services from the repository root (convenience)
+
+- The root package.json provides a convenience script that uses `concurrently` to run both services:
+  ```bash
+  # from repository root
+  pnpm install         # installs root devDependencies if using pnpm, or npm install
+  npm run dev          # runs frontend and backend concurrently (requires `concurrently`)
+  ```
+
+Note: the repository uses `pnpm` for the Frontend package; `npm` works for the root scripts as well, but ensure the required devDependency (`concurrently`) is installed.
+
+## Useful Links
+
+- Backend README: Backend/README.md
+- Frontend README: Frontend/README.md
+- Project roadmap & tasks: PROJECT_CONTEXT.md
+
+
+If you'd like, I can now apply refined, localized (Hebrew) instructions or add troubleshooting tips for running migrations and connecting to PostgreSQL. I will not modify any source code — only README files, per your request.
