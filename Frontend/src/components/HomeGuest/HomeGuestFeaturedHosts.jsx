@@ -14,8 +14,8 @@ export default function HomeGuestFeaturedHosts({ hosts, loading }) {
     <section className="gh-featured-section">
       <div className="gh-section-header">
         <h3>מארחים מובילים השבת</h3>
-        <span 
-          className="gh-link-all" 
+        <span
+          className="gh-link-all"
           onClick={() => navigate('/find-host')}
         >
           כל המארחים
@@ -34,16 +34,16 @@ export default function HomeGuestFeaturedHosts({ hosts, loading }) {
             const isKosher = host.kashrut_level === 'MEHADRIN' || host.kosher;
 
             return (
-              <div 
-                className="gh-host-card" 
+              <div
+                className="gh-host-card"
                 key={host.id}
-                onClick={() => navigate(`/hosts/${host.id}`)}
+                onClick={() => navigate(`/host/${host.id}`)}
               >
                 <div className="gh-card-image-wrapper">
-                  <img 
-                    src={imageUrl} 
-                    alt={host.full_name || host.name} 
-                    className="gh-card-image" 
+                  <img
+                    src={imageUrl}
+                    alt={host.full_name || host.name}
+                    className="gh-card-image"
                     onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
                   />
                   <div className="gh-card-badges">

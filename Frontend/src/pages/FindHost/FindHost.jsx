@@ -78,7 +78,7 @@ export default function FindHost() {
               <div
                 className="gh-host-card"
                 key={host.id}
-                onClick={() => navigate(`/hosts/${host.id}`)}
+                onClick={() => navigate(`/host/${host.id}`)}
               >
                 <div className="gh-card-image-wrapper">
                   <img
