@@ -63,7 +63,7 @@ function DonutChart({ data, title }) {
             const pct = total > 0 ? Math.round(((item.value || 0) / total) * 100) : 0;
             return (
               <div key={idx} className="legend-item">
-                <span className="legend-color-dot" style={{ backgroundColor: item.color }} />
+                <span className="legend-color-dot" style={{ '--dot-color': item.color }} />
                 <span className="legend-label">{item.label}</span>
                 <span className="legend-value">{item.value || 0} ({pct}%)</span>
               </div>
@@ -125,9 +125,9 @@ function ColumnChart({ data, title, barColor = '#2563eb', emptyText }) {
                       <div
                         className="chart-bar-fill"
                         style={{
-                          height: `${heightPct}%`,
-                          backgroundColor: item.count > 0 ? barColor : 'transparent',
-                          border: item.count > 0 ? `1px solid ${barColor}` : 'none'
+                          '--bar-height': `${heightPct}%`,
+                          '--bar-color': item.count > 0 ? barColor : 'transparent',
+                          '--bar-border': item.count > 0 ? `1px solid ${barColor}` : 'none'
                         }}
                       />
                     </div>

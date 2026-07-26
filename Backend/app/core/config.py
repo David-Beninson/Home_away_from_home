@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     )
 
     DATABASE_URL: str
+    DIRECT_URL: str | None = None
 
     JWT_SECRET: str
     JWT_ALGORITHM: str

@@ -12,29 +12,12 @@ export default function HostsGrid({
 }) {
   if (error) {
     return (
-      <div
-        className="alert alert-danger"
-        style={{
-          marginBottom: '1.5rem',
-          color: '#dc2626',
-          backgroundColor: '#fef2f2',
-          padding: '1rem',
-          borderRadius: '10px',
-          border: '1px solid #fecaca'
-        }}
-      >
+      <div className="alert alert-danger hosts-grid-error">
         <span>{error}</span>
         {onRetry && (
           <button
             onClick={onRetry}
-            style={{
-              marginRight: '1rem',
-              background: 'none',
-              border: 'underline',
-              color: '#dc2626',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
+            className="hosts-grid-retry-btn"
           >
             נסה שנית
           </button>
@@ -45,7 +28,7 @@ export default function HostsGrid({
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
+      <div className="hosts-grid-loading">
         <p>טוען מארחים מתוך בסיס הנתונים...</p>
       </div>
     );

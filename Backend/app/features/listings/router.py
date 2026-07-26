@@ -62,10 +62,15 @@ def delete_listing(listing_id: uuid.UUID, host_profile_id: uuid.UUID = Depends(r
 
 
 
+from app.features.availability.services import get_hosts_upcoming_availability_batch
+
+from app.agent.services import AgentService
+
 @router.get("/search", response_model=List[HostSearchResponse])
 def search_hosts(
     city: Optional[str] = None,
     kashrut_level: Optional[KashrutLevel] = None,
+    vibe: Optional[str] = None,
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
@@ -77,15 +82,37 @@ def search_hosts(
         query = query.filter(HostProfile.kashrut_level == kashrut_level)
     
     results = query.all()
+    host_ids = [profile.id for profile in results]
+    availability_map = get_hosts_upcoming_availability_batch(host_ids, db)
     
+    filtered_results = []
     for idx, profile in enumerate(results):
+        # Extract Vibe Tags using AI service
+        # Combine the new fields to feed the AI vibe tag extractor
+        general_notes = f"{profile.housing_type or ''} {profile.neighborhood_type or ''} {profile.pets_description or ''}".strip()
+        kashrut_info = profile.kashrut_level.value if hasattr(profile.kashrut_level, 'value') else str(profile.kashrut_level)
+    
+        profile.vibe_tags = AgentService.extract_vibe_tags(general_notes, kashrut_info)
+
+        # Apply Vibe filter if specified
+        if vibe:
+            clean_vibe = vibe.replace("#", "").strip()
+            tags_str = " ".join(profile.vibe_tags).replace("#", "")
+            notes_str = profile.free_text_notes or ""
+            if clean_vibe.lower() not in tags_str.lower() and clean_vibe.lower() not in notes_str.lower():
+                continue
+
         # Calculate or assign realistic AI match score
         if current_user and current_user.user_type == UserType.GUEST and current_user.guest_profile and current_user.guest_profile.preference_vector and profile.atmosphere_vector:
-            # Cosine similarity logic
             profile.match_score = 92
         else:
-            # Provide high default match score
             profile.match_score = max(75, 96 - (idx * 4))
             
-    return results
+        avail = availability_map.get(profile.id, {"open_dates": [], "open_day_names": [], "is_available_this_week": False})
+        profile.upcoming_open_dates = avail["open_dates"]
+        profile.upcoming_open_days = avail["open_day_names"]
+        profile.is_available_this_week = avail["is_available_this_week"]
+        filtered_results.append(profile)
+
+    return filtered_results
 

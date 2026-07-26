@@ -9,15 +9,21 @@ export default function HostCard({ host, onBookingRequest }) {
   const fullName = host.full_name || host.host_name ;
   const rating = host.rating !== undefined && host.rating !== null ? Number(host.rating).toFixed(1) : '4.9';
   const reviewsCount = host.reviews_count ?? host.review_count ?? 47;
-  const city = host.city ;
-  const availableSpots = host.available_spots !== undefined && host.available_spots !== null ? host.available_spots : 2;
+  const city = host.city || 'לא צוין';
+  const hasOpenDays = host.upcoming_open_days && host.upcoming_open_days.length > 0;
+  const availableSpots = hasOpenDays
+    ? (host.available_spots !== undefined && host.available_spots !== null ? host.available_spots : 2)
+    : 0;
   const tags = host.tags && host.tags.length > 0 ? host.tags : ['ילדים', 'חם ומשפחתי'];
+
+  const isDisabled = availableSpots <= 0;
 
   return (
     <button
       type="button"
-      onClick={() => onBookingRequest && onBookingRequest(host)}
-      className="host-card-button"
+      disabled={isDisabled}
+      onClick={() => !isDisabled && onBookingRequest && onBookingRequest(host)}
+      className={`host-card-button ${isDisabled ? 'host-card-button--disabled' : ''}`}
     >
       {/* 1. Media Header (Image, Badges, Overlay Gradient) */}
       <HostCardMedia host={host} />
@@ -47,6 +53,17 @@ export default function HostCard({ host, onBookingRequest }) {
           {city}
         </div>
 
+        {/* Row 2.5: Upcoming Week Availability */}
+        {host.upcoming_open_days && host.upcoming_open_days.length > 0 ? (
+          <div className="upcoming-open-days">
+            📅 זמין השבוע ב: {host.upcoming_open_days.join(', ')}
+          </div>
+        ) : (
+          <div className="upcoming-no-spots">
+            אין עוד מקומות פנויים אצל מארח זה
+          </div>
+        )}
+
         {/* Row 3: Available Spots (Right) & Tags (Left) */}
         <div className="card-row-footer">
           <span className={`card-spots-text ${availableSpots > 0 ? 'text-amber' : 'text-red'}`}>
@@ -55,7 +72,7 @@ export default function HostCard({ host, onBookingRequest }) {
 
           <div className="card-tags-group">
             {tags.map((tag, idx) => (
-              <span key={idx} className="card-tag-pill">
+              <span key={idx} className={tag.startsWith('#') ? "card-vibe-pill" : "card-tag-pill"}>
                 {tag}
               </span>
             ))}

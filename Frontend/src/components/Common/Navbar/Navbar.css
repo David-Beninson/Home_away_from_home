@@ -289,6 +289,10 @@
   transition: background-color 0.2s;
 }
 
+.dropdown-text-space {
+  margin-right: 8px;
+}
+
 .dropdown-item:hover {
   background-color: rgba(241, 245, 249, 0.8);
 }

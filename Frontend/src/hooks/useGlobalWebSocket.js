@@ -17,8 +17,18 @@ export function useGlobalWebSocket(userRole) {
     // Fetch initial posts instantly via HTTP REST API
     dispatch(fetchPosts());
 
-    const apiUrl = import.meta.env.VITE_API_URL;
-    const wsUrl = apiUrl.replace(/^http/, 'ws') + '/posts/ws?token=' + encodeURIComponent(token);
+    let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    baseUrl = baseUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+    if (baseUrl.startsWith('https://')) {
+      baseUrl = baseUrl.replace(/^https:\/\//, 'wss://');
+    } else if (baseUrl.startsWith('http://')) {
+      baseUrl = baseUrl.replace(/^http:\/\//, 'ws://');
+    } else if (!baseUrl.startsWith('ws://') && !baseUrl.startsWith('wss://')) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      baseUrl = `${protocol}//${window.location.host}`;
+    }
+    baseUrl = baseUrl.replace(/\/+$/, '');
+    const wsUrl = `${baseUrl}/api/posts/ws?token=` + encodeURIComponent(token);
 
     function connect() {
       const ws = new WebSocket(wsUrl);
@@ -31,7 +41,9 @@ export function useGlobalWebSocket(userRole) {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (Array.isArray(data)) {
+          if (data && data.type === 'HOST_AVAILABILITY_UPDATED') {
+            window.dispatchEvent(new CustomEvent('host_availability_updated', { detail: data }));
+          } else if (Array.isArray(data)) {
             dispatch(setPosts(data));
           }
           dispatch(setLoading(false));
@@ -57,8 +69,16 @@ export function useGlobalWebSocket(userRole) {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.onclose = null; // Prevent reconnect loop
-        socketRef.current.close();
+        const ws = socketRef.current;
+        ws.onclose = null;
+        ws.onerror = null;
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        } else if (ws.readyState === WebSocket.CONNECTING) {
+          ws.onopen = () => {
+            try { ws.close(); } catch {}
+          };
+        }
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);

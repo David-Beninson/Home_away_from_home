@@ -14,6 +14,7 @@ filelock==3.29.7
 fsspec==2026.6.0
 h11==0.16.0
 hf-xet==1.5.1
+-e file:///Users/mrjimmyy/Projects/hosting_for_shabat/Backend
 httpcore==1.0.9
 httptools==0.8.0
 httpx==0.28.1
@@ -44,6 +45,7 @@ pydantic-core==2.46.4
 pydantic-settings==2.14.2
 pyjwt==2.13.0
 python-dotenv==1.2.2
+python-multipart==0.0.32
 pyyaml==6.0.3
 requests==2.34.2
 requests-toolbelt==1.0.0

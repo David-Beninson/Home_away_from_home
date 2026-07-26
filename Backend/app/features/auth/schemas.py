@@ -67,7 +67,6 @@ class UserRegisterVerifySchema(BaseModel):
         if len(v) < 8 or not re.search(r"[A-Z]", v) or not re.search(r"\d", v):
             raise ValueError("Password must be >= 8 chars, contain an uppercase letter and a digit")
         return v
-
         
 class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
@@ -75,28 +74,51 @@ class UserResponse(UserBase):
     created_at: datetime
 
 class HostProfileBase(BaseModel):
-    city: str
-    neighborhood: Optional[str] = None
-    kashrut_level: KashrutLevel = KashrutLevel.KOSHER
-    religious_orientation: Optional[str] = None
-    availability_windows: Optional[str] = None
-    emergency_available: bool = False
-    full_address: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+    residential_address: Optional[str] = None
     max_guests: int = 1
-    num_bedrooms: Optional[int] = None
-    has_pets: bool = False
-    accessibility: Optional[str] = None
-    free_text_notes: Optional[str] = None
+    neighborhood_type: Optional[str] = None
+    kashrut_level: Optional[str] = "כשר"
+    num_beds: int = 1
+    num_bedrooms: int = 1
+    pets_description: Optional[str] = None
+    housing_type: Optional[str] = None
+    accessibility_level: Optional[str] = None
+    questionnaire_answered: Optional[bool] = False
+
+    @field_validator("kashrut_level", mode="before")
+    @classmethod
+    def validate_kashrut_level(cls, v):
+        if not v:
+            return "כשר"
+        return v
 
 class GuestProfileBase(BaseModel):
-    is_soldier_or_national_service: bool = False
-    skills_give_take: Optional[str] = None
-    is_anonymous: bool = False
-    service_type: Optional[str] = None
-    unit_name: Optional[str] = None
-    food_preferences_allergies: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+    service_type: Optional[str] = "סדיר"
+    unit_description: Optional[str] = None
     release_date: Optional[datetime] = None
-    origin_city: Optional[str] = None
+    is_anonymous: bool = False
+    giving_to_host: bool = False
+    food_allergies: Optional[str] = None
+    food_preferences: Optional[str] = None
+    religious_level: Optional[str] = None
+    kosher_food: bool = True
+    gender: Optional[str] = None
+    guest_address: Optional[str] = None
+    questionnaire_answered: Optional[bool] = False
+
+    @field_validator("release_date", mode="before")
+    @classmethod
+    def validate_release_date(cls, v):
+        if v == "" or v is None:
+            return None
+        if isinstance(v, str):
+            try:
+                return datetime.fromisoformat(v)
+            except ValueError:
+                return None
+        return v
 
 class LoginRequest(BaseModel):
     username: str
@@ -122,6 +144,7 @@ class UserMeResponse(BaseModel):
     phone_number: Optional[str] = None
     full_name: str
     user_type: UserType
+    verification_status: Optional[str] = "pending_submission"
     biography: Optional[str] = None
     is_email_verified: bool = False
     is_phone_verified: bool = False
@@ -136,6 +159,8 @@ class UserMeResponse(BaseModel):
             p = getattr(data, "host_profile", None) if u_type == UserType.HOST else getattr(data, "guest_profile", None)
 
             data_dict = {k: v for k, v in data.__dict__.items() if not k.startswith('_')}
+            v_status = getattr(data, "verification_status", None)
+            data_dict["verification_status"] = v_status.value if hasattr(v_status, "value") else str(v_status) if v_status else "pending_submission"
             
             if p and hasattr(p, "__dict__"):
                 data_dict["profile"] = {k: v for k, v in p.__dict__.items() if not k.startswith('_')}

@@ -410,6 +410,7 @@ dependencies = [
     { name = "pyjwt" },
     { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
 
 [package.metadata]
@@ -429,6 +430,7 @@ requires-dist = [
     { name = "pyjwt", specifier = ">=2.8.0" },
     { name = "sqlalchemy", specifier = ">=2.0.28" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.28.0" },
+    { name = "uvloop", marker = "sys_platform != 'win32'", specifier = ">=0.22.1" },
 ]
 
 [[package]]

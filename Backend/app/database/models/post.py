@@ -10,6 +10,7 @@ from app.database.base import Base
 class PostStatus(str, enum.Enum):
     """Lifecycle state of a guest hosting request."""
     OPEN = "open"
+    PENDING = "pending"
     MATCHED = "matched"
 
 class GuestPost(Base):
@@ -40,6 +41,9 @@ class GuestPost(Base):
     )
     claimed_by_host_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         ForeignKey("host_profiles.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    is_direct_request: Mapped[bool] = mapped_column(
+        default=False, server_default=text("false")
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -76,4 +80,25 @@ class GuestPost(Base):
         if self.guest_profile and not self.guest_profile.is_anonymous:
             return self.guest_profile.unit_name
         return None
+
+    @property
+    def claimed_by_host_name(self) -> Optional[str]:
+        if self.claimed_by_host and self.claimed_by_host.user:
+            return self.claimed_by_host.user.full_name
+        return None
+
+    @property
+    def claimed_by_host_city(self) -> Optional[str]:
+        if self.claimed_by_host:
+            return self.claimed_by_host.city
+        return None
+
+    @property
+    def pending_match_id(self) -> Optional[uuid.UUID]:
+        from app.database.models.match import MatchStatus
+        for m in self.matches:
+            if m.status == MatchStatus.PENDING and m.host_profile_id == self.claimed_by_host_id:
+                return m.id
+        return None
+
 

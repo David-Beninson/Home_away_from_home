@@ -8,6 +8,9 @@ from app.features.bookings.router import router as bookings_router
 from app.features.admin.router import router as admin_router
 from app.features.chat.router import router as chat_router
 from app.features.availability.router import router as availability_router
+from app.features.notifications.router import router as notifications_router
+from app.features.verification.router import router as verification_router
+from app.features.stats.router import router as stats_router
 
 app = FastAPI(
     title="Hosting for Shabbat API",
@@ -31,7 +34,23 @@ app.include_router(bookings_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 app.include_router(availability_router, prefix="/api")
+app.include_router(notifications_router, prefix="/api")
+app.include_router(verification_router, prefix="/api")
+app.include_router(stats_router, prefix="/api")
 
+
+
+@app.on_event("startup")
+def ensure_db_schema():
+    try:
+        from app.database.session import engine
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_path VARCHAR(512) DEFAULT '';"))
+            conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_data TEXT;"))
+            conn.commit()
+    except Exception as e:
+        print(f"Startup DB migration warning: {e}")
 
 @app.get("/")
 def read_root():

@@ -921,6 +921,7 @@
   display: inline-block;
   margin-left: 8px;
   flex-shrink: 0;
+  background-color: var(--dot-color, transparent);
 }
 
 .legend-label {
@@ -1108,22 +1109,307 @@
 
 .chart-bar-fill {
   width: 100%;
+  height: var(--bar-height, 0%);
+  background-color: var(--bar-color, transparent);
+  border: var(--bar-border, none);
   border-radius: 4px 4px 0 0;
   transition: height 0.4s ease-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-.chart-x-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-h);
-  text-align: center;
-  height: 24px;
-  line-height: 24px;
-  white-space: nowrap;
+/* Admin Verification Requests Helper Classes */
+.admin-chat-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.admin-chat-modal-box {
+  width: 100%;
+  max-width: 680px;
+  height: 80vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card, #ffffff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 1rem;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 75px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.admin-chat-close-btn {
+  border: none;
+  background: var(--secondary, #f3f4f6);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.admin-success-toast {
+  padding: 1rem;
+  background-color: var(--match-high-bg);
+  border: 1px solid var(--match-high-border);
+  color: var(--match-high-color);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.admin-empty-card {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text-muted);
+}
+
+.admin-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.admin-req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-req-card {
+  padding: 1.5rem;
+}
+
+.admin-req-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-req-user-name {
+  margin: 0 0 0.25rem 0;
+  color: var(--text-h);
+}
+
+.admin-req-user-email {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.admin-req-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-req-type-tag {
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  background-color: var(--primary-blue-light);
+  color: var(--primary-blue);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-req-ai-tag {
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  background-color: var(--match-high-bg);
+  border: 1px solid var(--match-high-border);
+  color: var(--match-high-color);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.admin-req-img-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.admin-req-img-grid.grid-lone-soldier {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.admin-req-img-box {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.admin-req-img-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-h);
+  font-size: 0.9rem;
+}
+
+.admin-req-img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.admin-req-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.admin-req-chat-btn {
+  background-color: var(--primary-blue-light);
+  color: var(--primary-blue);
+  border: 1px solid var(--primary-blue-light);
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-req-reject-btn {
+  background-color: var(--spot-full-bg);
+  color: var(--spot-full-color);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.admin-req-reject-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-req-approve-btn {
+  background-color: var(--match-high-color);
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.admin-req-approve-btn:disabled {
+  background-color: #15803d;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.admin-btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.admin-reject-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-reject-modal-box {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: var(--shadow);
+}
+
+.admin-reject-title {
+  margin: 0 0 1rem 0;
+  color: var(--text-h);
+}
+
+.admin-reject-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.admin-reject-textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-secondary);
+  color: var(--text-h);
+  font-family: var(--sans);
+  margin-bottom: 1.25rem;
+}
+
+.admin-reject-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.admin-reject-cancel-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.admin-reject-confirm-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--spot-full-color);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-reject-confirm-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
 }
 
 

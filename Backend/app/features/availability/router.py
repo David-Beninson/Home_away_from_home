@@ -8,6 +8,7 @@ Endpoints:
   POST /availability/overrides → upsert a single override
   DELETE /availability/overrides/{date} → remove one override
 """
+import uuid
 from datetime import date as DateType
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -66,8 +67,29 @@ def get_availability(
 
 # ─── PUT /availability/rules ─────────────────────────────────────────────────
 
+import asyncio
+from app.features.posts.router import post_manager
+from app.features.availability.services import get_host_upcoming_availability
+
+
+async def _notify_availability_change(host_profile_id: uuid.UUID, db: Session):
+    try:
+        avail = get_host_upcoming_availability(host_profile_id, db)
+        await post_manager.broadcast_event({
+            "type": "HOST_AVAILABILITY_UPDATED",
+            "host_profile_id": str(host_profile_id),
+            "upcoming_open_dates": avail["open_dates"],
+            "upcoming_open_days": avail["open_day_names"],
+            "is_available_this_week": avail["is_available_this_week"]
+        })
+    except Exception as e:
+        print(f"[WebSocket Availability Broadcast Error]: {e}")
+
+
+# ─── PUT /availability/rules ─────────────────────────────────────────────────
+
 @router.put("/rules", response_model=AvailabilityRuleResponse)
-def upsert_rules(
+async def upsert_rules(
     payload: AvailabilityRuleUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -90,13 +112,14 @@ def upsert_rules(
 
     db.commit()
     db.refresh(rule)
+    await _notify_availability_change(host_profile_id, db)
     return rule
 
 
 # ─── PUT /availability/overrides (bulk replace) ───────────────────────────────
 
 @router.put("/overrides", response_model=list[OverrideResponse])
-def bulk_upsert_overrides(
+async def bulk_upsert_overrides(
     payload: BulkOverrideUpsert,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -131,13 +154,14 @@ def bulk_upsert_overrides(
     for o in new_overrides:
         db.refresh(o)
 
+    await _notify_availability_change(host_profile_id, db)
     return new_overrides
 
 
 # ─── POST /availability/overrides (single upsert) ────────────────────────────
 
 @router.post("/overrides", response_model=OverrideResponse, status_code=status.HTTP_201_CREATED)
-def upsert_single_override(
+async def upsert_single_override(
     payload: OverrideUpsert,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -156,6 +180,7 @@ def upsert_single_override(
         existing.note = payload.note
         db.commit()
         db.refresh(existing)
+        await _notify_availability_change(host_profile_id, db)
         return existing
 
     new_override = HostAvailabilityOverride(
@@ -167,13 +192,14 @@ def upsert_single_override(
     db.add(new_override)
     db.commit()
     db.refresh(new_override)
+    await _notify_availability_change(host_profile_id, db)
     return new_override
 
 
 # ─── DELETE /availability/overrides/{date} ────────────────────────────────────
 
 @router.delete("/overrides/{override_date}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_override(
+async def delete_override(
     override_date: DateType,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -195,3 +221,4 @@ def delete_override(
 
     db.delete(deleted)
     db.commit()
+    await _notify_availability_change(host_profile_id, db)

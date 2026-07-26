@@ -10,7 +10,7 @@ export default function HostDetailsAbout({ biography, tags }) {
       {/* Tags Pills */}
       <div className="about-tags-list">
         {tags.map((tag, idx) => (
-          <span key={idx} className="about-tag-pill">
+          <span key={idx} className={tag.startsWith('#') ? "about-tag-pill vibe-tag-pill" : "about-tag-pill"}>
             {tag}
           </span>
         ))}

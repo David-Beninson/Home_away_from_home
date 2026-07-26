@@ -1,0 +1,151 @@
+.pq-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.pq-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  padding: 2.5rem;
+  font-family: system-ui, -apple-system, sans-serif;
+
+  /* Allow internal scrolling when content is taller than viewport */
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pq-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.pq-header h2 {
+  color: #1a365d;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.pq-header p {
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.pq-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.pq-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pq-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.pq-form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.pq-form-group input[type="text"],
+.pq-form-group input[type="number"],
+.pq-form-group input[type="date"],
+.pq-form-group select,
+.pq-form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.pq-form-group input:focus,
+.pq-form-group select:focus,
+.pq-form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.pq-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+.pq-actions {
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pq-submit-btn {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pq-submit-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.pq-error-msg {
+  color: #ef4444;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .pq-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

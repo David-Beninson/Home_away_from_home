@@ -12,6 +12,7 @@ from app.agent.prompts import (
     GENERATOR_USER_TEMPLATE,
     GUARDRAILS_SYSTEM_PROMPT,
     GUARDRAILS_USER_TEMPLATE,
+    get_default_icebreakers,
 )
 from langgraph.graph import StateGraph, START, END
 from langchain_core.language_models.llms import LLM
@@ -112,6 +113,7 @@ def _pad_or_truncate(vector: list[float], size: int = 1536) -> list[float]:
 
 # LangGraph Definitions for Icebreaker Agent
 class IcebreakerState(TypedDict):
+    role_perspective: str  # "host" or "guest"
     host_city: str
     host_kashrut: str
     host_religious: str
@@ -154,7 +156,9 @@ def generate_questions_node(state: IcebreakerState) -> dict:
     if not llm:
         return {"raw_questions": ""}
         
+    role_str = "אורח" if state.get("role_perspective") == "guest" else "מארח"
     user_prompt = GENERATOR_USER_TEMPLATE.format(
+        role_perspective=role_str,
         host_city=state.get("host_city") or "Unknown",
         host_kashrut=state.get("host_kashrut") or "Unknown",
         host_religious=state.get("host_religious") or "Unknown",
@@ -196,11 +200,8 @@ def parse_and_validate_node(state: IcebreakerState) -> dict:
     if not checked:
         checked = state.get("raw_questions", "")
         
-    default_icebreakers = [
-        "What is your favorite Shabbat custom?",
-        "Do you have any dietary preferences or restrictions?",
-        "Are there any specific Shabbat rules you observe that we should coordinate?",
-    ]
+    role = state.get("role_perspective", "host")
+    default_icebreakers = get_default_icebreakers(role)
     
     if not checked:
         return {"icebreakers": default_icebreakers}
@@ -273,9 +274,42 @@ class AgentService:
         return _normalize(vector)
 
     @staticmethod
-    def generate_icebreakers(host_attributes: dict, guest_attributes: dict) -> list[str]:
+    def extract_vibe_tags(free_text: Optional[str], religious_orientation: Optional[str] = None) -> List[str]:
+        """Extract 3-4 Vibe Tags for a host's Shabbat table atmosphere."""
+        tags = []
+        text = (free_text or "") + " " + (religious_orientation or "")
+        text_lower = text.lower()
+
+        if any(k in text_lower for k in ["שיר", "זמירות", "נגינה", "גיטרה", "שמח", "תוסס", "שירים"]):
+            tags.append("#שירים_ורקודים")
+            tags.append("#שולחן_תוסס")
+        if any(k in text_lower for k in ["שקט", "רגוע", "אינטימי", "עמוק", "שיחות", "סולידי"]):
+            tags.append("#שקט_ורגוע")
+            tags.append("#שיחות_עומק")
+        if any(k in text_lower for k in ["עדתי", "תימני", "מרוקאי", "אשכנזי", "טעים", "בישול", "מאכלים", "אוכל"]):
+            tags.append("#אוכל_עדתי")
+        if any(k in text_lower for k in ["משפחה", "ילדים", "חם", "בית", "משפחתי"]):
+            tags.append("#שולחן_משפחתי")
+        if any(k in text_lower for k in ["צעיר", "חיילים", "סטודנטים", "חברים", "רווקים"]):
+            tags.append("#צעירים_וחברים")
+
+        # Fallbacks based on religious orientation or defaults
+        if not tags:
+            if "דתי" in text_lower or "חרדי" in text_lower:
+                tags = ["#שולחן_חם", "#שיחות_עומק", "#שירים_ורקודים"]
+            elif "חילוני" in text_lower or "מסורתי" in text_lower:
+                tags = ["#אווירה_פתוחה", "#צעירים_וחברים", "#שיחות_עומק"]
+            else:
+                tags = ["#שולחן_חם", "#אוכל_עדתי", "#שיחות_עומק"]
+
+        return list(dict.fromkeys(tags))[:4]
+
+
+    @staticmethod
+    def generate_icebreakers(host_attributes: dict, guest_attributes: dict, user_role: str = "host") -> list[str]:
         """Return 3 personalized icebreaker questions for a host-guest pair using LangGraph."""
         input_state = {
+            "role_perspective": user_role if user_role in ["host", "guest"] else "host",
             "host_city": host_attributes.get("city") or "Unknown",
             "host_kashrut": str(host_attributes.get("kashrut_level") or "Unknown"),
             "host_religious": host_attributes.get("religious_orientation") or "Unknown",
@@ -292,12 +326,8 @@ class AgentService:
         
         try:
             result = icebreaker_agent.invoke(input_state)
-            return result.get("icebreakers") or []
+            return result.get("icebreakers") or get_default_icebreakers(user_role)
         except Exception as e:
             print(f"[AgentService] error running LangGraph: {e}")
-            # Failsafe fallback
-            return [
-                "What is your favorite Shabbat custom?",
-                "Do you have any dietary preferences or restrictions?",
-                "Are there any specific Shabbat rules you observe that we should coordinate?",
-            ]
+            return get_default_icebreakers(user_role)
+

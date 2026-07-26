@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Settings, CalendarDays, LayoutList, RefreshCw, Loader2 } from 'lucide-react';
+import { Settings, CalendarDays, LayoutList, Loader2 } from 'lucide-react';
 import {
   openRulesModal,
   setViewMode,
@@ -19,10 +19,17 @@ export default function HomeHost() {
     useSelector((s) => s.availability);
   const badgeCount = useSelector((s) => s.requests.badgeCount);
 
-  // ── Load from DB on mount ──
+  // ── Load from DB on mount & periodic auto-refresh ──
   useEffect(() => {
     dispatch(fetchAvailability());
     dispatch(fetchPosts());
+
+    const interval = setInterval(() => {
+      dispatch(fetchAvailability());
+      dispatch(fetchPosts());
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [dispatch]);
 
   // ── Auto-switch to week view on narrow screens ──
@@ -60,15 +67,6 @@ export default function HomeHost() {
 
         <div className="hh-hero-actions">
           <button
-            id="hh-refresh"
-            className="hh-btn-refresh"
-            onClick={() => dispatch(fetchAvailability())}
-            disabled={loading}
-            aria-label="רענן"
-          >
-            <RefreshCw size={15} className={loading ? 'hh-spin' : ''} />
-          </button>
-          <button
             id="hh-open-rules"
             className="hh-btn-settings"
             onClick={() => dispatch(openRulesModal())}
@@ -84,10 +82,6 @@ export default function HomeHost() {
         <div className="hh-stat-card">
           <h2>{totalBookings}</h2>
           <p>אירוחים פעילים</p>
-        </div>
-        <div className="hh-stat-card hh-stat-green">
-          <h2>{totalOverrides}</h2>
-          <p>שינויים ידניים</p>
         </div>
         <div className="hh-stat-card hh-stat-purple">
           <h2>{badgeCount}</h2>
@@ -125,7 +119,7 @@ export default function HomeHost() {
         </div>
 
         <div className={`hh-calendar-card ${loading ? 'hh-calendar-card--loading' : ''}`}>
-          {loading ? (
+          {loading && !rules ? (
             <div className="hh-loading-skeleton">
               <div className="hh-skeleton-header" />
               <div className="hh-skeleton-grid">

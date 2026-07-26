@@ -1,5 +1,31 @@
 .my-requests-page {
   padding: var(--layout-padding) 24px;
-  max-width: 1000px;
+  max-width: 800px;
   margin: 0 auto;
+}
+
+.my-requests-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.my-requests-create-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, rgb(27, 61, 123), rgb(37, 99, 235));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.my-requests-create-btn:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
 }

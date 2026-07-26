@@ -10,7 +10,9 @@ import HostDetails from '../pages/HostDetails/HostDetails'
 import MyRequests from '../pages/MyRequests/MyRequests'
 import RequestsBoard from '../pages/RequestsBoard/RequestsBoard'
 import ProfilePage from '../pages/Profile/Profile'
+import ChatsPage from '../pages/Chats/Chats'
 import NotFound from '../pages/NotFound/NotFound'
+import ProfileQuestionnaire from "../pages/Profile/ProfileQuestionnaire";
 
 // Auth Views
 import Login from '../pages/Login/Login'
@@ -20,6 +22,7 @@ import Register from '../pages/Register/Register'
 import AdminLayout from '../pages/Admin/Admin'
 import AdminDashboard from '../components/Admin/AdminDashboard'
 import AdminUsers from '../components/Admin/AdminUsers'
+import AdminVerificationRequests from '../components/Admin/AdminVerificationRequests'
 import AdminBookings from '../components/Admin/AdminBookings'
 import AdminListings from '../components/Admin/AdminListings'
 
@@ -31,6 +34,15 @@ export function useAppLogic() {
   const user = useSelector((state) => state.auth.user);
   const loadingAuth = useSelector((state) => state.auth.loading);
   const userRole = user?.user_type || null;
+
+  // Determine whether the current user still needs to complete a core profile field
+  // Requirement: only hosts must fill residential_address before using the app
+  const needsProfile = Boolean(
+    user && userRole === 'host' && (!user.profile || !user.profile.residential_address || user.profile.residential_address.trim() === '')
+  );
+
+  // hasProfile kept for backwards compatibility where needed (inverse of needsProfile for hosts)
+  const hasProfile = user ? !needsProfile : false;
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
@@ -46,7 +58,7 @@ export function useAppLogic() {
     };
   }, [dispatch]);
 
-  // Memoize router configuration to prevent unnecessary recreations unless userRole or loadingAuth changes
+  // Memoize router configuration to prevent unnecessary recreations
   const router = useMemo(() => {
     return createBrowserRouter([
       {
@@ -56,20 +68,34 @@ export function useAppLogic() {
         children: [
           {
             index: true,
-            // <-- Updated routing logic for the homepage
+            // If logged in but profile is missing, show questionnaire overlay for hosts
             element: userRole === 'admin'
               ? <Navigate to="/admin" replace />
-              : userRole === 'guest'
-                ? <HomeGuest />
-                : userRole === 'host'
-                  ? <HomeHost />
-                  : <>NotFound</>
+              : (userRole === 'host' && needsProfile)
+                ? <>
+                  <HomeHost />
+                  <ProfileQuestionnaire />
+                </>
+                : userRole === 'guest'
+                  ? <HomeGuest />
+                  : userRole === 'host'
+                    ? <HomeHost />
+                    : <NotFound />
           },
           {
             path: 'profile',
             element: (
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: 'complete-profile',
+            element: (
+              <ProtectedRoute>
+                {/* If profile is already complete, don't let them back in here */}
+                {hasProfile ? <Navigate to="/" replace /> : <ProfileQuestionnaire />}
               </ProtectedRoute>
             )
           },
@@ -115,6 +141,15 @@ export function useAppLogic() {
               </ProtectedRoute>
             )
           },
+          // Shared Protected Routes
+          {
+            path: 'chats',
+            element: (
+              <ProtectedRoute allowedRoles={['guest', 'host']}>
+                <ChatsPage />
+              </ProtectedRoute>
+            )
+          },
           // Admin Protected Routes
           {
             path: 'admin',
@@ -126,6 +161,7 @@ export function useAppLogic() {
             children: [
               { index: true, element: <AdminDashboard /> },
               { path: 'users', element: <AdminUsers /> },
+              { path: 'verifications', element: <AdminVerificationRequests /> },
               { path: 'bookings', element: <AdminBookings /> },
               { path: 'listings', element: <AdminListings /> }
             ]
@@ -157,7 +193,7 @@ export function useAppLogic() {
         element: <NotFound />
       }
     ]);
-  }, [userRole, loadingAuth]);
+  }, [userRole, loadingAuth, hasProfile]);
 
   return { router };
 }

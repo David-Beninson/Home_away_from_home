@@ -183,7 +183,12 @@ export function getUpcomingFridayDateStr(dateInput) {
   let d;
   if (dateInput) {
     try {
-      d = new Date(dateInput);
+      if (typeof dateInput === 'string' && dateInput.includes('-')) {
+        const parts = dateInput.split('T')[0].split('-').map(Number);
+        d = new Date(parts[0], parts[1] - 1, parts[2]);
+      } else {
+        d = new Date(dateInput);
+      }
     } catch (e) {
       console.warn('Invalid date format:', e);
       d = getUpcomingFriday();
@@ -203,4 +208,63 @@ export function getUpcomingFridayDateStr(dateInput) {
     console.warn('Error formatting date:', e);
     return '';
   }
+}
+
+/**
+ * Format host open date range or list (e.g. "חמישי - שבת, 23–25 ביולי 2026")
+ */
+export function formatHostOpenDates(host) {
+  if (!host) return '';
+
+  const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  const HEBREW_MONTHS = [
+    'בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני',
+    'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'
+  ];
+
+  const formatPart = (d) => `יום ${HEBREW_DAYS[d.getDay()]}, ${d.getDate()} ${HEBREW_MONTHS[d.getMonth()]}`;
+
+  const openDates = host.upcoming_open_dates || host.open_dates;
+  if (Array.isArray(openDates) && openDates.length > 1) {
+    const dates = openDates
+      .map(dStr => {
+        if (typeof dStr === 'string' && dStr.includes('-')) {
+          const parts = dStr.split('T')[0].split('-').map(Number);
+          return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+        return new Date(dStr);
+      })
+      .filter(d => !isNaN(d.getTime()))
+      .sort((a, b) => a - b);
+
+    if (dates.length > 1) {
+      const first = dates[0];
+      const last = dates[dates.length - 1];
+      return `${formatPart(first)} -> ${formatPart(last)} ${last.getFullYear()}`;
+    }
+  }
+
+  if (host.start_date && host.end_date) {
+    const d1 = new Date(host.start_date);
+    const d2 = new Date(host.end_date);
+    if (!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
+      return `${formatPart(d1)} - ${formatPart(d2)} ${d2.getFullYear()}`;
+    }
+  }
+
+  const singleDate = host.date || host.shabbat_date || host.requested_date || (openDates && openDates[0]);
+  if (singleDate) {
+    let d;
+    if (typeof singleDate === 'string' && singleDate.includes('-')) {
+      const parts = singleDate.split('T')[0].split('-').map(Number);
+      d = new Date(parts[0], parts[1] - 1, parts[2]);
+    } else {
+      d = new Date(singleDate);
+    }
+    if (!isNaN(d.getTime())) {
+      return `${formatPart(d)} ${d.getFullYear()}`;
+    }
+  }
+
+  return 'סוף השבוע הקרוב';
 }

@@ -64,6 +64,16 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.loading = true; // Set to true since we should fetch details next
     },
+    // Allow setting the current user object directly (useful for optimistic updates)
+    setCurrentUser: (state, action) => {
+      state.user = action.payload;
+      try {
+        localStorage.setItem('user', JSON.stringify(action.payload));
+      } catch (e) {
+        // ignore localStorage failures
+      }
+      state.loading = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -97,5 +107,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setAuthCredentials } = authSlice.actions;
+export const { logout, setAuthCredentials, setCurrentUser } = authSlice.actions;
 export default authSlice.reducer;

@@ -41,23 +41,6 @@
   border-color: rgba(239, 68, 68, 0.5);
 }
 
-/* ── Refresh button ── */
-.hh-btn-refresh {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 99px;
-  color: white;
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.hh-btn-refresh:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
-.hh-btn-refresh:disabled { opacity: 0.5; cursor: default; }
-
 /* ── Loading skeleton ── */
 .hh-calendar-card--loading { pointer-events: none; }
 
@@ -185,7 +168,7 @@
 ============================================= */
 .hh-stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -320,6 +303,12 @@
   margin: 0;
 }
 
+.ac-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .ac-nav-btn {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -337,6 +326,22 @@
   background: var(--primary-blue-light);
   color: var(--primary-blue);
   border-color: var(--primary-blue-border);
+}
+
+.ac-today-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text);
+  margin-left: 4px;
+}
+.ac-today-btn:hover {
+  background: var(--primary-blue-light);
+  color: var(--primary-blue);
 }
 
 /* Legend */
@@ -366,6 +371,10 @@
 .dot--booked { background: #2563eb; }
 .dot--closed { background: #cbd5e1; }
 .dot--notice { background: #f59e0b; }
+.dot--pending-flashing {
+  background-color: #ef4444;
+  animation: ac-pulse-dot 1.2s infinite ease-in-out;
+}
 
 /* Day-of-week headers */
 .ac-grid-headers {
@@ -441,6 +450,49 @@
   height: 5px;
   border-radius: 50%;
   background: #f59e0b;
+}
+
+/* Flashing Pending Request Dot at top-left */
+.ac-pending-request-dot {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  z-index: 3;
+  animation: ac-pulse-dot 1.2s infinite ease-in-out;
+}
+
+/* Yellow Dot at top-right for requests waiting for guest answer */
+.ac-waiting-guest-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  z-index: 3;
+}
+
+@keyframes ac-pulse-dot {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    opacity: 1;
+  }
 }
 
 /* Booking dot */
@@ -566,6 +618,24 @@
 .agenda-badge--closed       { background: #e2e8f0; color: #475569; }
 .agenda-badge--booked       { background: #2563eb; color: white; }
 .agenda-badge--past         { background: #f1f5f9; color: #94a3b8; }
+
+.agenda-pending-tag {
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.agenda-waiting-tag {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
 .agenda-badge--notice_closed{ background: #f59e0b; color: white; }
 
 .agenda-override-tag {
@@ -787,6 +857,177 @@
 .ddp-notice-info p { font-size: 13px; color: #92400e; margin: 0; line-height: 1.6; }
 .dark-theme .ddp-notice-info { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); }
 .dark-theme .ddp-notice-info p { color: #fcd34d; }
+
+/* ── DayDetailPanel Extended Styles ── */
+.ddp-pending-section {
+  margin: 16px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ddp-pending-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.ddp-card-waiting {
+  background-color: #fffbe6;
+  border-color: #fef08a;
+  margin: 0;
+}
+
+.ddp-card-pending {
+  background-color: #f0f9ff;
+  border-color: #bae6fd;
+  margin: 0;
+}
+
+.ddp-header-waiting {
+  color: #b45309;
+}
+
+.ddp-header-pending {
+  color: #0369a1;
+}
+
+.ddp-value-highlight {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.ddp-return-box {
+  background-color: #f0fdf4;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+  margin-top: 4px;
+}
+
+.ddp-return-label {
+  color: #166534;
+  font-weight: 600;
+}
+
+.ddp-return-value {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.ddp-desc-row {
+  margin-top: 4px;
+}
+
+.ddp-waiting-notice {
+  margin: 12px 16px;
+  padding: 10px 14px;
+  background-color: #fef3c7;
+  border-radius: 8px;
+  color: #92400e;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #fde68a;
+}
+
+.ddp-request-actions {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.ddp-btn-approve {
+  flex: 1;
+  padding: 10px 14px;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+}
+
+.ddp-btn-approve:disabled {
+  not-allowed: pointer;
+  opacity: 0.6;
+}
+
+.ddp-btn-reject {
+  flex: 1;
+  padding: 10px 14px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ddp-btn-reject:disabled {
+  not-allowed: pointer;
+  opacity: 0.6;
+}
+
+.ddp-card-overflow {
+  overflow: hidden;
+}
+
+.ddp-card-body {
+  padding: 16px;
+}
+
+.ddp-matched-footer {
+  border-top: 1px solid #a7f3d0;
+  background-color: #ecfdf5;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ddp-matched-links {
+  display: flex;
+  gap: 12px;
+}
+
+.ddp-chat-link {
+  color: #047857;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ddp-chat-link:hover {
+  text-decoration: underline;
+}
+
+.ddp-matched-badge {
+  color: #047857;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0;
+}
+
 
 /* =============================================
    RULES SETTINGS MODAL (rsm-*)

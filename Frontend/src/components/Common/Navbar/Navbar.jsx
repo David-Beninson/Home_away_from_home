@@ -6,13 +6,16 @@ import {
   Search,
   FileText,
   ClipboardList,
+  MessageSquare,
   LayoutDashboard,
   Users,
   Building,
   Inbox,
-  User
+  User,
+  ShieldCheck
 } from 'lucide-react';
 import { logout } from '../../../store/authSlice';
+import { fetchMyChats } from '../../../store/chatSlice';
 import { Logo, LogOutIcon } from '../Icons';
 import { getUserInitials } from '../../../utils/user';
 import NotificationBell from "../NotificationBell/NotificationBell";
@@ -32,14 +35,23 @@ export default function Navbar() {
   const userName = user?.full_name || '';
 
   const badgeCount = useSelector((state) => state.requests.badgeCount);
+  const unreadChatsCount = useSelector((state) => state.chat.unreadTotalCount);
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchMyChats());
+    }
+  }, [user, dispatch]);
 
   const linksConfig = [
     { path: '/', label: 'בית', roles: ['guest', 'host'], icon: <House className="nav-icon" /> },
     { path: '/find-host', label: 'מצא מארח', roles: ['guest'], icon: <Search className="nav-icon" /> },
     { path: '/my-requests', label: 'הבקשות שלי', roles: ['guest'], hasBadge: true, icon: <FileText className="nav-icon" /> },
     { path: '/requests-board', label: 'לוח בקשות', roles: ['host'], hasBadge: true, icon: <ClipboardList className="nav-icon" /> },
+    { path: '/chats', label: 'צ׳אטים', roles: ['guest', 'host'], hasChatBadge: true, icon: <MessageSquare className="nav-icon" /> },
     { path: '/admin', end: true, label: 'לוח בקרה', roles: ['admin'], hasBadge: true, icon: <LayoutDashboard className="nav-icon" /> },
     { path: '/admin/users', label: 'ניהול משתמשים', roles: ['admin'], icon: <Users className="nav-icon" /> },
+    { path: '/admin/verifications', label: 'אימותים וסינון', roles: ['admin'], icon: <ShieldCheck className="nav-icon" /> },
     { path: '/admin/listings', label: 'דירות ומארחים', roles: ['admin'], icon: <Building className="nav-icon" /> },
     { path: '/admin/bookings', label: 'בקשות', roles: ['admin'], icon: <Inbox className="nav-icon" /> },
     { path: '/profile', label: 'פרופיל', roles: ['guest', 'host'], icon: <User className="nav-icon" /> }
@@ -58,6 +70,7 @@ export default function Navbar() {
           {link.icon}
           <span>{link.label}</span>
           {link.hasBadge && badgeCount > 0 && <span className="requests-badge">{badgeCount}</span>}
+          {link.hasChatBadge && unreadChatsCount > 0 && <span className="requests-badge bg-primary text-white">{unreadChatsCount}</span>}
         </NavLink>
       </li>
     ));
@@ -134,7 +147,7 @@ export default function Navbar() {
 
               <button className="dropdown-item" onClick={() => setIsDark(!isDark)}>
                 {isDark ? '☀️' : '🌙'}
-                <span style={{ marginRight: '8px' }}>
+                <span className="dropdown-text-space">
                   {isDark ? 'מצב בהיר' : 'מצב כהה'}
                 </span>
               </button>

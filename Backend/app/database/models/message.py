@@ -26,6 +26,7 @@ class Message(Base):
         default=func.now(),
         server_default=func.now(),
     )
+    is_read: Mapped[bool] = mapped_column(default=False, server_default="false")
 
     match: Mapped["Match"] = relationship(back_populates="messages")
     sender: Mapped["User"] = relationship()

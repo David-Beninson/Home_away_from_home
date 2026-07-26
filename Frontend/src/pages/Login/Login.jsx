@@ -85,12 +85,11 @@ export default function Login() {
         {/* Navigation Switcher Pill (Without Arrows) */}
         <div className="auth-toggle-wrapper">
           <div className="auth-toggle-pill">
-            <div className="toggle-options-container" style={{ width: '100%' }}>
+            <div className="toggle-options-container">
               <button
                 type="button"
                 className={`toggle-btn-option ${!isLoginActive ? 'active' : ''}`}
                 onClick={() => navigate('/register')}
-                style={{ flex: 1, textAlign: 'center' }}
               >
                 הרשמה
               </button>
@@ -98,7 +97,6 @@ export default function Login() {
                 type="button"
                 className={`toggle-btn-option ${isLoginActive ? 'active' : ''}`}
                 onClick={() => navigate('/login')}
-                style={{ flex: 1, textAlign: 'center' }}
               >
                 התחברות
               </button>

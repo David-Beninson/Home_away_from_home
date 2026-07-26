@@ -1,11 +1,39 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { authApi } from '../../api/api';
 import { fetchCurrentUser, logout } from '../../store/authSlice';
 import { LogOutIcon, SettingsIcon } from '../../components/Common/Icons';
 import { getUserInitials } from '../../utils/user';
+import { getProfileFieldDefinitions, formatFieldValue } from './profileFieldsConfig';
 import './Profile.css';
+
+// Translation dictionary for dynamic fields
+const labelTranslations = {
+  // Guest Fields
+  "Giving To Host": "מביא/ה מתנה למארח",
+  "Food Preferences": "העדפות מזון",
+  "Kosher Food": "אוכל כשר",
+  "Guest Address": "כתובת מגורים",
+  "Unit Description": "יחידה צבאית",
+  "Food Allergies": "אלרגיות / רגישויות",
+  "Religious Level": "דת",
+  "Gender": "מין",
+  "Service Type": "סוג שירות",
+  "Release Date": "תאריך שחרור",
+  "Is Anonymous": "פרופיל אנונימי",
+
+  // Host Fields
+  "Residential Address": "כתובת מגורים",
+  "Neighborhood Type": "סוג שכונה",
+  "Pets Description": "חיות מחמד",
+  "Housing Type": "סוג דיור",
+  "Max Guests": "מקסימום אורחים",
+  "Kashrut Level": "רמת כשרות",
+  "Num Beds": "מספר מיטות",
+  "Num Bedrooms": "מספר חדרי שינה",
+  "Accessibility Level": "נגישות"
+};
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -21,15 +49,28 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user?.profile) {
-      setProfileData(user.profile);
+      setProfileData({ ...user.profile });
     }
   }, [user]);
 
+  // Dynamically compute all profile fields (preset + any extra backend fields)
+  const fieldDefinitions = useMemo(() => {
+    if (!user) return {};
+    return getProfileFieldDefinitions(user.user_type, profileData);
+  }, [user, profileData]);
+
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
+    let finalVal = value;
+    if (type === 'checkbox') {
+      finalVal = checked;
+    } else if (type === 'number') {
+      finalVal = value === '' ? '' : Number(value);
+    }
+
     setProfileData((prev) => ({
       ...prev,
-      [id]: type === 'checkbox' ? checked : value
+      [id]: finalVal
     }));
   };
 
@@ -38,21 +79,34 @@ export default function ProfilePage() {
     setSaving(true);
     setMessage({ type: '', text: '' });
 
+    // Clean internal/system attributes before sending to endpoint
+    const cleanedPayload = { ...profileData };
+    const SYSTEM_KEYS = ['id', 'user_id', 'created_at', 'updated_at', 'atmosphere_vector', 'preference_vector', '_sa_instance_state'];
+    SYSTEM_KEYS.forEach((key) => delete cleanedPayload[key]);
+
+    if (cleanedPayload.release_date === '') {
+      cleanedPayload.release_date = null;
+    }
+
     try {
       if (user.user_type === 'host') {
-        await authApi.updateHostProfile(profileData);
+        await authApi.updateHostProfile(cleanedPayload);
       } else {
-        await authApi.updateGuestProfile(profileData);
+        await authApi.updateGuestProfile(cleanedPayload);
       }
-      
+
       // Refresh the current user profile in Redux store
       await dispatch(fetchCurrentUser()).unwrap();
-      
+
       setMessage({ type: 'success', text: 'הפרופיל עודכן בהצלחה!' });
       setIsEditing(false); // Switch back to read-only view on success
     } catch (err) {
       console.error('Failed to update profile:', err);
-      setMessage({ type: 'error', text: 'שגיאה בעדכון הפרופיל. נסה שוב.' });
+      const detail = err.response?.data?.detail;
+      const errorText = Array.isArray(detail)
+        ? detail.map((d) => d.msg || JSON.stringify(d)).join(', ')
+        : (detail || 'שגיאה בעדכון הפרופיל. נסה שוב.');
+      setMessage({ type: 'error', text: `שגיאה בעדכון הפרופיל: ${errorText}` });
     } finally {
       setSaving(false);
     }
@@ -76,28 +130,31 @@ export default function ProfilePage() {
   }
 
   const userInitial = getUserInitials(user);
+  const locationSubtext =
+    user.user_type === 'guest'
+      ? profileData.unit_name || profileData.guest_address || 'טרם עודכן מיקום/יחידה'
+      : profileData.residential_address || 'טרם עודכנה עיר מגורים';
 
   return (
-    <div className="profile-container">
+    <div className="profile-container" dir="rtl">
       <div className="profile-card">
-        
         {!isEditing ? (
           /* ================= VIEW MODE ================= */
           <>
             <h1 className="page-title">הפרופיל שלי</h1>
-            
+
             <div className="profile-hero">
               <div className="hero-top">
                 <div className="hero-avatar">{userInitial}</div>
                 <div className="hero-info">
                   <h3>{user.full_name}</h3>
-                  <p>{user.user_type === 'guest' ? profileData.unit_name || 'טרם עודכנה יחידה' : profileData.city || 'טרם עודכנה עיר'}</p>
+                  <p>{locationSubtext}</p>
                 </div>
                 <div className="hero-role">
                   {user.user_type === 'host' ? 'משפחה מארחת' : 'חייל/ת (אורח)'}
                 </div>
               </div>
-              
+
               <div className="hero-stats">
                 <div className="stat-item">
                   <span className="stat-value">0</span>
@@ -115,10 +172,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="details-card">
-              <div className="details-header">
-                {user.user_type === 'host' ? 'פרופיל מארח' : 'פרופיל אורח'}
-              </div>
-              
+
+
+              {/* Base User Account Info */}
               <div className="detail-row">
                 <span className="detail-label">אימייל</span>
                 <span className="detail-value">{user.email}</span>
@@ -128,39 +184,21 @@ export default function ProfilePage() {
                 <span className="detail-value" dir="ltr">{user.phone_number}</span>
               </div>
 
-              {user.user_type === 'guest' && (
-                <>
-                  <div className="detail-row">
-                    <span className="detail-label">יחידה / בסיס</span>
-                    <span className="detail-value">{profileData.unit_name || '-'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">עיר מוצא</span>
-                    <span className="detail-value">{profileData.origin_city || '-'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">העדפות / אלרגיות</span>
-                    <span className="detail-value">{profileData.food_preferences_allergies || 'אין'}</span>
-                  </div>
-                </>
-              )}
+              {/* Dynamically Rendered Profile Fields */}
+              {Object.entries(fieldDefinitions).map(([key, fieldDef]) => {
+                const rawValue = profileData[key];
+                const formattedVal = formatFieldValue(rawValue, fieldDef);
 
-              {user.user_type === 'host' && (
-                <>
-                  <div className="detail-row">
-                    <span className="detail-label">עיר מגורים</span>
-                    <span className="detail-value">{profileData.city || '-'}</span>
+                return (
+                  <div className="detail-row" key={key}>
+                    <span className="detail-label">
+                      {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
+                      {labelTranslations[fieldDef.label] || fieldDef.label}
+                    </span>
+                    <span className="detail-value">{formattedVal}</span>
                   </div>
-                  <div className="detail-row">
-                    <span className="detail-label">רמת כשרות</span>
-                    <span className="detail-value">{profileData.kashrut_level === 'GLATT_KOSHER' ? 'למהדרין' : profileData.kashrut_level === 'NOT_KOSHER' ? 'לא שומרים' : 'כשר'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">מקסימום מתארחים</span>
-                    <span className="detail-value">{profileData.max_guests || 1}</span>
-                  </div>
-                </>
-              )}
+                );
+              })}
             </div>
 
             <div className="profile-footer-actions">
@@ -179,86 +217,94 @@ export default function ProfilePage() {
           <>
             <div className="profile-header">
               <h2>עריכת פרופיל</h2>
-              <p>עדכן את הפרטים האישיים שלך</p>
+              <p>עדכן את הפרטים האישיים והעדפות האירוח שלך</p>
             </div>
 
             {message.text && (
-              <div className="login-error" style={{
-                backgroundColor: message.type === 'success' ? 'rgba(74, 222, 128, 0.1)' : '',
-                color: message.type === 'success' ? '#4ade80' : '',
-                borderColor: message.type === 'success' ? 'rgba(74, 222, 128, 0.2)' : ''
-              }}>
+              <div
+                className={`login-error ${message.type === 'success' ? 'profile-msg-success' : ''}`}
+              >
                 {message.text}
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
               <div className="profile-form-grid">
-                
-                {user.user_type === 'host' && (
-                  <>
-                    <div className="form-group">
-                      <label htmlFor="city">עיר מגורים</label>
-                      <input type="text" id="city" value={profileData.city || ''} onChange={handleChange} required />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="neighborhood">שכונה (אופציונלי)</label>
-                      <input type="text" id="neighborhood" value={profileData.neighborhood || ''} onChange={handleChange} />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="max_guests">כמות מתארחים מקסימלית</label>
-                      <input type="number" id="max_guests" min="1" value={profileData.max_guests || 1} onChange={handleChange} required />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="kashrut_level">רמת כשרות בבית</label>
-                      <select id="kashrut_level" value={profileData.kashrut_level || 'KOSHER'} onChange={handleChange}>
-                        <option value="KOSHER">כשר</option>
-                        <option value="GLATT_KOSHER">גלאט כשר / למהדרין</option>
-                        <option value="NOT_KOSHER">ללא תעודה / לא מקפידים</option>
-                      </select>
-                    </div>
-                    <div className="form-group full-width">
-                      <label htmlFor="free_text_notes">הערות נוספות למתארחים</label>
-                      <textarea id="free_text_notes" rows="3" value={profileData.free_text_notes || ''} onChange={handleChange} />
-                    </div>
-                  </>
-                )}
+                {Object.entries(fieldDefinitions).map(([key, fieldDef]) => {
+                  const val = profileData[key] ?? '';
+                  const isFullWidth = fieldDef.fullWidth || fieldDef.type === 'textarea';
 
-                {user.user_type === 'guest' && (
-                  <>
-                    <div className="form-group">
-                      <label htmlFor="origin_city">עיר מגורים (מקור)</label>
-                      <input type="text" id="origin_city" value={profileData.origin_city || ''} onChange={handleChange} />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="unit_name">שם יחידה / בסיס</label>
-                      <input type="text" id="unit_name" value={profileData.unit_name || ''} onChange={handleChange} />
-                    </div>
-                    <div className="form-group full-width">
-                      <label htmlFor="food_preferences_allergies">העדפות מזון / אלרגיות</label>
-                      <input type="text" id="food_preferences_allergies" placeholder="צמחוני, אלרגיה לבוטנים..." value={profileData.food_preferences_allergies || ''} onChange={handleChange} />
-                    </div>
-                    <div className="form-group full-width">
-                      <label htmlFor="skills_give_take">קצת עלייך (תחביבים, כישורים)</label>
-                      <textarea id="skills_give_take" rows="3" value={profileData.skills_give_take || ''} onChange={handleChange} />
-                    </div>
-                  </>
-                )}
-              </div>
+                  return (
+                    <div
+                      key={key}
+                      className={`form-group ${isFullWidth ? 'full-width' : ''} ${fieldDef.type === 'boolean' ? 'checkbox-group' : ''}`}
+                    >
+                      <label htmlFor={key}>
+  {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
+  {labelTranslations[fieldDef.label] || fieldDef.label}
+                      </label >
 
-              <div className="profile-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
-                <button type="button" className="btn-outline" style={{ padding: '12px 24px' }} onClick={() => setIsEditing(false)}>
-                  ביטול
-                </button>
-                <button type="submit" className="save-btn" disabled={saving}>
-                  {saving ? 'שומר...' : 'שמור שינויים'}
-                </button>
-              </div>
-            </form>
+  {
+    fieldDef.type === 'textarea' ? (
+      <textarea
+        id={key}
+        rows={fieldDef.rows || 3}
+        placeholder={fieldDef.placeholder || ''}
+        value={val}
+        onChange={handleChange}
+        required={fieldDef.required}
+      />
+    ) : fieldDef.type === 'select' ? (
+      <select id={key} value={val} onChange={handleChange} required={fieldDef.required}>
+        {fieldDef.options?.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    ) : fieldDef.type === 'boolean' ? (
+      <div className="toggle-switch-container">
+        <input
+          type="checkbox"
+          id={key}
+          checked={Boolean(profileData[key])}
+          onChange={handleChange}
+        />
+        <span className="checkbox-text">{profileData[key] ? 'כן' : 'לא'}</span>
+      </div>
+    ) : (
+      <input
+        type={fieldDef.type || 'text'}
+        id={key}
+        min={fieldDef.min}
+        placeholder={fieldDef.placeholder || ''}
+        value={val}
+        onChange={handleChange}
+        required={fieldDef.required}
+      />
+    )
+  }
+                    </div >
+                  );
+})}
+              </div >
+
+  <div className="profile-actions">
+    <button
+      type="button"
+      className="btn-outline btn-cancel-profile"
+      onClick={() => setIsEditing(false)}
+    >
+      ביטול
+    </button>
+    <button type="submit" className="save-btn" disabled={saving}>
+      {saving ? 'שומר...' : 'שמור שינויים'}
+    </button>
+  </div>
+            </form >
           </>
         )}
-
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

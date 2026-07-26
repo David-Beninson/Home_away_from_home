@@ -22,41 +22,30 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 _OTP_TTL = timedelta(minutes=15)
 
 # Temporary in-memory OTP store for registration flow.
-# In a production environment, use a shared store like Redis with expiration.
-# Example Redis:
-# redis_client.setex(f"otp:{phone_number}", 600, code)
 otp_store = {}  # format: {phone_number: {"code": str, "expires_at": datetime}}
 
 @router.post("/register/request-otp", status_code=status.HTTP_200_OK)
 def request_otp(data: OTPRequestSchema, db: Session = Depends(get_db)):
-    # Validate that neither the phone nor the email already exists
-    existing_user = db.query(User).filter(
-        (User.phone_number == data.phone_number) | (User.email == data.email)
-    ).first()
+    phone_exists = db.query(db.query(User.id).filter(User.phone_number == data.phone_number).exists()).scalar()
+    if phone_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Phone number already registered"
+        )
+    email_exists = db.query(db.query(User.id).filter(User.email == data.email).exists()).scalar()
+    if email_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email address already registered"
+        )
     
-    if existing_user:
-        if existing_user.phone_number == data.phone_number:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Phone number already registered"
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email address already registered"
-            )
-    
-    # Generate 6-digit random code
     code = f"{random.randint(100_000, 999_999)}"
-    
-    # Store temporary OTP with expiration keyed by phone number
     expires_at = datetime.now(timezone.utc) + _OTP_TTL
     otp_store[data.phone_number] = {
         "code": code,
         "expires_at": expires_at
     }
     
-    # Invoke existing email service/utility to send the code
     try:
         email_sent = send_verification_email(data.email, code)
         if not email_sent:
@@ -76,7 +65,6 @@ def request_otp(data: OTPRequestSchema, db: Session = Depends(get_db)):
 
 @router.post("/register/verify", status_code=status.HTTP_201_CREATED)
 def register_verify(data: UserRegisterVerifySchema, db: Session = Depends(get_db)):
-    # Validate submitted OTP against the stored code
     otp_entry = otp_store.get(data.phone_number)
     if not otp_entry:
         raise HTTPException(
@@ -84,7 +72,6 @@ def register_verify(data: UserRegisterVerifySchema, db: Session = Depends(get_db
             detail="No OTP verification code requested for this phone number"
         )
     
-    # Check expiration
     if otp_entry["expires_at"] < datetime.now(timezone.utc):
         otp_store.pop(data.phone_number, None)
         raise HTTPException(
@@ -92,21 +79,18 @@ def register_verify(data: UserRegisterVerifySchema, db: Session = Depends(get_db
             detail="OTP verification code has expired"
         )
         
-    # Check code match
     if otp_entry["code"] != data.otp_code:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect verification code"
         )
         
-    # Check database again for duplicate email or phone number
-    if db.query(User).filter((User.email == data.email) | (User.phone_number == data.phone_number)).first():
+    if db.query(db.query(User.id).filter((User.email == data.email) | (User.phone_number == data.phone_number)).exists()).scalar():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email or phone already registered"
         )
         
-    # Hash password and create user in DB
     new_user = User(
         email=data.email,
         phone_number=data.phone_number,
@@ -120,18 +104,14 @@ def register_verify(data: UserRegisterVerifySchema, db: Session = Depends(get_db
     db.add(new_user)
     db.flush()
     
-    # Create respective profile
     if new_user.user_type == UserType.HOST:
-        db.add(HostProfile(user_id=new_user.id, city="Not Specified"))
+        db.add(HostProfile(user_id=new_user.id, residential_address="Not Specified"))
     elif new_user.user_type == UserType.GUEST:
         db.add(GuestProfile(user_id=new_user.id))
         
     db.commit()
-    
-    # Delete the used OTP
     otp_store.pop(data.phone_number, None)
     
-    # Immediately return a valid JWT access_token so the user logs in automatically
     u_type = new_user.user_type.value if hasattr(new_user.user_type, "value") else str(new_user.user_type)
     return {
         "access_token": create_access_token({"sub": str(new_user.id), "user_type": u_type}),
@@ -156,7 +136,7 @@ def register(user_in: UserCreate, background_tasks: BackgroundTasks, db: Session
     if user_in.email == settings.ADMIN_EMAIL or user_in.user_type == UserType.ADMIN:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot register with admin email or role")
 
-    if db.query(User).filter((User.email == user_in.email) | (User.phone_number == user_in.phone_number)).first():
+    if db.query(db.query(User.id).filter((User.email == user_in.email) | (User.phone_number == user_in.phone_number)).exists()).scalar():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email or phone already registered")
 
     expires_at = datetime.now(timezone.utc) + _OTP_TTL
@@ -174,7 +154,7 @@ def register(user_in: UserCreate, background_tasks: BackgroundTasks, db: Session
     db.flush()
 
     if new_user.user_type == UserType.HOST:
-        db.add(HostProfile(user_id=new_user.id, city="Not Specified"))
+        db.add(HostProfile(user_id=new_user.id, residential_address="Not Specified"))
     elif new_user.user_type == UserType.GUEST:
         db.add(GuestProfile(user_id=new_user.id))
 
@@ -296,35 +276,78 @@ def telegram_webhook(update: dict, db: Session = Depends(get_db)):
     return {"status": "verified"}
 
 @router.put("/profile/host")
-def update_host_profile(profile_data: HostProfileBase, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def update_host_profile(profile_data: HostProfileBase, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if current_user.user_type != UserType.HOST:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not a host")
 
-    profile = current_user.host_profile or HostProfile(user_id=current_user.id)
-    for key, value in profile_data.model_dump(exclude_unset=True).items():
-        setattr(profile, key, value)
+    profile = current_user.host_profile
+    if not profile:
+        profile = HostProfile(user_id=current_user.id)
+        current_user.host_profile = profile
 
-    embed_text = " ".join(filter(None, [profile.city, profile.neighborhood, profile.religious_orientation, profile.free_text_notes]))
+    dump_data = profile_data.model_dump()
+    for key, value in dump_data.items():
+        if value is not None or key in profile_data.model_fields_set:
+            setattr(profile, key, value)
+
+    if "available_spots" not in profile_data.model_fields_set or dump_data.get("available_spots") is None:
+        profile.available_spots = profile.max_guests
+
+    embed_text = " ".join(filter(None, [profile.residential_address, profile.neighborhood_type, profile.pets_description, profile.housing_type, current_user.biography]))
     if embed_text:
-        profile.atmosphere_vector = AgentService.generate_embedding(embed_text)
+        try:
+            profile.atmosphere_vector = AgentService.generate_embedding(embed_text)
+        except Exception as err:
+            print(f"Warning: Failed to generate atmosphere embedding: {err}")
 
     db.add(profile)
     db.commit()
+    db.refresh(profile)
+    db.refresh(current_user)
+
+    try:
+        from app.features.posts.router import post_manager
+        await post_manager.broadcast_event({
+            "type": "HOST_PROFILE_UPDATED",
+            "host_profile_id": str(profile.id),
+            "residential_address": getattr(profile, "residential_address", None),
+            "kashrut_level": profile.kashrut_level,
+            "max_guests": profile.max_guests,
+            "available_spots": profile.available_spots,
+            "religious_orientation": getattr(profile, "religious_orientation", None),
+            "free_text_notes": getattr(profile, "free_text_notes", None),
+            "neighborhood": getattr(profile, "neighborhood", None),
+            "full_name": current_user.full_name,
+        })
+    except Exception as err:
+        print(f"Warning: Failed to broadcast host profile WS event: {err}")
+
     return {"message": "Host profile updated successfully"}
+
 
 @router.put("/profile/guest")
 def update_guest_profile(profile_data: GuestProfileBase, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if current_user.user_type != UserType.GUEST:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not a guest")
 
-    profile = current_user.guest_profile or GuestProfile(user_id=current_user.id)
-    for key, value in profile_data.model_dump(exclude_unset=True).items():
+    profile = current_user.guest_profile
+    if not profile:
+        profile = GuestProfile(user_id=current_user.id)
+        current_user.guest_profile = profile
+
+    dump_data = profile_data.model_dump()
+    for key, value in dump_data.items():
         setattr(profile, key, value)
 
-    embed_text = " ".join(filter(None, [profile.skills_give_take, profile.food_preferences_allergies, current_user.biography]))
+    embed_text = " ".join(filter(None, [profile.unit_description, profile.food_allergies, profile.food_preferences, profile.religious_level, current_user.biography]))
     if embed_text:
-        profile.preference_vector = AgentService.generate_embedding(embed_text)
+        try:
+            profile.preference_vector = AgentService.generate_embedding(embed_text)
+        except Exception as err:
+            print(f"Warning: Failed to generate preference embedding: {err}")
 
     db.add(profile)
     db.commit()
+    db.refresh(profile)
+    db.refresh(current_user)
     return {"message": "Guest profile updated successfully"}

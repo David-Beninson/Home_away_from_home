@@ -75,7 +75,7 @@ function overridesFromDB(dbOverrides) {
 
 // ─── Pure helpers (exported for use in components) ────────────────────────────
 
-export function getISOWeekNumber(date) {
+function getISOWeekNumber(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
@@ -172,7 +172,7 @@ export const fetchAvailability = createAsyncThunk(
 /**
  * Save recurring rules to backend (called from RulesSettingsModal on Save).
  */
-export const saveRules = createAsyncThunk(
+const saveRules = createAsyncThunk(
   'availability/saveRules',
   async (rules, { rejectWithValue }) => {
     try {
@@ -188,7 +188,7 @@ export const saveRules = createAsyncThunk(
 /**
  * Set a single date override and persist it to backend.
  */
-export const saveOverride = createAsyncThunk(
+const saveOverride = createAsyncThunk(
   'availability/saveOverride',
   async ({ dateStr, status }, { rejectWithValue }) => {
     try {
@@ -203,7 +203,7 @@ export const saveOverride = createAsyncThunk(
 /**
  * Delete a single date override from backend.
  */
-export const removeOverride = createAsyncThunk(
+const removeOverride = createAsyncThunk(
   'availability/removeOverride',
   async ({ dateStr }, { rejectWithValue }) => {
     try {
@@ -289,11 +289,15 @@ const availabilitySlice = createSlice({
     // ── fetchAvailability ──
     builder
       .addCase(fetchAvailability.pending, (state) => {
-        state.loading = true;
+        if (!state.rules) {
+          state.loading = true;
+        }
+        state.syncing = true;
         state.error = null;
       })
       .addCase(fetchAvailability.fulfilled, (state, action) => {
         state.loading = false;
+        state.syncing = false;
         const { rule, overrides } = action.payload;
 
         // Merge DB rule into Redux (DB wins over localStorage on load)
@@ -307,6 +311,7 @@ const availabilitySlice = createSlice({
       })
       .addCase(fetchAvailability.rejected, (state, action) => {
         state.loading = false;
+        state.syncing = false;
         state.error = action.payload;
         // Keep localStorage data as fallback — don't wipe it
       });

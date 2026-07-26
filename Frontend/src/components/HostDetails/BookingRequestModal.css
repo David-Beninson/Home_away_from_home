@@ -1,0 +1,362 @@
+/* Booking Request Modal Overlay */
+.brm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: brmFadeIn 0.2s ease-out;
+}
+
+@keyframes brmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Content Box */
+.brm-modal {
+  background: white;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark-theme .brm-modal {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+/* Header */
+.brm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.dark-theme .brm-header {
+  background: #0f172a;
+  border-bottom-color: #334155;
+}
+
+.brm-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark-theme .brm-title {
+  color: #f8fafc;
+}
+
+.brm-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.brm-close-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.brm-close-btn:hover {
+  background: #e2e8f0;
+}
+
+/* Form & Inputs */
+.brm-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.brm-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.brm-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.dark-theme .brm-label {
+  color: #cbd5e1;
+}
+
+.brm-icon {
+  color: #2563eb;
+}
+
+/* Date Selection Cards */
+.brm-date-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.brm-date-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  background: #ffffff;
+}
+
+.dark-theme .brm-date-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.brm-date-card:hover {
+  border-color: #93c5fd;
+  background: #f0f9ff;
+}
+
+.brm-date-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.brm-radio,
+.brm-checkbox {
+  accent-color: #2563eb;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.brm-date-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.brm-date-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.dark-theme .brm-date-text {
+  color: #f8fafc;
+}
+
+.brm-date-subtext {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Range Slider Label Row & Badge */
+.brm-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brm-slider-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #bfdbfe;
+}
+
+.dark-theme .brm-slider-value {
+  background: rgba(37, 99, 235, 0.2);
+  color: #93c5fd;
+  border-color: rgba(37, 99, 235, 0.4);
+}
+
+.brm-slider-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+}
+
+.brm-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  accent-color: #2563eb;
+  background: linear-gradient(to left, #2563eb var(--slider-fill, 0%), #e2e8f0 var(--slider-fill, 0%));
+  transition: background 0.1s ease;
+}
+
+.brm-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+  transition: transform 0.15s ease;
+}
+
+.brm-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.brm-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Offer Tags */
+.brm-offer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.brm-offer-tag {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.brm-offer-tag:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.brm-offer-tag.selected {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.dark-theme .brm-offer-tag {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+.dark-theme .brm-offer-tag.selected {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: #2563eb;
+  color: #93c5fd;
+}
+
+/* Select & Textarea */
+.brm-select,
+.brm-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+  background: #ffffff;
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+.dark-theme .brm-select,
+.dark-theme .brm-textarea {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.brm-select:focus,
+.brm-textarea:focus {
+  border-color: #2563eb;
+}
+
+/* Actions */
+.brm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.brm-submit-btn {
+  width: 100%;
+  padding: 0.875rem;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+  transition: opacity 0.15s;
+}
+
+.brm-submit-btn:hover {
+  opacity: 0.95;
+}
+
+.brm-cancel-btn {
+  width: 100%;
+  padding: 0.65rem;
+  background: transparent;
+  color: #64748b;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.brm-cancel-btn:hover {
+  background: #f1f5f9;
+}

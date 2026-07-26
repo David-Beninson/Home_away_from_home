@@ -236,7 +236,6 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
             type="submit"
             disabled={submitting}
             className="px-5 py-2 rounded-xl text-white font-semibold text-sm disabled:opacity-40 hover:opacity-90 cpm-btn-submit"
-            style={{ background: 'linear-gradient(135deg, rgb(27, 61, 123), rgb(37, 99, 235))' }}
           >
             {submitting ? (isEdit ? 'שומר...' : 'מפרסם...') : (isEdit ? 'עדכן בקשה' : 'פרסם')}
           </button>
