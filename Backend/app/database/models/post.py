@@ -96,9 +96,17 @@ class GuestPost(Base):
     @property
     def pending_match_id(self) -> Optional[uuid.UUID]:
         from app.database.models.match import MatchStatus
-        for m in self.matches:
-            if m.status == MatchStatus.PENDING and m.host_profile_id == self.claimed_by_host_id:
+        # Prefer a pending match that matches the claimed_by_host_id (if set),
+        # but fall back to any pending match for this post so the guest still
+        # receives the notification even if claimed_by_host_id wasn't persisted.
+        pending_matches = [m for m in self.matches if m.status == MatchStatus.PENDING]
+        if not pending_matches:
+            return None
+        # Prefer match where host_profile_id equals claimed_by_host_id
+        for m in pending_matches:
+            if self.claimed_by_host_id and m.host_profile_id == self.claimed_by_host_id:
                 return m.id
-        return None
+        # Otherwise return the first pending match
+        return pending_matches[0].id
 
 

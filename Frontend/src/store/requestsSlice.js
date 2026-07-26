@@ -34,12 +34,14 @@ export const fetchAllRequests = createAsyncThunk(
         source: 'booking',
       }));
 
-      // Combine: posts first, then incoming bookings (avoid accidental duplicates by id)
+      // Combine: posts first, then incoming bookings that don't already have their
+      // guest_post_id present in the posts list (dedup by guest post ID, not match ID).
       const combined = [...posts];
-      const existingIds = new Set(posts.map((p) => String(p.id)));
+      const existingPostIds = new Set(posts.map((p) => String(p.id)));
       for (const it of mappedIncoming) {
-        const id = String(it.id || it.match_id || it.booking_id || Math.random());
-        if (!existingIds.has(id)) {
+        // Use guest_post_id for dedup — that is the post the host needs to see.
+        const postId = String(it.guest_post_id || it.id || '');
+        if (postId && !existingPostIds.has(postId)) {
           combined.push(it);
         }
       }

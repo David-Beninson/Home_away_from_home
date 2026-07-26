@@ -1,9 +1,9 @@
 import uuid
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 import jwt
 import asyncio
 from typing import List, Dict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.core.config import settings
@@ -17,6 +17,18 @@ from app.features.notifications.router import manager as notification_manager
 
 
 router = APIRouter(prefix="/posts", tags=["Guest Posts"])
+
+
+def get_israel_today_start() -> datetime:
+    """Return midnight Israel time as an aware UTC datetime.
+    Israel is UTC+2 (winter) / UTC+3 (summer/DST).
+    We use a fixed UTC+3 offset to stay safe for the Shabbat use-case.
+    """
+    ISRAEL_OFFSET = timedelta(hours=3)
+    now_israel = datetime.now(timezone.utc) + ISRAEL_OFFSET
+    midnight_israel = now_israel.replace(hour=0, minute=0, second=0, microsecond=0)
+    return midnight_israel - ISRAEL_OFFSET  # convert back to UTC
+
 
 class PostConnectionManager:
     """Manages active WebSocket connections for posts feeds, grouped by user ID and type."""
@@ -41,7 +53,7 @@ class PostConnectionManager:
         """Recalculate and send updates to all active clients according to their role."""
         with SessionLocal() as db:
             now = datetime.now(timezone.utc)
-            today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            today_start = get_israel_today_start()
 
             for conn in list(self.active_connections):
                 try:
@@ -56,11 +68,16 @@ class PostConnectionManager:
                             )
 
                             posts = db.query(GuestPost).filter(
-                                GuestPost.requested_date >= today_start,
                                 ~GuestPost.id.in_(rejected_select),
-                                (
-                                    (GuestPost.status == PostStatus.OPEN) | 
-                                    ((GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED])) & (GuestPost.claimed_by_host_id == host_profile_id))
+                                or_(
+                                    and_(
+                                        GuestPost.status == PostStatus.OPEN,
+                                        GuestPost.requested_date >= today_start
+                                    ),
+                                    and_(
+                                        GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED]),
+                                        GuestPost.claimed_by_host_id == host_profile_id
+                                    )
                                 )
                             ).all()
                         else:
@@ -130,7 +147,7 @@ def get_posts(
     db: Session = Depends(get_db)
 ):
     if current_user.user_type == UserType.HOST:
-        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = get_israel_today_start()
         host_profile_id = current_user.host_profile.id if current_user.host_profile else None
         
         if host_profile_id:
@@ -140,11 +157,16 @@ def get_posts(
             )
 
             posts = db.query(GuestPost).filter(
-                GuestPost.requested_date >= today_start,
                 ~GuestPost.id.in_(rejected_select),
-                (
-                    (GuestPost.status == PostStatus.OPEN) | 
-                    ((GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED])) & (GuestPost.claimed_by_host_id == host_profile_id))
+                or_(
+                    and_(
+                        GuestPost.status == PostStatus.OPEN,
+                        GuestPost.requested_date >= today_start
+                    ),
+                    and_(
+                        GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED]),
+                        GuestPost.claimed_by_host_id == host_profile_id
+                    )
                 )
             ).all()
         else:
@@ -309,7 +331,7 @@ async def websocket_posts_endpoint(
             db = SessionLocal()
             try:
                 if user_type == UserType.HOST:
-                    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+                    today_start = get_israel_today_start()
                     current_user = db.query(User).filter(User.id == user_id).first()
                     host_profile_id = current_user.host_profile.id if (current_user and current_user.host_profile) else None
                     if host_profile_id:
@@ -318,11 +340,16 @@ async def websocket_posts_endpoint(
                             Match.status == MatchStatus.REJECTED
                         )
                         posts = db.query(GuestPost).filter(
-                            GuestPost.requested_date >= today_start,
                             ~GuestPost.id.in_(rejected_select),
-                            (
-                                (GuestPost.status == PostStatus.OPEN) |
-                                ((GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED])) & (GuestPost.claimed_by_host_id == host_profile_id))
+                            or_(
+                                and_(
+                                    GuestPost.status == PostStatus.OPEN,
+                                    GuestPost.requested_date >= today_start
+                                ),
+                                and_(
+                                    GuestPost.status.in_([PostStatus.PENDING, PostStatus.MATCHED]),
+                                    GuestPost.claimed_by_host_id == host_profile_id
+                                )
                             )
                         ).all()
                     else:

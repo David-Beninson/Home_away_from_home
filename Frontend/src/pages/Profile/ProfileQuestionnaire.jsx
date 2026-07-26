@@ -33,10 +33,9 @@ export default function ProfileQuestionnaire() {
     if (user?.profile) {
 
       // Only copy keys that exist in formData to avoid adding unknown fields
-      // For hosts, do NOT prefill residential_address (no default city)
+      // Prefill all available profile values (including residential_address) so the user sees saved data
       const merged = { ...formData };
       Object.keys(merged).forEach((k) => {
-        if (k === 'residential_address' && user.user_type === 'host') return; // skip prefill for host address
         if (user.profile[k] !== undefined && user.profile[k] !== null) merged[k] = user.profile[k];
       });
       setFormData(merged);

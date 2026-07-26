@@ -10,6 +10,7 @@ from app.database.models.match import Match, MatchStatus
 from app.database.models.post import GuestPost, PostStatus
 from app.features.auth.services import get_current_user
 from app.features.bookings.schemas import BookingRequestCreate, BookingResponse, MatchStatusUpdate
+from app.features.posts.schemas import GuestPostResponse
 from app.agent.services import AgentService
 from app.agent.prompts import get_default_icebreakers
 from app.features.posts.router import post_manager
@@ -193,7 +194,7 @@ async def request_booking(
 
     return new_match
 
-@router.get("/bookings/incoming", response_model=List[BookingResponse])
+@router.get("/bookings/incoming", response_model=List[GuestPostResponse])
 def get_incoming_bookings(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -203,10 +204,21 @@ def get_incoming_bookings(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only hosts can view incoming bookings"
         )
-    return db.query(Match).filter(
+    matches = db.query(Match).filter(
         Match.host_profile_id == current_user.host_profile.id,
         Match.status == MatchStatus.PENDING
     ).all()
+
+    # Return the full guest post data for each pending match so the frontend
+    # can render the card correctly (guest_name, is_direct_request, pending_match_id, etc.)
+    result = []
+    seen_post_ids = set()
+    for match in matches:
+        post = match.guest_post
+        if post and str(post.id) not in seen_post_ids:
+            seen_post_ids.add(str(post.id))
+            result.append(post)
+    return result
 
 @router.patch("/bookings/{match_id}/respond", response_model=BookingResponse)
 async def respond_booking(
