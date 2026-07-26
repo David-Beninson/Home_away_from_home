@@ -19,6 +19,7 @@ class UserVerificationStatus(str, enum.Enum):
     PENDING_AI = "pending_ai"
     PENDING_ADMIN = "pending_admin"
     APPROVED = "approved"
+    VERIFIED = "verified"
     REJECTED = "rejected"
     SUSPENDED = "suspended"
 
