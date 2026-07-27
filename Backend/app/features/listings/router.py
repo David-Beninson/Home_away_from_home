@@ -74,45 +74,61 @@ def search_hosts(
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
-    query = db.query(HostProfile).options(joinedload(HostProfile.user))
-    
-    if city:
-        query = query.filter(HostProfile.city.ilike(f"%{city}%"))
-    if kashrut_level:
-        query = query.filter(HostProfile.kashrut_level == kashrut_level)
-    
-    results = query.all()
-    host_ids = [profile.id for profile in results]
-    availability_map = get_hosts_upcoming_availability_batch(host_ids, db)
-    
-    filtered_results = []
-    for idx, profile in enumerate(results):
-        # Extract Vibe Tags using AI service
-        # Combine the new fields to feed the AI vibe tag extractor
-        general_notes = f"{profile.housing_type or ''} {profile.neighborhood_type or ''} {profile.pets_description or ''}".strip()
-        kashrut_info = profile.kashrut_level.value if hasattr(profile.kashrut_level, 'value') else str(profile.kashrut_level)
-    
-        profile.vibe_tags = AgentService.extract_vibe_tags(general_notes, kashrut_info)
+    try:
+        query = db.query(HostProfile).options(joinedload(HostProfile.user))
+        
+        if city:
+            query = query.filter(HostProfile.city.ilike(f"%{city}%"))
+        if kashrut_level:
+            query = query.filter(HostProfile.kashrut_level == kashrut_level)
+        
+        results = query.all()
+        host_ids = [profile.id for profile in results]
+        
+        try:
+            availability_map = get_hosts_upcoming_availability_batch(host_ids, db)
+        except Exception as e:
+            print(f"Error getting availability: {e}")
+            availability_map = {}
+        
+        filtered_results = []
+        for idx, profile in enumerate(results):
+            # Extract Vibe Tags using AI service
+            # Combine the new fields to feed the AI vibe tag extractor
+            general_notes = f"{profile.housing_type or ''} {profile.neighborhood_type or ''} {profile.pets_description or ''}".strip()
+            kashrut_info = profile.kashrut_level.value if hasattr(profile.kashrut_level, 'value') else str(profile.kashrut_level)
+        
+            try:
+                from app.agent.services import AgentService
+                profile.vibe_tags = AgentService.extract_vibe_tags(general_notes, kashrut_info)
+            except Exception as e:
+                print(f"Error extracting vibe tags: {e}")
+                profile.vibe_tags = []
 
-        # Apply Vibe filter if specified
-        if vibe:
-            clean_vibe = vibe.replace("#", "").strip()
-            tags_str = " ".join(profile.vibe_tags).replace("#", "")
-            notes_str = profile.free_text_notes or ""
-            if clean_vibe.lower() not in tags_str.lower() and clean_vibe.lower() not in notes_str.lower():
-                continue
+            # Apply Vibe filter if specified
+            if vibe:
+                clean_vibe = vibe.replace("#", "").strip()
+                tags_str = " ".join(profile.vibe_tags).replace("#", "")
+                notes_str = getattr(profile, 'free_text_notes', '') or ""
+                if clean_vibe.lower() not in tags_str.lower() and clean_vibe.lower() not in notes_str.lower():
+                    continue
 
-        # Calculate or assign realistic AI match score
-        if current_user and current_user.user_type == UserType.GUEST and current_user.guest_profile and current_user.guest_profile.preference_vector and profile.atmosphere_vector:
-            profile.match_score = 92
-        else:
-            profile.match_score = max(75, 96 - (idx * 4))
-            
-        avail = availability_map.get(profile.id, {"open_dates": [], "open_day_names": [], "is_available_this_week": False})
-        profile.upcoming_open_dates = avail["open_dates"]
-        profile.upcoming_open_days = avail["open_day_names"]
-        profile.is_available_this_week = avail["is_available_this_week"]
-        filtered_results.append(profile)
+            # Calculate or assign realistic AI match score
+            if current_user and current_user.user_type == UserType.GUEST and current_user.guest_profile and current_user.guest_profile.preference_vector and profile.atmosphere_vector:
+                profile.match_score = 92
+            else:
+                profile.match_score = max(75, 96 - (idx * 4))
+                
+            avail = availability_map.get(profile.id, {"open_dates": [], "open_day_names": [], "is_available_this_week": False})
+            profile.upcoming_open_dates = avail["open_dates"]
+            profile.upcoming_open_days = avail["open_day_names"]
+            profile.is_available_this_week = avail["is_available_this_week"]
+            filtered_results.append(profile)
 
-    return filtered_results
+        return filtered_results
+    except Exception as e:
+        print(f"Error in search_hosts: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error searching hosts: {str(e)}")
 
