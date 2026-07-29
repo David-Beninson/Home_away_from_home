@@ -112,7 +112,7 @@ export default function SuspendedOverlay() {
       <header className="suspended-header">
         <div className="suspended-header-brand">
           <span>🕯️</span>
-          <span>Hosting for Shabbat</span>
+          <span>Home Away From Home</span>
         </div>
 
         <button className="logout-btn-overlay" onClick={() => dispatch(logout())}>

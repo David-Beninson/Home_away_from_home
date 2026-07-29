@@ -1,6 +1,6 @@
 # Home Away From Home - Backend API
 
-This is the backend service for the **Hosting for Shabbat** platform, built using Python, FastAPI, SQLAlchemy ORM, PostgreSQL, and LangGraph.
+This is the backend service for the **Home Away From Home** platform, built using Python, FastAPI, SQLAlchemy ORM, PostgreSQL, and LangGraph.
 
 ## Architecture
 
@@ -88,7 +88,7 @@ The platform features a state-of-the-art, multi-stage AI Agent built using **Lan
    JWT_SECRET=your_jwt_secret_key_here
    JWT_ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=1440
-   ADMIN_EMAIL=admin@hostingforshabbat.com
+   ADMIN_EMAIL=admin@HomeAwayFromHome.com
    ADMIN_PASSWORD=adminpassword123
    
    # Primary LLM Configuration

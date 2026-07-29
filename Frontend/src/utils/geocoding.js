@@ -50,7 +50,7 @@ export async function geocodeCity(cityName) {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${query}&format=json&accept-language=he&limit=1`,
       {
-        headers: { 'User-Agent': 'HostingForShabatApp/1.0' },
+        headers: { 'User-Agent': 'HomeAwayFromHomeApp/1.0' },
         signal: controller.signal
       }
     );

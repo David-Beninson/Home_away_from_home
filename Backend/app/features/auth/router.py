@@ -12,11 +12,11 @@ from app.features.auth.schemas import (
     OTPRequestSchema, UserRegisterVerifySchema
 )
 from app.features.auth.services import (
-    create_access_token, get_current_user, hash_password, send_telegram_message, send_verification_email, validate_otp, verify_password
+    create_access_token, get_current_user, hash_password, send_telegram_message, send_otp_email, validate_otp, verify_password
 )
 
 # Explicitly import the existing email sending service
-from app.features.auth.services import send_verification_email
+from app.features.auth.services import send_otp_email
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 _OTP_TTL = timedelta(minutes=15)
@@ -47,7 +47,7 @@ def request_otp(data: OTPRequestSchema, db: Session = Depends(get_db)):
     }
     
     try:
-        email_sent = send_verification_email(data.email, code)
+        email_sent = send_otp_email(data.email, code)
         if not email_sent:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -159,7 +159,7 @@ def register(user_in: UserCreate, background_tasks: BackgroundTasks, db: Session
         db.add(GuestProfile(user_id=new_user.id))
 
     db.commit()
-    background_tasks.add_task(send_verification_email, new_user.email, email_code)
+    background_tasks.add_task(send_otp_email, new_user.email, email_code)
 
     return {
         "message": "User registered successfully. Verification codes generated.",

@@ -1,9 +1,10 @@
 import logging
-import smtplib
 import uuid
 import bcrypt
+import base64
+import os
+import requests
 from datetime import datetime, timedelta, timezone
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional
 import httpx
@@ -172,34 +173,6 @@ def validate_otp(stored_code: Optional[str], expires_at: Optional[datetime], inp
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification code has expired")
 
 
-def send_verification_email(email: str, code: str) -> bool:
-    if not all([settings.SMTP_USER, settings.SMTP_PASSWORD, settings.SMTP_FROM_EMAIL]):
-        logger.warning(f"[MOCK EMAIL] Verification code for {email}: {code}")
-        return True
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = "Your verification code – Shabbat Hosting"
-        msg["From"] = settings.SMTP_FROM_EMAIL
-        msg["To"] = email
-        msg.attach(MIMEText(f"Your verification code: {code}\nValid for 15 minutes.", "plain", "utf-8"))
-        msg.attach(MIMEText(f"""
-        <html><body style="direction:ltr;font-family:sans-serif;padding:20px;">
-          <h2>Welcome to Shabbat Hosting! 🕯️</h2>
-          <p>Your verification code:</p>
-          <div style="font-size:32px;font-weight:bold;background:#f5f5f5;padding:14px 28px;border-radius:8px;display:inline-block;letter-spacing:6px;">{code}</div>
-          <p style="color:#666;">The code is valid for 15 minutes only.</p>
-        </body></html>
-        """, "html", "utf-8"))
-
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as srv:
-            srv.starttls()
-            srv.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            srv.sendmail(settings.SMTP_FROM_EMAIL, email, msg.as_string())
-        return True
-    except Exception as exc:
-        logger.error(f"Failed to send email to {email}: {exc}")
-        return False
-
 
 def send_telegram_message(chat_id: str, text: str) -> bool:
     if not settings.TELEGRAM_BOT_TOKEN:
@@ -215,3 +188,48 @@ def send_telegram_message(chat_id: str, text: str) -> bool:
     except Exception as exc:
         logger.error(f"Failed to send Telegram message to {chat_id}: {exc}")
         return False
+
+
+def send_otp_email(to_email: str, otp_code: str):
+    client_id = os.getenv("GMAIL_CLIENT_ID")
+    client_secret = os.getenv("GMAIL_CLIENT_SECRET")
+    refresh_token = os.getenv("GMAIL_REFRESH_TOKEN")
+    sender_email = os.getenv("GMAIL_SENDER")
+
+    # 1. קבלת Access Token חדש
+    token_url = "https://oauth2.googleapis.com/token"
+    payload = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "refresh_token": refresh_token,
+        "grant_type": "refresh_token",
+    }
+
+    token_response = requests.post(token_url, data=payload)
+    if token_response.status_code != 200:
+        raise Exception(f"Failed to refresh access token: {token_response.text}")
+
+    access_token = token_response.json().get("access_token")
+
+    # 2. בניית הודעת האימייל
+    message = MIMEText(f"Your verification code is: {otp_code}")
+    message["to"] = to_email
+    message["from"] = sender_email
+    message["subject"] = "Your OTP Verification Code"
+
+    raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
+
+    # 3. שליחה דרך ה-API של גוגל (פורט 443)
+    send_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+    body = {"raw": raw_message}
+
+    response = requests.post(send_url, headers=headers, json=body)
+
+    if response.status_code != 200:
+        raise Exception(f"Failed to send email: {response.text}")
+
+    return response.json()

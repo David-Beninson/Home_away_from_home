@@ -352,7 +352,7 @@ def get_match_details(
         host_name = host_user.full_name
         
         recipient_name = guest_name if is_host else host_name
-        message_text = f"Hi {recipient_name}! This is {current_user.full_name} from Hosting for Shabbat. Looking forward to hosting/visiting this upcoming weekend!"
+        message_text = f"Hi {recipient_name}! This is {current_user.full_name} from Home Away From Home. Looking forward to hosting/visiting this upcoming weekend!"
         encoded_message = urllib.parse.quote(message_text)
         whatsapp_link = f"https://wa.me/{phone_number}?text={encoded_message}"
     else:

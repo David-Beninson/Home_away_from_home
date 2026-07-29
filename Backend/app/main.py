@@ -15,7 +15,7 @@ from app.features.agent.router import router as agent_router
 from app.features.reviews.router import router as reviews_router
 
 app = FastAPI(
-    title="Hosting for Shabbat API",
+    title="Home Away From Home API",
     description="Backend API for managing host and guest matchmaking for Shabbat",
     version="1.0.0"
 )
@@ -66,4 +66,4 @@ def ensure_db_schema():
 
 @app.get("/")
 def read_root():
-    return {"message": "Hosting for Shabbat API is running"}
+    return {"message": "Home Away From Home API is running"}
