@@ -43,6 +43,8 @@ class GuestPostResponse(GuestPostBase):
     claimed_by_host_name: Optional[str] = None
     claimed_by_host_phone: Optional[str] = None
     claimed_by_host_city: Optional[str] = None
+    claimed_by_host_user_id: Optional[uuid.UUID] = None
+    guest_user_id: Optional[uuid.UUID] = None
     pending_match_id: Optional[uuid.UUID] = None
     match_id: Optional[uuid.UUID] = None
 

@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Utensils, Users, Heart, Edit3, Loader2, AlertCircle, Clock, Check, MessageSquare, ExternalLink } from 'lucide-react';
+import { Utensils, Users, Heart, Edit3, Loader2, AlertCircle, Clock, Check, MessageSquare, ExternalLink, Star } from 'lucide-react';
 import { formatHebrewDate, getRelativeTimeHebrew, checkPostUrgency } from '../../utils/date';
 import RequestInlineEdit from './RequestInlineEdit';
 import PendingOfferBox from './PendingOfferBox';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
+import ReviewsListModal from '../Reviews/ReviewsListModal';
 
 export default function RequestCard({ post, userRole, onAction, isClaiming, onUpdateSuccess }) {
   const navigate = useNavigate();
   const [isEditingInline, setIsEditingInline] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
 
   // Determine displayed name
   const isAnon = post.is_anonymous || post.guest_name === 'Soldier' || post.guest_name === 'Anonymous Guest' || post.guest_name === 'אנונימי' || post.guest_name === 'חייל אנונימי' || post.guest_name === 'אורח אנונימי';
@@ -58,6 +60,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
     ? (post.claimed_by_host_name || post.host_name || 'מארח')
     : displayName;
   const hostingDate = post.requested_date || post.start_date;
+  const reviewTargetId = userRole === 'host' ? post.guest_user_id : post.claimed_by_host_user_id;
 
   const modalData = {
     ...post,
@@ -92,6 +95,15 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
               <h3>{displayName}</h3>
             </div>
             <p className="card-subtitle">{subtitle}</p>
+            {reviewTargetId && (
+              <button 
+                className="action-button view-reviews-btn" 
+                onClick={() => setShowReviewsModal(true)}
+              >
+                <Star className="w-3 h-3 inline-icon" style={{marginRight: '4px'}} />
+                {userRole === 'host' ? 'אודות המשרת/ת' : 'אודות המארח'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -237,6 +249,13 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
           onClose={() => setShowDetailsModal(false)}
         />
       )}
+      <ReviewsListModal
+        open={showReviewsModal}
+        onClose={() => setShowReviewsModal(false)}
+        targetType={userRole === 'host' ? 'guest' : 'host'}
+        targetId={userRole === 'host' ? post.guest_profile?.user_id || post.guest_id || post.user_id : post.host_profile_id || post.claimed_by_host_id}
+        title={`ביקורות על ${userRole === 'host' ? displayName : otherPartyName}`}
+      />
     </>
   );
 }

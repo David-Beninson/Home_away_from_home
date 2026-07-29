@@ -9,6 +9,7 @@ import HostDetailsStats from '../../components/HostDetails/HostDetailsStats';
 import HostDetailsAbout from '../../components/HostDetails/HostDetailsAbout';
 import HostDetailsSidebar from '../../components/HostDetails/HostDetailsSidebar';
 import BookingRequestModal from '../../components/HostDetails/BookingRequestModal';
+import ReviewsListModal from '../../components/Reviews/ReviewsListModal';
 import { getUpcomingFridayDateStr, formatHostOpenDates } from '../../utils/shabbat';
 import './HostDetails.css';
 
@@ -142,6 +143,7 @@ export default function HostDetails() {
   }, [id, host]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
 
   const handleBack = () => {
     navigate('/find-host');
@@ -274,6 +276,7 @@ export default function HostDetails() {
               availableSpots={availableSpots}
               toastMessage={toastMessage}
               guestBookingStatus={guestBookingStatus}
+              onReviewsClick={() => setIsReviewsModalOpen(true)}
             />
           </div>
 
@@ -287,6 +290,14 @@ export default function HostDetails() {
         host={host}
         onSubmit={handleModalSubmit}
         isSubmitting={requestStatus === 'submitting'}
+      />
+
+      <ReviewsListModal
+        open={isReviewsModalOpen}
+        onClose={() => setIsReviewsModalOpen(false)}
+        targetType="host"
+        targetId={host?.user_id || host?.id}
+        title={`ביקורות על ${hostName}`}
       />
     </main>
   );

@@ -105,17 +105,26 @@ export function Logo({ size = 32, className = "" }) {
           <stop offset="100%" stopColor="#2563eb" />
         </linearGradient>
       </defs>
-      <rect width="100" height="100" rx="25" fill="url(#logo-bg-gradient)" />
-      <g transform="translate(26, 26) scale(2)">
-        <path
-          d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
+      <rect width="100" height="100" rx="26" fill="#2563eb" />
+      <path 
+        d="M50 18 L80 32 L80 56 C80 69 66 78 50 83 C34 78 20 69 20 56 L20 32 Z" 
+        fill="none" 
+        stroke="#FFFFFF" 
+        strokeWidth="3.5" 
+        strokeLinejoin="round" 
+      />
+      <path 
+        d="M33 44 L50 30 L67 44" 
+        fill="none" 
+        stroke="#FFFFFF" 
+        strokeWidth="3" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+      />
+      <path 
+        d="M50 46 Q50 57 39 57 Q50 57 50 68 Q50 57 61 57 Q50 57 50 46 Z" 
+        fill="#FFFFFF" 
+      />
     </IconWrapper>
   );
 }

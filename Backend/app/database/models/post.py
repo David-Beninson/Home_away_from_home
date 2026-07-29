@@ -112,6 +112,18 @@ class GuestPost(Base):
         return None
 
     @property
+    def guest_user_id(self) -> Optional[uuid.UUID]:
+        if self.guest_profile:
+            return self.guest_profile.user_id
+        return None
+
+    @property
+    def claimed_by_host_user_id(self) -> Optional[uuid.UUID]:
+        if self.claimed_by_host:
+            return self.claimed_by_host.user_id
+        return None
+
+    @property
     def pending_match_id(self) -> Optional[uuid.UUID]:
         from app.database.models.match import MatchStatus
         # Prefer a pending match that matches the claimed_by_host_id (if set),

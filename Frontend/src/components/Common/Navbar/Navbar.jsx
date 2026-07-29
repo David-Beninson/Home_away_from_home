@@ -12,7 +12,8 @@ import {
   Building,
   Inbox,
   User,
-  ShieldCheck
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { logout } from '../../../store/authSlice';
 import { fetchMyChats } from '../../../store/chatSlice';
@@ -55,6 +56,7 @@ export default function Navbar() {
     { path: '/admin/verifications', label: 'אימותים וסינון', roles: ['admin'], icon: <ShieldCheck className="nav-icon" /> },
     { path: '/admin/listings', label: 'דירות ומארחים', roles: ['admin'], icon: <Building className="nav-icon" /> },
     { path: '/admin/bookings', label: 'בקשות', roles: ['admin'], icon: <Inbox className="nav-icon" /> },
+    { path: '/admin/alerts', label: 'התראות', roles: ['admin'], icon: <AlertTriangle className="nav-icon" /> },
     { path: '/profile', label: 'פרופיל', roles: ['guest', 'host'], icon: <User className="nav-icon" /> }
   ];
 

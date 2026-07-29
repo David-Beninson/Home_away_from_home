@@ -12,7 +12,8 @@ export default function HostDetailsSidebar({
   requestStatus,
   availableSpots,
   toastMessage,
-  guestBookingStatus
+  guestBookingStatus,
+  onReviewsClick
 }) {
   const isBlocked = guestBookingStatus?.can_request === false;
   const disabledReason = guestBookingStatus?.reason || 'לא ניתן לשלוח בקשת אירוח נוספת';
@@ -26,11 +27,16 @@ export default function HostDetailsSidebar({
           {matchPercentage}%
         </span>
 
-        <span className="sidebar-rating-group">
+        <button 
+          type="button"
+          className="sidebar-rating-group" 
+          onClick={onReviewsClick}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+        >
           <Star className="star-icon-filled" />
           <span className="rating-score">{rating}</span>
-          <span className="rating-count">({reviewsCount})</span>
-        </span>
+          <span className="rating-count">({reviewsCount} ביקורות)</span>
+        </button>
       </div>
 
       {/* Date Subtitle */}

@@ -5,6 +5,8 @@ import Loading from '../Loading/Loading';
 import SuspendedOverlay from '../SuspendedOverlay/SuspendedOverlay';
 import ProfileQuestionnaire from '../../../pages/Profile/ProfileQuestionnaire';
 import { useGlobalWebSocket } from '../../../hooks/useGlobalWebSocket';
+import { usePendingReviews } from '../../../hooks/usePendingReviews';
+import PendingReviewModal from '../../Reviews/PendingReviewModal';
 import './Layout.css';
 
 export default function Layout() {
@@ -14,6 +16,8 @@ export default function Layout() {
 
   // Initialize the global WebSocket connection and fetch badge count
   useGlobalWebSocket(userRole);
+
+  const { pendingReview, clearPendingReview } = usePendingReviews();
 
   // If authentication state is still loading, show loading indicator instead of redirecting prematurely
   if (loading) {
@@ -60,6 +64,15 @@ export default function Layout() {
       <main className="layout-content">
         <Outlet />
       </main>
+
+      {/* Global pending review modal */}
+      {pendingReview && (
+        <PendingReviewModal
+          pendingReview={pendingReview}
+          onClose={clearPendingReview}
+          onSuccess={clearPendingReview}
+        />
+      )}
     </div>
   );
 }

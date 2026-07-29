@@ -143,4 +143,15 @@ export const agentApi = {
   chat: (message) => api.post('/agent/chat', { message }),
 };
 
+// Reviews & Monitoring API
+export const reviewsApi = {
+  getPending: () => api.get('/reviews/pending'),
+  createReview: (data) => api.post('/reviews', data),
+  getHostReviews: (hostId) => api.get(`/reviews/host/${hostId}`),
+  getGuestReviews: (guestId) => api.get(`/reviews/guest/${guestId}`),
+  getMatchReviews: (matchId) => api.get(`/reviews/match/${matchId}`),
+  getAlerts: () => api.get('/reviews/alerts'),
+  updateStatus: (reviewId, status) => api.patch(`/reviews/${reviewId}/status`, { status }),
+};
+
 export default api;

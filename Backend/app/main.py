@@ -12,6 +12,7 @@ from app.features.notifications.router import router as notifications_router
 from app.features.verification.router import router as verification_router
 from app.features.stats.router import router as stats_router
 from app.features.agent.router import router as agent_router
+from app.features.reviews.router import router as reviews_router
 
 app = FastAPI(
     title="Hosting for Shabbat API",
@@ -42,6 +43,7 @@ app.include_router(notifications_router, prefix="/api")
 app.include_router(verification_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
+app.include_router(reviews_router, prefix="/api")
 
 
 # lifeSpan
