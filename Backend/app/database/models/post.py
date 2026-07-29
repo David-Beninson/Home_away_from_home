@@ -12,6 +12,7 @@ class PostStatus(str, enum.Enum):
     OPEN = "open"
     PENDING = "pending"
     MATCHED = "matched"
+    CANCELLED = "cancelled"
 
 class GuestPost(Base):
     """A guest's active hosting request (reverse-auction style)."""

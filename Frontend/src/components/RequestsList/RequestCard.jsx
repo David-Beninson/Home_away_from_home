@@ -1,17 +1,42 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Utensils, Users, Heart, Edit3, Loader2, AlertCircle, Clock, Check, MessageSquare, ExternalLink, Star } from 'lucide-react';
+import { Utensils, Users, Heart, Edit3, Loader2, AlertCircle, Clock, Check, MessageSquare, ExternalLink, Star, XCircle } from 'lucide-react';
 import { formatHebrewDate, getRelativeTimeHebrew, checkPostUrgency } from '../../utils/date';
 import RequestInlineEdit from './RequestInlineEdit';
 import PendingOfferBox from './PendingOfferBox';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 import ReviewsListModal from '../Reviews/ReviewsListModal';
+import { postsApi } from '../../api/api';
 
 export default function RequestCard({ post, userRole, onAction, isClaiming, onUpdateSuccess }) {
   const navigate = useNavigate();
   const [isEditingInline, setIsEditingInline] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancel = async () => {
+    if (post.status === 'matched' || post.status === 'approved') {
+      if (!window.confirm('האם את/ה בטוח/ה שברצונך לבטל? המארח יעודכן על כך.')) {
+        return;
+      }
+    } else {
+      if (!window.confirm('האם לבטל בקשה זו?')) {
+        return;
+      }
+    }
+    
+    try {
+      setIsCancelling(true);
+      await postsApi.cancelPost(post.id);
+      if (onUpdateSuccess) onUpdateSuccess();
+    } catch (err) {
+      console.error('Failed to cancel post:', err);
+      alert('שגיאה בביטול הבקשה.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   // Determine displayed name
   const isAnon = post.is_anonymous || post.guest_name === 'Soldier' || post.guest_name === 'Anonymous Guest' || post.guest_name === 'אנונימי' || post.guest_name === 'חייל אנונימי' || post.guest_name === 'אורח אנונימי';
@@ -40,6 +65,8 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
     } else {
       statusLabel = userRole === 'guest' ? 'ממתין לאישורך' : 'ממתין לתשובת החייל';
     }
+  } else if (post.status === 'cancelled' || post.status === 'CANCELLED') {
+    statusLabel = 'בוטל';
   }
 
   if (isEditingInline) {
@@ -180,6 +207,17 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                   <ExternalLink size={16} />
                   פרטי אירוח
                 </button>
+                {userRole === 'guest' && (
+                  <button 
+                    className="card-matched-btn cancel-btn"
+                    onClick={handleCancel}
+                    disabled={isCancelling}
+                    style={{ color: '#dc2626', borderColor: '#fca5a5', backgroundColor: '#fee2e2' }}
+                  >
+                    {isCancelling ? <Loader2 size={16} className="spin-icon" /> : <XCircle size={16} />}
+                    ביטול
+                  </button>
+                )}
               </div>
               <p className="card-matched-status">האירוח אושר! ✓</p>
             </div>
@@ -228,15 +266,29 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
               </button>
             )
           ) : (
-            post.status === 'open' && (
-              <button
-                className="action-button edit-button"
-                onClick={() => setIsEditingInline(true)}
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>עריכת בקשה</span>
-              </button>
-            )
+            <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+              {post.status === 'open' && (
+                <button
+                  className="action-button edit-button"
+                  onClick={() => setIsEditingInline(true)}
+                  style={{ flex: 1 }}
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span>עריכת בקשה</span>
+                </button>
+              )}
+              {post.status !== 'cancelled' && post.status !== 'rejected' && post.status !== 'declined' && (
+                <button
+                  className="action-button cancel-button"
+                  onClick={handleCancel}
+                  disabled={isCancelling}
+                  style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '8px', fontWeight: '500' }}
+                >
+                  {isCancelling ? <Loader2 className="w-4 h-4 spin-icon" /> : <XCircle className="w-4 h-4" />}
+                  <span>ביטול בקשה</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

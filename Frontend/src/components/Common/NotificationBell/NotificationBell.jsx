@@ -1,25 +1,38 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { receiveNotification, markAllAsRead, markAsRead } from '../../../store/notificationsSlice';
+import {
+  receiveNotification,
+  fetchNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+} from '../../../store/notificationsSlice';
 import { fetchCurrentUser } from '../../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCircle2, MessageSquare, AlertCircle, Check } from 'lucide-react';
+import { Bell, CheckCircle2, MessageSquare, AlertCircle, Check, Trash2, Filter } from 'lucide-react';
 import './NotificationBell.css';
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
+  const [filterMode, setFilterMode] = useState('all'); // 'all' | 'unread'
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
 
-  // 1. Pull the current user from Redux so we know who to connect as
+  // 1. Current authenticated user
   const user = useSelector((state) => state.auth.user);
-  // (Make sure this matches exactly how the ID is stored in your auth object, e.g., user.id or user._id)
   const userId = user?.id || user?.user_id;
 
-  // 2. Pull notification data straight from Redux
+  // 2. Notification state from Redux store
   const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
 
-  // 3. The WebSocket Connection Hook with Auto-Reconnect and Heartbeat
+  // Fetch initial notifications on mount / login
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchNotifications());
+    }
+  }, [userId, dispatch]);
+
+  // 3. WebSocket Connection Hook with Auto-Reconnect and Heartbeat
   useEffect(() => {
     if (!userId) return;
 
@@ -31,9 +44,7 @@ export default function NotificationBell() {
     const MAX_RECONNECT_DELAY_MS = 30000;
 
     const connectWebSocket = () => {
-      // Dynamic WS/WSS URL resolution
       let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      // Strip trailing slashes and trailing /api to avoid /api/api
       baseUrl = baseUrl.replace(/\/+$/, '').replace(/\/api$/, '');
 
       if (baseUrl.startsWith('https://')) {
@@ -51,9 +62,8 @@ export default function NotificationBell() {
 
       socket.onopen = () => {
         reconnectAttempt = 0;
-        console.log("🟢 Connected to live notifications WS");
+        console.log('🟢 Connected to live notifications WS');
 
-        // Start heartbeat ping every 25 seconds
         if (pingInterval) clearInterval(pingInterval);
         pingInterval = setInterval(() => {
           if (socket && socket.readyState === WebSocket.OPEN) {
@@ -65,42 +75,46 @@ export default function NotificationBell() {
       socket.onmessage = (event) => {
         try {
           const incomingData = JSON.parse(event.data);
-          // Ignore heartbeat pong messages
           if (incomingData?.type === 'pong') return;
 
           dispatch(receiveNotification(incomingData));
 
-          // If this is a live verification approval or rejection event from admin:
           if (
             incomingData?.verification_status ||
             incomingData?.id?.startsWith('approved_') ||
             incomingData?.id?.startsWith('rejected_')
           ) {
-            console.log("⚡ Real-time verification status change received via WS! Updating user state...");
+            console.log('⚡ Real-time verification status change received via WS!');
             dispatch(fetchCurrentUser());
             window.dispatchEvent(new CustomEvent('verification_status_changed', { detail: incomingData }));
           }
+
+          if (incomingData?.popup) {
+            setTimeout(() => {
+              window.alert(`שים לב!\n\n${incomingData.message}`);
+            }, 100);
+          }
         } catch (err) {
-          console.error("Error parsing WS notification:", err);
+          console.error('Error parsing WS notification:', err);
         }
       };
 
       socket.onclose = () => {
-        console.log("🔴 Disconnected from live notifications WS");
+        console.log('🔴 Disconnected from live notifications WS');
         if (pingInterval) clearInterval(pingInterval);
 
         if (isComponentMounted) {
           const delay = Math.min(1000 * 2 ** reconnectAttempt, MAX_RECONNECT_DELAY_MS);
           reconnectAttempt += 1;
           reconnectTimeout = setTimeout(() => {
-            console.log("🔄 Attempting to reconnect to live notifications WS...");
+            console.log('🔄 Attempting to reconnect to live notifications WS...');
             connectWebSocket();
           }, delay);
         }
       };
 
       socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        console.error('WebSocket error:', error);
         socket?.close();
       };
     };
@@ -123,7 +137,7 @@ export default function NotificationBell() {
             try {
               socket.close(1000, 'Component unmounted');
             } catch {
-              // ignore close races
+              // ignore race
             }
           };
         }
@@ -131,7 +145,7 @@ export default function NotificationBell() {
     };
   }, [userId, dispatch]);
 
-  // Handle clicking outside to close the dropdown
+  // Handle clicking outside dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -143,22 +157,43 @@ export default function NotificationBell() {
   }, []);
 
   const handleMarkAllAsRead = () => {
-    dispatch(markAllAsRead());
+    dispatch(markAllNotificationsAsRead());
+  };
+
+  const handleSingleMarkAsRead = (e, noteId) => {
+    e.stopPropagation();
+    if (noteId) {
+      dispatch(markNotificationAsRead(noteId));
+    }
+  };
+
+  const handleDeleteNotification = (e, noteId) => {
+    e.stopPropagation();
+    if (noteId) {
+      dispatch(deleteNotification(noteId));
+    }
   };
 
   const navigate = useNavigate();
 
   const handleNotificationClick = (note) => {
-    // Mark as read and close dropdown
-    if (note?.id) dispatch(markAsRead(note.id));
+    const isUnread = !note.isRead && !note.is_read;
+    if (note?.id && isUnread) {
+      dispatch(markNotificationAsRead(note.id));
+    }
     setIsOpen(false);
 
-    // Prefer explicit path/url fields if provided by the backend
-    const targetPath = note?.path || note?.url || note?.targetPath || note?.target_path || note?.data?.path || note?.meta?.path;
-    const targetState = note?.state || note?.targetState || note?.data?.state || null;
+    const targetPath =
+      note?.path ||
+      note?.url ||
+      note?.targetPath ||
+      note?.target_path ||
+      note?.data?.path ||
+      note?.meta?.path ||
+      note?.payload?.path;
+    const targetState = note?.state || note?.targetState || note?.data?.state || note?.payload?.state || null;
 
     if (targetPath) {
-      // If it's an absolute URL (starts with http), open in new tab
       if (typeof targetPath === 'string' && /^https?:\/\//.test(targetPath)) {
         window.open(targetPath, '_blank');
         return;
@@ -167,8 +202,6 @@ export default function NotificationBell() {
       return;
     }
 
-    // Fallbacks based on type or content
-    // Message -> open chats; prefer passing match/chat identifiers if available
     if (note?.type === 'message' || /צ'אט|chat|message/i.test(note?.title + ' ' + note?.message)) {
       const matchId = note?.match_id || note?.data?.match_id || note?.meta?.match_id || note?.payload?.match_id;
       const chatId = note?.chat_id || note?.data?.chat_id || note?.meta?.chat_id || note?.payload?.chat_id;
@@ -180,32 +213,39 @@ export default function NotificationBell() {
       return;
     }
 
-    // Verification / admin related -> verifications page
     if (note?.type === 'verification' || /אימות|אימותים|verificat/i.test(note?.title + ' ' + note?.message)) {
       navigate('/admin/verifications');
       return;
     }
 
-    // Requests / bookings -> route to requests board or my-requests
     if (note?.type === 'request' || /בקשה|בקשות|request/i.test(note?.title + ' ' + note?.message)) {
-      // If admin/host path provided, go to board; otherwise to my requests
       const isAdmin = note?.meta?.for === 'admin' || note?.target_role === 'admin';
       navigate(isAdmin ? '/admin/bookings' : '/my-requests');
       return;
     }
 
-    // Generic fallback: open notifications page or home
     navigate('/');
   };
 
   const getIcon = (type) => {
     switch (type) {
-      case 'success': return <CheckCircle2 size={18} className="nb-icon-success" />;
-      case 'message': return <MessageSquare size={18} className="nb-icon-message" />;
-      case 'alert': return <AlertCircle size={18} className="nb-icon-alert" />;
-      default: return <Bell size={18} className="nb-icon-default" />;
+      case 'success':
+        return <CheckCircle2 size={18} className="nb-icon-success" />;
+      case 'message':
+        return <MessageSquare size={18} className="nb-icon-message" />;
+      case 'alert':
+        return <AlertCircle size={18} className="nb-icon-alert" />;
+      default:
+        return <Bell size={18} className="nb-icon-default" />;
     }
   };
+
+  const filteredNotifications = notifications.filter((note) => {
+    if (filterMode === 'unread') {
+      return !note.isRead && !note.is_read;
+    }
+    return true;
+  });
 
   return (
     <div className="notification-bell-container" ref={dropdownRef}>
@@ -217,9 +257,7 @@ export default function NotificationBell() {
         <div className="navbar-left">
           <div className="notification-bell">
             <Bell className="nav-icon" size={22} />
-            {unreadCount > 0 && (
-              <span className="bell-badge"></span>
-            )}
+            {unreadCount > 0 && <span className="bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
           </div>
         </div>
       </button>
@@ -227,45 +265,82 @@ export default function NotificationBell() {
       {isOpen && (
         <div className="nb-dropdown">
           <div className="nb-header">
-            {unreadCount > 0 ? (
-              <>
-                <h3>{unreadCount} התראות חדשות</h3>
-                <button className="nb-mark-read-btn" onClick={handleMarkAllAsRead}>
+            <div className="nb-header-title-row">
+              <h3>התראות {unreadCount > 0 && <span className="nb-unread-count-pill">{unreadCount} חדשות</span>}</h3>
+              {unreadCount > 0 && (
+                <button className="nb-mark-read-btn" onClick={handleMarkAllAsRead} title="סמן הכל כנקרא">
                   <Check size={14} /> סמן הכל כנקרא
                 </button>
-              </>
-            ) : (
-              <h3>התראות</h3>
-            )}
+              )}
+            </div>
+
+            <div className="nb-filter-bar">
+              <button
+                className={`nb-filter-btn ${filterMode === 'all' ? 'active' : ''}`}
+                onClick={() => setFilterMode('all')}
+              >
+                הכל ({notifications.length})
+              </button>
+              <button
+                className={`nb-filter-btn ${filterMode === 'unread' ? 'active' : ''}`}
+                onClick={() => setFilterMode('unread')}
+              >
+                לא נקראו ({unreadCount})
+              </button>
+            </div>
           </div>
 
           <div className="nb-list">
-            {notifications.length === 0 ? (
+            {filteredNotifications.length === 0 ? (
               <div className="nb-empty">
                 <Bell size={32} strokeWidth={1} />
-                <p>אין לך התראות חדשות</p>
+                <p>{filterMode === 'unread' ? 'אין לך התראות שלא נקראו' : 'אין לך התראות במערכת'}</p>
               </div>
             ) : (
-              notifications.map((note) => (
-                <div
-                  key={note.id}
-                  className={`nb-item ${!note.isRead ? 'unread' : ''}`}
-                  onClick={() => handleNotificationClick(note)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNotificationClick(note); }}
-                >
-                  <div className="nb-item-icon">
-                    {getIcon(note.type)}
+              filteredNotifications.map((note) => {
+                const isUnread = !note.isRead && !note.is_read;
+                return (
+                  <div
+                    key={note.id}
+                    className={`nb-item ${isUnread ? 'unread' : 'read'}`}
+                    onClick={() => handleNotificationClick(note)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') handleNotificationClick(note);
+                    }}
+                  >
+                    <div className="nb-item-icon">{getIcon(note.type)}</div>
+                    <div className="nb-item-content">
+                      <div className="nb-item-header">
+                        <h4 className={isUnread ? 'nb-unread-title' : 'nb-read-title'}>{note.title}</h4>
+                        {isUnread && <span className="nb-unread-dot" title="לא נקרא" />}
+                      </div>
+                      <p>{note.message}</p>
+                      <span className="nb-time">{note.time || note.created_at || 'עכשיו'}</span>
+                    </div>
+
+                    <div className="nb-actions">
+                      {isUnread && (
+                        <button
+                          className="nb-action-btn nb-read-action"
+                          onClick={(e) => handleSingleMarkAsRead(e, note.id)}
+                          title="סמן כנקרא"
+                        >
+                          <Check size={14} />
+                        </button>
+                      )}
+                      <button
+                        className="nb-action-btn nb-delete-action"
+                        onClick={(e) => handleDeleteNotification(e, note.id)}
+                        title="מחק התראה"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="nb-item-content">
-                    <h4>{note.title}</h4>
-                    <p>{note.message}</p>
-                    <span className="nb-time">{note.time}</span>
-                  </div>
-                  {!note.isRead && <div className="nb-unread-dot" />}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

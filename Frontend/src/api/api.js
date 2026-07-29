@@ -65,12 +65,12 @@ export const listingsApi = {
   getKashrutOptions: () => api.get('/listings/kashrut-options'),
 };
 
-// Posts (Guest open boards requests) API
 export const postsApi = {
   create: (postData) => api.post('/posts', postData),
   update: (id, postData) => api.put(`/posts/${id}`, postData),
   getOpenPosts: () => api.get('/posts'),
   claimPost: (id) => api.post(`/posts/${id}/claim`),
+  cancelPost: (id) => api.post(`/posts/${id}/cancel`),
 };
 
 // Bookings / Matches API
@@ -152,6 +152,14 @@ export const reviewsApi = {
   getMatchReviews: (matchId) => api.get(`/reviews/match/${matchId}`),
   getAlerts: () => api.get('/reviews/alerts'),
   updateStatus: (reviewId, status) => api.patch(`/reviews/${reviewId}/status`, { status }),
+};
+
+// Persistent Notifications API
+export const notificationsApi = {
+  getNotifications: () => api.get('/notifications'),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllAsRead: () => api.patch('/notifications/read-all'),
+  deleteNotification: (id) => api.delete(`/notifications/${id}`),
 };
 
 export default api;

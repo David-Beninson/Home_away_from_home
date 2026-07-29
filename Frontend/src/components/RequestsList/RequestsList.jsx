@@ -84,7 +84,7 @@ export default function RequestsList({ userRole: userRoleProp }) {
       return post.status === 'matched' || post.status === 'approved';
     }
     if (activeFilter === 'rejected') {
-      return post.status === 'rejected' || post.status === 'declined' || post.status === 'cancelled';
+      return post.status === 'rejected' || post.status === 'declined' || post.status === 'cancelled' || post.status === 'CANCELLED';
     }
 
     return true;

@@ -51,8 +51,10 @@ app.include_router(reviews_router, prefix="/api")
 def ensure_db_schema():
     try:
         from app.database.session import engine
+        from app.database.models import Base
         from sqlalchemy import text
         try:
+            Base.metadata.create_all(bind=engine)
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_path VARCHAR(512) DEFAULT '';"))
                 conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_data TEXT;"))
@@ -62,6 +64,7 @@ def ensure_db_schema():
             print(f"Startup DB migration warning: {e}")
     except Exception as e:
         print(f"Failed to ensure DB schema: {e}")
+
 
 @app.get("/")
 def read_root():

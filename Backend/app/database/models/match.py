@@ -11,6 +11,7 @@ class MatchStatus(str, enum.Enum):
     PENDING = "pending"
     MATCHED = "matched"
     REJECTED = "rejected"
+    CANCELLED = "cancelled"
 
 class Match(Base):
     """Links a GuestPost to a HostProfile; tracks the acceptance lifecycle."""

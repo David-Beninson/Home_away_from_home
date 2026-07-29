@@ -166,20 +166,8 @@
   transform: scale(1.05);
 }
 
-.bell-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
-  background-color: #f97316;
-  border-radius: 50%;
-  border: 2px solid var(--bg-card, #ffffff);
-}
+/* .bell-badge styles are defined in NotificationBell.css */
 
-.dark-theme .bell-badge {
-  border-color: #1e293b;
-}
 
 .profile-circle {
   width: 36px;

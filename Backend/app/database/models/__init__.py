@@ -18,6 +18,7 @@ from app.database.models.verification import (
 from app.database.models.support_message import SupportMessage
 from app.database.models.review import Review, ReviewStatus
 from app.database.models.admin_alert import AdminAlert
+from app.database.models.notification import Notification
 
 __all__ = [
     "Base",
@@ -43,5 +44,7 @@ __all__ = [
     "Review",
     "ReviewStatus",
     "AdminAlert",
+    "Notification",
 ]
+
 

@@ -293,6 +293,84 @@ async def claim_post(
         "post_status": post.status
     }
 
+@router.post("/{post_id}/cancel")
+async def cancel_post(
+    post_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.user_type != UserType.GUEST or not current_user.guest_profile:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only guests can cancel posts"
+        )
+        
+    post = db.query(GuestPost).filter(GuestPost.id == post_id).with_for_update().first()
+    
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Guest post not found"
+        )
+        
+    if post.guest_profile_id != current_user.guest_profile.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only cancel your own posts"
+        )
+        
+    if post.status == PostStatus.CANCELLED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Post is already cancelled"
+        )
+
+    was_matched = (post.status == PostStatus.MATCHED)
+    matched_match = None
+    
+    for m in post.matches:
+        if m.status == MatchStatus.MATCHED:
+            was_matched = True
+            matched_match = m
+            m.status = MatchStatus.CANCELLED
+        elif m.status == MatchStatus.PENDING:
+            m.status = MatchStatus.CANCELLED
+
+    post.status = PostStatus.CANCELLED
+    
+    db.commit()
+    db.refresh(post)
+    
+    await post_manager.broadcast_updates()
+    
+    host_to_notify_id = None
+    if matched_match and matched_match.host_profile and matched_match.host_profile.user_id:
+        host_to_notify_id = matched_match.host_profile.user_id
+    elif post.claimed_by_host and post.claimed_by_host.user_id:
+        host_to_notify_id = post.claimed_by_host.user_id
+
+    if host_to_notify_id:
+        host_user_id_str = str(host_to_notify_id)
+        guest_name = current_user.full_name or 'אורח'
+        if getattr(post, 'is_anonymous', False) or (post.guest_profile and getattr(post.guest_profile, 'is_anonymous', False)):
+            guest_name = 'אנונימי'
+            
+        notification_payload = {
+            "id": str(uuid.uuid4()),
+            "type": "alert",
+            "title": "ביטול אירוח",
+            "message": f"שים לב: האורח {guest_name} ביטל את בקשת האירוח. ניתן לעדכן את זמינותך בלוח הבקרה כדי לאפשר לאורחים אחרים לבקש להתארח.",
+            "time": "עכשיו",
+            "isRead": False,
+            "popup": True
+        }
+        try:
+            await notification_manager.send_personal_notification(notification_payload, host_user_id_str)
+        except Exception as e:
+            print(f"Failed to send cancellation notification: {e}")
+
+    return {"message": "Post cancelled successfully", "post_status": post.status}
+
 @router.websocket("/ws")
 async def websocket_posts_endpoint(
     websocket: WebSocket,
