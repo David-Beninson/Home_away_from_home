@@ -6,6 +6,7 @@ import os
 import requests
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from typing import Optional
 import httpx
 import jwt
@@ -212,10 +213,32 @@ def send_otp_email(to_email: str, otp_code: str):
     access_token = token_response.json().get("access_token")
 
     # 2. בניית הודעת האימייל
-    message = MIMEText(f"Your verification code is: {otp_code}")
+    message = MIMEMultipart("alternative")
     message["to"] = to_email
     message["from"] = sender_email
-    message["subject"] = "Your OTP Verification Code"
+    message["subject"] = "Welcome to Shabbat Hosting! 🕯️ Your Verification Code"
+
+    otp_spaced = " ".join(otp_code)
+
+    html_content = f"""
+    <html>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333;">
+        <div style="max-width: 600px; padding: 20px;">
+            <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 24px;">Welcome to Shabbat Hosting! 🕯️</h1>
+            <p style="font-size: 16px; margin-bottom: 16px;">Your verification code:</p>
+            <div style="background-color: #f4f4f5; border-radius: 8px; padding: 24px 32px; margin-bottom: 16px; display: inline-block;">
+                <span style="font-size: 36px; font-weight: 800; letter-spacing: 12px; color: #000; margin-right: -12px;">{otp_spaced}</span>
+            </div>
+            <p style="font-size: 14px; color: #666;">The code is valid for 15 minutes only.</p>
+        </div>
+      </body>
+    </html>
+    """
+
+    text_content = f"Welcome to Shabbat Hosting! 🕯️\\n\\nYour verification code:\\n{otp_code}\\n\\nThe code is valid for 15 minutes only."
+
+    message.attach(MIMEText(text_content, "plain"))
+    message.attach(MIMEText(html_content, "html"))
 
     raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
 
