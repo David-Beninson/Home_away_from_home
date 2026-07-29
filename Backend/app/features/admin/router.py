@@ -201,6 +201,19 @@ def approve_verification_request(request_id: str, admin_user: User = Depends(req
 
     db.commit()
 
+    # Permanently delete files from Supabase Storage
+    try:
+        from app.services.supabase_storage import delete_file
+        if req.selfie_image_path:
+            delete_file(req.selfie_image_path)
+        if req.document_image_path:
+            delete_file(req.document_image_path)
+        if req.secondary_document_image_path:
+            delete_file(req.secondary_document_image_path)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to delete verification files from Supabase for req {req.id}: {e}")
+
     # Notify User live via WebSocket
     try:
         import asyncio
@@ -244,6 +257,19 @@ def reject_verification_request(
         user.verification_status = UserVerificationStatus.REJECTED
 
     db.commit()
+
+    # Permanently delete files from Supabase Storage
+    try:
+        from app.services.supabase_storage import delete_file
+        if req.selfie_image_path:
+            delete_file(req.selfie_image_path)
+        if req.document_image_path:
+            delete_file(req.document_image_path)
+        if req.secondary_document_image_path:
+            delete_file(req.secondary_document_image_path)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to delete verification files from Supabase for req {req.id}: {e}")
 
     # Notify User live via WebSocket
     try:

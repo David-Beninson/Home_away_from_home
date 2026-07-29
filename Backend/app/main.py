@@ -55,9 +55,7 @@ def ensure_db_schema():
         from sqlalchemy import text
         try:
             Base.metadata.create_all(bind=engine)
-            with engine.begin() as conn:
-                conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_path VARCHAR(512) DEFAULT '';"))
-                conn.execute(text("ALTER TABLE verification_requests ADD COLUMN IF NOT EXISTS secondary_document_image_data TEXT;"))
+
         except TimeoutError:
             print("DB migration timeout - will try again on next request")
         except Exception as e:

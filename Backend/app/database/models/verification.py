@@ -33,9 +33,6 @@ class VerificationRequest(Base):
     selfie_image_path: Mapped[str] = mapped_column(String(512), default="")
     document_image_path: Mapped[str] = mapped_column(String(512), default="")
     secondary_document_image_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True, default="")
-    selfie_image_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    document_image_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    secondary_document_image_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     verification_type: Mapped[VerificationType] = mapped_column(
         Enum(VerificationType, native_enum=False, values_callable=lambda obj: [e.value for e in obj]),
         default=VerificationType.CIVILIAN,
