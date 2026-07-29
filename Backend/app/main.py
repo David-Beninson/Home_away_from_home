@@ -24,7 +24,7 @@ if "*" not in _cors_origins:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins if "*" in _cors_origins else ["*"],
+    allow_origins=["*"] if "*" in _cors_origins else _cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,7 +42,7 @@ app.include_router(verification_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
 
 
-
+# lifeSpan
 @app.on_event("startup")
 def ensure_db_schema():
     try:
