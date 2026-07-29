@@ -28,7 +28,16 @@ export const loginUser = createAsyncThunk(
       await dispatch(fetchCurrentUser()).unwrap();
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.detail || 'התחברות נכשלה. אנא ודא שהפרטים נכונים.');
+      if (error?.response?.status === 401) {
+        return rejectWithValue('שם משתמש או סיסמה שגויים');
+      }
+      const detail = error?.response?.data?.detail;
+      const message = typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail)
+        ? detail.map(e => e.msg || e.detail).join(', ')
+        : (error?.message || 'שם משתמש או סיסמה שגויים');
+      return rejectWithValue(message || 'שם משתמש או סיסמה שגויים');
     }
   }
 );
@@ -54,7 +63,8 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      authApi.logout(); // removes localStorage token/user and fires event
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       state.user = null;
       state.token = null;
       state.loading = false;

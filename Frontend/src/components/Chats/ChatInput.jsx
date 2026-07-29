@@ -1,38 +1,55 @@
 
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Send, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Sparkles, RefreshCw } from 'lucide-react';
 import api from '../../api/api';
 
-export function ChatInput({ messageText, setMessageText, sendMessage, activeChat }) {
+export function ChatInput({ messageText, setMessageText, sendMessage, activeChat, messages = [] }) {
   const currentUser = useSelector((state) => state.auth.user);
   const userRole = currentUser?.user_type || 'guest';
-  const [icebreakers, setIcebreakers] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchSuggestions = () => {
     if (!activeChat?.match_id) {
-      setIcebreakers([]);
+      setSuggestions([]);
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    api.get(`/agent/icebreakers?match_id=${activeChat.match_id}`)
+    api.post('/agent/suggest-reply', { match_id: activeChat.match_id })
       .then(res => {
-        setIcebreakers(res.data?.icebreakers || []);
+        setSuggestions(res.data?.suggestions || []);
       })
       .catch(() => {
-        setIcebreakers([]);
+        setSuggestions([]);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [activeChat?.match_id]);
+  };
+
+  useEffect(() => {
+    fetchSuggestions();
+  }, [activeChat?.match_id, messages.length]);
 
   const handleQuickClick = (text) => {
     setMessageText(text);
   };
+
+  const chatStatus = activeChat?.status || activeChat?.matchStatus || 'matched';
+  const isApproved = ['approved', 'matched', 'confirmed', 'accepted'].includes(String(chatStatus).toLowerCase());
+
+  if (!isApproved) {
+    return (
+      <div className="chat-input-wrapper">
+        <div className="chat-input-disabled-banner">
+          הצ'אט יתאפשר רק לאחר אישור האירוח
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="chat-input-wrapper">
@@ -41,7 +58,7 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
           <div className="chat-icebreakers-list scrollbar-none">
             <div className="chat-icebreaker-loading-pill">
               <Sparkles size={13} className="icebreaker-sparkle" />
-              <span>ה-AI מכין עבורך שאלות תיאום</span>
+              <span>הAI שלנו מנתח את שיחת הצ'אט</span>
               <span className="chat-typing-dots">
                 <span>.</span>
                 <span>.</span>
@@ -50,18 +67,32 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
             </div>
           </div>
         </div>
-      ) : icebreakers.length > 0 && (
+      ) : suggestions.length > 0 && (
         <div className="chat-icebreakers-wrapper">
+          <div className="chat-icebreakers-header">
+            <span className="chat-ai-badge">
+              <Sparkles size={12} />
+              <span>הצעות לשיחה </span>
+            </span>
+            <button 
+              type="button" 
+              className="chat-ai-refresh-btn" 
+              onClick={fetchSuggestions}
+              title="רענן הצעות AI"
+            >
+              <RefreshCw size={12} />
+            </button>
+          </div>
           <div className="chat-icebreakers-list scrollbar-none">
-            {icebreakers.map((question, idx) => (
+            {suggestions.map((suggestion, idx) => (
               <button
                 key={idx}
                 type="button"
                 className="chat-icebreaker-pill"
-                onClick={() => handleQuickClick(question)}
-                title="לחץ לבחירת השאלה"
+                onClick={() => handleQuickClick(suggestion)}
+                title="לחץ לבחירת הצעת התשובה"
               >
-                {question}
+                {suggestion}
               </button>
             ))}
           </div>
@@ -92,5 +123,6 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
     </div>
   );
 }
+
 
 

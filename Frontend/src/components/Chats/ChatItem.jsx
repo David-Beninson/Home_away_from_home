@@ -1,6 +1,10 @@
 
 
+import { getChatDisplayName } from '../../utils/chatUtils';
+
 export function ChatItem({ chat, isActive, onSelectChat }) {
+  const displayName = getChatDisplayName(chat);
+
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
     try {
@@ -17,11 +21,11 @@ export function ChatItem({ chat, isActive, onSelectChat }) {
     >
       <div className="chat-item-content">
         <div className="chat-item-avatar">
-          {chat.other_party_name?.charAt(0) || 'א'}
+          {displayName?.charAt(0) || 'א'}
         </div>
         <div className="chat-item-info">
           <div className="chat-item-top">
-            <h3 className="chat-item-name">{chat.other_party_name}</h3>
+            <h3 className="chat-item-name">{displayName}</h3>
             {chat.last_message_time && (
               <span className="chat-item-time">
                 {formatTime(chat.last_message_time)}

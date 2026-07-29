@@ -12,6 +12,8 @@ from app.agent.prompts import (
     GENERATOR_USER_TEMPLATE,
     GUARDRAILS_SYSTEM_PROMPT,
     GUARDRAILS_USER_TEMPLATE,
+    CHAT_REPLY_SUGGESTION_SYSTEM_PROMPT,
+    CHAT_REPLY_SUGGESTION_USER_TEMPLATE,
     get_default_icebreakers,
 )
 from langgraph.graph import StateGraph, START, END
@@ -351,5 +353,52 @@ class AgentService:
         except Exception as e:
             print(f"[AgentService.chat] Error: {e}")
             return "מצטער, נתקלתי בבעיה בעיבוד השאלה שלך. אנא נסה שוב או נסה לנסח מחדש."
+
+    @staticmethod
+    def suggest_chat_reply(
+        chat_history: str,
+        current_role: str = "Host",
+        current_user_name: str = "User",
+        other_role: str = "Guest",
+        other_party_name: str = "Guest"
+    ) -> List[str]:
+        """Analyze message history and generate context-aware reply suggestions."""
+        if not chat_history or not chat_history.strip():
+            return get_default_icebreakers(current_role.lower())
+
+        if not llm:
+            return get_default_icebreakers(current_role.lower())
+
+        system_prompt = CHAT_REPLY_SUGGESTION_SYSTEM_PROMPT.format(
+            user_role_upper=current_role.upper()
+        )
+        user_prompt = CHAT_REPLY_SUGGESTION_USER_TEMPLATE.format(
+            current_role=current_role,
+            current_user_name=current_user_name,
+            other_role=other_role,
+            other_party_name=other_party_name,
+            chat_history=chat_history.strip()
+        )
+        prompt = format_llama_prompt(system_prompt, user_prompt)
+        try:
+            response = llm.invoke(prompt)
+            raw_output = response.strip()
+            lines = raw_output.split("\n")
+            suggestions = []
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                clean = re.sub(r"^(\d+[\.\)]|\*|-)\s*", "", line).strip()
+                clean = clean.strip('"\'')
+                if len(clean) > 3:
+                    suggestions.append(clean)
+            if suggestions:
+                return suggestions[:3]
+            return get_default_icebreakers(current_role.lower())
+        except Exception as e:
+            print(f"[AgentService.suggest_chat_reply] Error: {e}")
+            return get_default_icebreakers(current_role.lower())
+
 
 

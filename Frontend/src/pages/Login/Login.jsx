@@ -37,7 +37,8 @@ export default function Login() {
       await dispatch(loginUser(formData)).unwrap();
       navigate('/');
     } catch (err) {
-      setError(err || 'כתובת אימייל או סיסמה שגויים.');
+      const errorMsg = typeof err === 'string' ? err : 'שם משתמש או סיסמה שגויים';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

@@ -24,10 +24,14 @@ class ChatPreviewResponse(BaseModel):
     other_party_avatar: Optional[str] = None
     other_party_phone: Optional[str] = None
     phone_number: Optional[str] = None
-    hosting_date: datetime
+    hosting_date: Optional[datetime] = None
+    shabbat_date: Optional[datetime] = None
+    requested_date: Optional[datetime] = None
     last_message: Optional[str] = None
     last_message_time: Optional[datetime] = None
     unread_count: int
+    is_anonymous: Optional[bool] = False
+    status: Optional[str] = None
 
 class ChatReadRequest(BaseModel):
     match_id: uuid.UUID

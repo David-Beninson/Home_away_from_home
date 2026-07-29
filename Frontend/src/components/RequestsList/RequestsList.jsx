@@ -5,6 +5,7 @@ import CreatePostModal from './CreatePostModal';
 import { postsApi, bookingsApi } from '../../api/api';
 import { checkPostUrgency } from '../../utils/date';
 import { fetchPosts } from '../../store/requestsSlice';
+import { isUpcomingOrActiveChat } from '../../utils/chatUtils';
 import './RequestsList.css';
 
 
@@ -20,6 +21,7 @@ export default function RequestsList({ userRole: userRoleProp }) {
   const [claimingPostId, setClaimingPostId] = useState(null);
   const [activeFilter, setActiveFilter] = useState(currentRole === 'host' ? 'urgent' : 'all');
   const [hasInitializedFilter, setHasInitializedFilter] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Sync WebSocket posts to local state and calculate initial tab
   useEffect(() => {
@@ -48,13 +50,20 @@ export default function RequestsList({ userRole: userRoleProp }) {
     }
   }, [posts, currentRole, hasInitializedFilter]);
 
-
-  // Filter posts so a guest only sees their own posts, while hosts see all fetched posts
-  const displayedPosts = localPosts.filter(post => {
+  // Base list of posts relevant to current user role
+  const rolePosts = localPosts.filter(post => {
     if (currentRole === 'guest' && currentGuestProfileId && post.guest_profile_id && post.guest_profile_id !== currentGuestProfileId) {
       return false;
     }
+    return true;
+  });
 
+  // Separate active/upcoming requests vs past requests for guest view
+  const activePosts = rolePosts.filter(post => currentRole === 'guest' ? isUpcomingOrActiveChat(post) : true);
+  const pastRequests = currentRole === 'guest' ? rolePosts.filter(post => !isUpcomingOrActiveChat(post)) : [];
+
+  // Filter posts based on active filter tab
+  const displayedPosts = activePosts.filter(post => {
     if (activeFilter === 'urgent') {
       const isUnapproved = post.status !== 'matched' && post.status !== 'approved';
       const { isUrgent } = checkPostUrgency(post.requested_date);
@@ -121,8 +130,8 @@ export default function RequestsList({ userRole: userRoleProp }) {
     }
   };
 
-  const pendingForGuestCount = localPosts.filter(p => p.status === 'pending' && !p.is_direct_request).length;
-  const waitingHostCount = localPosts.filter(p => p.status === 'pending' && Boolean(p.is_direct_request)).length;
+  const pendingForGuestCount = activePosts.filter(p => p.status === 'pending' && !p.is_direct_request).length;
+  const waitingHostCount = activePosts.filter(p => p.status === 'pending' && Boolean(p.is_direct_request)).length;
 
   const filterTabs = currentRole === 'guest' ? [
     { id: 'waiting_host', label: waitingHostCount > 0 ? `מחכה לאישור מארח (${waitingHostCount})` : 'מחכה לאישור מארח' },
@@ -176,7 +185,37 @@ export default function RequestsList({ userRole: userRoleProp }) {
             onUpdateSuccess={() => dispatch(fetchPosts())}
           />
         ))
+      )}
 
+      {currentRole === 'guest' && pastRequests.length > 0 && (
+        <div className="requests-history-section">
+          <button
+            type="button"
+            className="requests-history-toggle"
+            onClick={() => setIsHistoryOpen(prev => !prev)}
+          >
+            <span className="requests-history-title">
+              היסטוריית בקשות ({pastRequests.length})
+            </span>
+            <span className={`requests-history-chevron ${isHistoryOpen ? 'open' : ''}`}>
+              ▼
+            </span>
+          </button>
+          {isHistoryOpen && (
+            <div className="requests-history-list">
+              {pastRequests.map((post) => (
+                <RequestCard
+                  key={post.id}
+                  post={post}
+                  userRole={currentRole}
+                  onAction={handleAction}
+                  isClaiming={claimingPostId === post.id}
+                  onUpdateSuccess={() => dispatch(fetchPosts())}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

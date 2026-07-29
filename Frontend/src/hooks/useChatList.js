@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { fetchMyChats, markChatAsRead, clearChatUnread } from '../store/chatSlice';
+import { getChatDisplayName, isUpcomingOrActiveChat } from '../utils/chatUtils';
 
 export function useChatList() {
   const dispatch = useDispatch();
@@ -13,11 +14,18 @@ export function useChatList() {
   const targetMatchId = location.state?.matchId || targetChatData?.match_id;
 
   // Combined list including target provisional chat if not in backend list yet
-  const displayChats = [...(chats || [])];
+  const displayChats = [...(chats || [])].map(c => ({
+    ...c,
+    other_party_name: getChatDisplayName(c)
+  }));
+
   if (targetChatData && targetChatData.match_id) {
     const exists = displayChats.some(c => c.match_id === targetChatData.match_id);
     if (!exists) {
-      displayChats.unshift(targetChatData);
+      displayChats.unshift({
+        ...targetChatData,
+        other_party_name: getChatDisplayName(targetChatData)
+      });
     }
   }
 
@@ -36,8 +44,9 @@ export function useChatList() {
           return;
         }
       }
-      // Only auto-select first chat if nothing is selected yet
-      setActiveChat(prev => prev ?? displayChats[0]);
+      // Prefer active/upcoming chat if nothing is selected yet
+      const activeFirst = displayChats.find(isUpcomingOrActiveChat);
+      setActiveChat(prev => prev ?? (activeFirst || displayChats[0]));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chats, targetMatchId]);

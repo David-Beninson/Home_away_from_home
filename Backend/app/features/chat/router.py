@@ -1,7 +1,7 @@
 import uuid
 import jwt
 import asyncio
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session, joinedload
@@ -51,7 +51,11 @@ manager = ConnectionManager()
 
 
 def _verify_match_access(user: User, match: Match) -> bool:
-    """Verify if the user is authorized to participate in this match's chat."""
+    """Verify if the user is authorized to participate in this match's chat and if match is approved."""
+    from app.database.models.match import MatchStatus
+    if match.status not in (MatchStatus.MATCHED, "approved", "confirmed", "accepted"):
+        return False
+
     if user.user_type == UserType.ADMIN:
         return True
     
@@ -81,10 +85,38 @@ def get_message_history(match_id: uuid.UUID, current_user: User = Depends(get_cu
     return db.query(Message).filter(Message.match_id == match_id).order_by(Message.created_at.asc()).all()
 
 
+def _build_chat_preview_item(match: Match, other_name: str, other_phone: Optional[str], is_anon: bool, current_user_id: uuid.UUID, db: Session) -> Optional[ChatPreviewResponse]:
+    from sqlalchemy import desc
+    guest_post = match.guest_post
+    hosting_date = (guest_post.start_date or guest_post.requested_date) if guest_post else None
+    if hosting_date is None:
+        return None
+    req_date = guest_post.requested_date if (guest_post and guest_post.requested_date) else hosting_date
+    last_message = db.query(Message).filter(Message.match_id == match.id).order_by(desc(Message.created_at)).first()
+    unread_count = db.query(Message).filter(Message.match_id == match.id, Message.sender_id != current_user_id, Message.is_read == False).count()
+
+    status_str = match.status.value if hasattr(match.status, "value") else str(match.status)
+
+    return ChatPreviewResponse(
+        match_id=match.id,
+        other_party_name=other_name,
+        other_party_avatar=None,
+        other_party_phone=other_phone,
+        phone_number=other_phone,
+        hosting_date=hosting_date,
+        shabbat_date=hosting_date,
+        requested_date=req_date,
+        last_message=last_message.content if last_message else None,
+        last_message_time=last_message.created_at if last_message else None,
+        unread_count=unread_count,
+        is_anonymous=is_anon,
+        status=status_str
+    )
+
+
 @router.get("/my-chats", response_model=List[ChatPreviewResponse])
 def get_my_chats(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Retrieve all active chats for the current user."""
-    from sqlalchemy import desc
+    """Retrieve all active approved chats for the current user."""
     from app.database.models.match import MatchStatus
     from app.database.models.profile import HostProfile, GuestProfile
 
@@ -93,11 +125,9 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
     if current_user.user_type == UserType.HOST and current_user.host_profile:
         matches = db.query(Match).join(GuestPost).join(GuestProfile).filter(
             Match.host_profile_id == current_user.host_profile.id,
-            Match.status.in_([MatchStatus.MATCHED, MatchStatus.PENDING])
+            Match.status == MatchStatus.MATCHED
         ).all()
         for match in matches:
-            last_message = db.query(Message).filter(Message.match_id == match.id).order_by(desc(Message.created_at)).first()
-            unread_count = db.query(Message).filter(Message.match_id == match.id, Message.sender_id != current_user.id, Message.is_read == False).count()
             guest_post = match.guest_post
             guest_prof = guest_post.guest_profile if guest_post else None
             is_anon = False
@@ -111,46 +141,23 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
                 other_name = (guest_prof.user.full_name if (guest_prof and guest_prof.user) else None) or (guest_post.guest_name if guest_post else None) or "אורח"
                 other_phone = guest_prof.user.phone_number if (guest_prof and guest_prof.user) else None
 
-            hosting_date = (guest_post.start_date or guest_post.requested_date) if guest_post else None
-            if hosting_date is None:
-                continue  # skip matches without a valid date
-            chats.append(ChatPreviewResponse(
-                match_id=match.id,
-                other_party_name=other_name,
-                other_party_avatar=None,
-                other_party_phone=other_phone,
-                phone_number=other_phone,
-                hosting_date=hosting_date,
-                last_message=last_message.content if last_message else None,
-                last_message_time=last_message.created_at if last_message else None,
-                unread_count=unread_count
-            ))
+            preview = _build_chat_preview_item(match, other_name, other_phone, is_anon, current_user.id, db)
+            if preview:
+                chats.append(preview)
 
     elif current_user.user_type == UserType.GUEST and current_user.guest_profile:
         matches = db.query(Match).join(GuestPost).join(HostProfile, Match.host_profile_id == HostProfile.id).filter(
             GuestPost.guest_profile_id == current_user.guest_profile.id,
-            Match.status.in_([MatchStatus.MATCHED, MatchStatus.PENDING])
+            Match.status == MatchStatus.MATCHED
         ).all()
         for match in matches:
-            last_message = db.query(Message).filter(Message.match_id == match.id).order_by(desc(Message.created_at)).first()
-            unread_count = db.query(Message).filter(Message.match_id == match.id, Message.sender_id != current_user.id, Message.is_read == False).count()
             host_prof = match.host_profile
             other_name = (host_prof.user.full_name if (host_prof and host_prof.user) else None) or "מארח"
             other_phone = host_prof.user.phone_number if (host_prof and host_prof.user) else None
-            hosting_date = (match.guest_post.start_date or match.guest_post.requested_date) if match.guest_post else None
-            if hosting_date is None:
-                continue
-            chats.append(ChatPreviewResponse(
-                match_id=match.id,
-                other_party_name=other_name,
-                other_party_avatar=None,
-                other_party_phone=other_phone,
-                phone_number=other_phone,
-                hosting_date=hosting_date,
-                last_message=last_message.content if last_message else None,
-                last_message_time=last_message.created_at if last_message else None,
-                unread_count=unread_count
-            ))
+
+            preview = _build_chat_preview_item(match, other_name, other_phone, False, current_user.id, db)
+            if preview:
+                chats.append(preview)
 
     # sort by last message time
     chats.sort(key=lambda x: x.last_message_time.timestamp() if x.last_message_time else 0, reverse=True)
@@ -231,31 +238,39 @@ async def websocket_chat_endpoint(websocket: WebSocket, match_id: uuid.UUID, tok
             # offloaded to a thread so the event loop is never blocked.
             def _save_and_resolve():
                 with SessionLocal() as db:
+                    match_obj = db.query(Match).options(
+                        joinedload(Match.guest_post)
+                    ).filter(Match.id == match_id).first()
+
+                    from app.database.models.match import MatchStatus
+                    if not match_obj or match_obj.status not in (MatchStatus.MATCHED, "approved", "confirmed", "accepted"):
+                        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Chat only available for approved hostings")
+
                     new_msg = Message(match_id=match_id, sender_id=user_id, content=data)
                     db.add(new_msg)
                     db.commit()
                     db.refresh(new_msg)
                     msg_dict = MessageResponse.model_validate(new_msg).model_dump(mode="json")
 
-                    # Resolve recipient in the same session
-                    match_obj = db.query(Match).options(
-                        joinedload(Match.guest_post)
-                    ).filter(Match.id == match_id).first()
                     sender_obj = db.query(User).filter(User.id == user_id).first()
                     sender_name = sender_obj.full_name if sender_obj else "משתמש"
 
                     recipient_id = None
-                    if match_obj:
-                        if match_obj.host_profile and match_obj.host_profile.user_id == user_id:
-                            if match_obj.guest_post and match_obj.guest_post.guest_profile:
-                                recipient_id = match_obj.guest_post.guest_profile.user_id
-                        else:
-                            if match_obj.host_profile:
-                                recipient_id = match_obj.host_profile.user_id
+                    if match_obj.host_profile and match_obj.host_profile.user_id == user_id:
+                        if match_obj.guest_post and match_obj.guest_post.guest_profile:
+                            recipient_id = match_obj.guest_post.guest_profile.user_id
+                    else:
+                        if match_obj.host_profile:
+                            recipient_id = match_obj.host_profile.user_id
 
                     return msg_dict, sender_name, recipient_id
 
-            msg_payload, sender_name, recipient_id = await asyncio.to_thread(_save_and_resolve)
+            try:
+                msg_payload, sender_name, recipient_id = await asyncio.to_thread(_save_and_resolve)
+            except HTTPException as e:
+                await websocket.send_json({"error": e.detail, "status_code": 403})
+                await websocket.close(code=4003, reason=e.detail)
+                break
 
             # Broadcast to other participants (non-blocking, pure async)
             await manager.broadcast(match_id, msg_payload, sender_id=user_id)

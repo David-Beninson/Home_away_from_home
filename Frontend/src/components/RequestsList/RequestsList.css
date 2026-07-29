@@ -651,4 +651,49 @@ body.dark-theme .request-card.inline-edit-card {
   transform: none;
 }
 
+/* ── History Section in Requests List ── */
+.requests-history-section {
+  border-top: 2px solid var(--border, #e5e7eb);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  width: 100%;
+}
+
+.requests-history-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: var(--bg-secondary, #f8fafc);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-muted, #4b5563);
+  transition: all 0.2s ease;
+}
+
+.requests-history-toggle:hover {
+  background-color: var(--border, #e2e8f0);
+  color: var(--text-h, #111827);
+}
+
+.requests-history-chevron {
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.requests-history-chevron.open {
+  transform: rotate(180deg);
+}
+
+.requests-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
 

@@ -54,6 +54,7 @@ export default function Chats() {
               setMessageText={setMessageText}
               sendMessage={sendMessage}
               activeChat={activeChat}
+              messages={messages}
             />
           </>
         )}
@@ -61,3 +62,4 @@ export default function Chats() {
     </div>
   );
 }
+
