@@ -1,4 +1,4 @@
-# Home Away From Home (אירוח לשבת)
+# Home Away From Home (אירוח למשרתים בודדים)
 
 A platform connecting hosts and guests (soldiers, national service volunteers, students, and families) for Shabbat hosting. The application combines strict factual filters with semantic vector matches, a multi-stage AI agent for expectation alignment, and real-time in-app chat.
 
