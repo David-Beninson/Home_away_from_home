@@ -43,8 +43,9 @@ class ConnectionManager:
                 continue  # skip echo to sender
             try:
                 await ws.send_json(message_data)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[WebSocket Broadcast Error] Match {match_id}, user {uid}: {e}")
+                self.disconnect(match_id, ws)
 
 manager = ConnectionManager()
 
@@ -92,7 +93,7 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
     if current_user.user_type == UserType.HOST and current_user.host_profile:
         matches = db.query(Match).join(GuestPost).join(GuestProfile).filter(
             Match.host_profile_id == current_user.host_profile.id,
-            Match.status == MatchStatus.MATCHED
+            Match.status.in_([MatchStatus.MATCHED, MatchStatus.PENDING])
         ).all()
         for match in matches:
             last_message = db.query(Message).filter(Message.match_id == match.id).order_by(desc(Message.created_at)).first()
@@ -105,15 +106,20 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
             
             if is_anon:
                 other_name = 'אנונימי'
+                other_phone = None
             else:
                 other_name = (guest_prof.user.full_name if (guest_prof and guest_prof.user) else None) or (guest_post.guest_name if guest_post else None) or "אורח"
-            hosting_date = guest_post.start_date if guest_post else None
+                other_phone = guest_prof.user.phone_number if (guest_prof and guest_prof.user) else None
+
+            hosting_date = (guest_post.start_date or guest_post.requested_date) if guest_post else None
             if hosting_date is None:
                 continue  # skip matches without a valid date
             chats.append(ChatPreviewResponse(
                 match_id=match.id,
                 other_party_name=other_name,
                 other_party_avatar=None,
+                other_party_phone=other_phone,
+                phone_number=other_phone,
                 hosting_date=hosting_date,
                 last_message=last_message.content if last_message else None,
                 last_message_time=last_message.created_at if last_message else None,
@@ -123,20 +129,23 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
     elif current_user.user_type == UserType.GUEST and current_user.guest_profile:
         matches = db.query(Match).join(GuestPost).join(HostProfile, Match.host_profile_id == HostProfile.id).filter(
             GuestPost.guest_profile_id == current_user.guest_profile.id,
-            Match.status == MatchStatus.MATCHED
+            Match.status.in_([MatchStatus.MATCHED, MatchStatus.PENDING])
         ).all()
         for match in matches:
             last_message = db.query(Message).filter(Message.match_id == match.id).order_by(desc(Message.created_at)).first()
             unread_count = db.query(Message).filter(Message.match_id == match.id, Message.sender_id != current_user.id, Message.is_read == False).count()
             host_prof = match.host_profile
             other_name = (host_prof.user.full_name if (host_prof and host_prof.user) else None) or "מארח"
-            hosting_date = match.guest_post.start_date if match.guest_post else None
+            other_phone = host_prof.user.phone_number if (host_prof and host_prof.user) else None
+            hosting_date = (match.guest_post.start_date or match.guest_post.requested_date) if match.guest_post else None
             if hosting_date is None:
                 continue
             chats.append(ChatPreviewResponse(
                 match_id=match.id,
                 other_party_name=other_name,
                 other_party_avatar=None,
+                other_party_phone=other_phone,
+                phone_number=other_phone,
                 hosting_date=hosting_date,
                 last_message=last_message.content if last_message else None,
                 last_message_time=last_message.created_at if last_message else None,

@@ -137,8 +137,9 @@ class SupportConnectionManager:
         for ws, sid in list(self.active_connections.get(user_id_str, [])):
             try:
                 await ws.send_json(message_data)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[Support WebSocket Broadcast Error] user {user_id_str}: {e}")
+                self.disconnect(user_id_str, ws)
 
 support_ws_manager = SupportConnectionManager()
 

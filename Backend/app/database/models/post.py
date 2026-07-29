@@ -74,6 +74,18 @@ class GuestPost(Base):
         return "אנונימי"
 
     @property
+    def guest_phone(self) -> Optional[str]:
+        if getattr(self, 'is_anonymous', False) or (self.guest_profile and getattr(self.guest_profile, 'is_anonymous', False)):
+            return None
+        if self.guest_profile and self.guest_profile.user:
+            return self.guest_profile.user.phone_number
+        return None
+
+    @property
+    def phone_number(self) -> Optional[str]:
+        return self.guest_phone
+
+    @property
     def unit_name(self) -> Optional[str]:
         if getattr(self, 'is_anonymous', False):
             return None
@@ -85,6 +97,12 @@ class GuestPost(Base):
     def claimed_by_host_name(self) -> Optional[str]:
         if self.claimed_by_host and self.claimed_by_host.user:
             return self.claimed_by_host.user.full_name
+        return None
+
+    @property
+    def claimed_by_host_phone(self) -> Optional[str]:
+        if self.claimed_by_host and self.claimed_by_host.user:
+            return self.claimed_by_host.user.phone_number
         return None
 
     @property
@@ -108,5 +126,14 @@ class GuestPost(Base):
                 return m.id
         # Otherwise return the first pending match
         return pending_matches[0].id
+
+    @property
+    def match_id(self) -> Optional[uuid.UUID]:
+        from app.database.models.match import MatchStatus
+        matched = [m for m in self.matches if m.status == MatchStatus.MATCHED]
+        if matched:
+            return matched[0].id
+        return self.pending_match_id
+
 
 

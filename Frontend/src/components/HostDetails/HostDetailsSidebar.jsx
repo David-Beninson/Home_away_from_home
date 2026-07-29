@@ -1,4 +1,5 @@
 import { Zap, Star, Phone, MessageCircle, CheckCircle2 } from 'lucide-react';
+import { formatPhoneNumber } from '../../utils/phone';
 
 export default function HostDetailsSidebar({
   matchPercentage,
@@ -37,9 +38,9 @@ export default function HostDetailsSidebar({
 
       {/* Action Buttons Row (Phone & Message) */}
       <div className="sidebar-action-buttons">
-        <a href={`tel:${phone}`} className="sidebar-phone-btn">
+        <a href={`tel:${phone}`} className="sidebar-phone-btn" title={phone ? formatPhoneNumber(phone) : ''}>
           <Phone className="btn-icon" />
-          שיחה
+          {phone ? formatPhoneNumber(phone) : 'שיחה'}
         </a>
         <button
           type="button"

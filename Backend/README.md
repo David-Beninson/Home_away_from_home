@@ -33,10 +33,9 @@ The platform features a state-of-the-art, multi-stage AI Agent built using **Lan
 3. **Quality Guardrails (`guardrails`):** Reviews the generated questions to ensure they respect Shabbat traditions and holiness, are friendly, and do not cross personal boundaries.
 4. **Parsing & Formatting (`parse_validate`):** Sanitizes list formatting, cleans markdown characters, and parses the final text into a clean Python array of strings with a robust default fallback.
 
-### Tracing & Self-Healing Routing
+### Tracing & LLM Service
 * **LangSmith Tracing:** The graph integrates with **LangSmith** for automatic execution tracing, token consumption logging, latency auditing, and run monitoring.
-* **Auto-Routing Wrapper:** Hugging Face serverless APIs deprecated legacy endpoints. The system uses a custom `HFInferenceAPILLM` LangChain component that targets the OpenAI-compatible HF Router (`https://router.huggingface.co/v1`).
-* **Transparent Mapping:** If the legacy gated model (`meta-llama/Meta-Llama-3-8B-Instruct`) is configured in the environment, the system automatically redirects requests to the active serverless endpoint (`meta-llama/Llama-3.1-8B-Instruct:deepinfra`), keeping the client fully functional without requiring manual configuration updates.
+* **OpenAI-Compatible LLM Client:** Configured via environment variables (`LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_BASE`, `LLM_TIMEOUT`, `LLM_HEADERS`) using `OpenAICompatibleLLM`.
 
 ---
 
@@ -92,9 +91,12 @@ The platform features a state-of-the-art, multi-stage AI Agent built using **Lan
    ADMIN_EMAIL=admin@hostingforshabbat.com
    ADMIN_PASSWORD=adminpassword123
    
-   # HuggingFace Configuration (for semantic vector search)
-   HF_ACCESS_TOKEN=your_huggingface_access_token
-   HF_MODEL=meta-llama/Meta-Llama-3-8B-Instruct
+   # Primary LLM Configuration
+   LLM_PROVIDER=openai
+   LLM_MODEL=qwen2.5vl:7b-q8_0
+   LLM_API_BASE=https://yummy-words-run.loca.lt/v1
+   LLM_TIMEOUT=300000
+   LLM_HEADERS={"Bypass-Tunnel-Reminders": "true"}
    
    # LangSmith Monitoring / Tracing (Optional)
    LANGCHAIN_TRACING_V2=true

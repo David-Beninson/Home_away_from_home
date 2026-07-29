@@ -35,7 +35,7 @@ export default function BookingRequestModal({
     if (Array.isArray(dates) && dates.length > 0) {
       return dates;
     }
-    const single = host.date || host.shabbat_date || host.requested_date;
+    const single = host.shabbat_date || host.date || host.requested_date || host.available_date;
     return single ? [single] : [new Date().toISOString().split('T')[0]];
   })();
 
@@ -75,7 +75,11 @@ export default function BookingRequestModal({
     });
   };
 
-  const maxSpots = host.available_spots && host.available_spots > 0 ? host.available_spots : 4;
+  const maxSpots = (host.available_spots !== undefined && host.available_spots > 0)
+    ? host.available_spots
+    : (host.max_guests || host.total_spots || 4);
+
+  const hostName = host.full_name || host.host_name || host.user?.full_name || 'משפחה מארחת';
 
   return (
     <div className="brm-overlay" onClick={onClose}>
@@ -85,7 +89,7 @@ export default function BookingRequestModal({
         <div className="brm-header">
           <div>
             <h2 className="brm-title">שליחת בקשת אירוח</h2>
-            <p className="brm-subtitle">מארח: {host.full_name || 'משפחה מארחת'}</p>
+            <p className="brm-subtitle">מארח: {hostName}</p>
           </div>
           <button className="brm-close-btn" onClick={onClose} aria-label="סגור">
             <X size={20} />

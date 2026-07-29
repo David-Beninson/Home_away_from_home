@@ -38,6 +38,7 @@ const STATUS_META = {
 
 import { useNavigate } from 'react-router-dom';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
+import { formatPhoneNumber } from '../../utils/phone';
 
 export default function DayDetailPanel() {
   const dispatch = useDispatch();
@@ -84,7 +85,7 @@ export default function DayDetailPanel() {
     guestsCount: matchedRequests[0].guests_count,
     notes: matchedRequests[0].description,
     unitName: matchedRequests[0].unit_name,
-    match_id: matchedRequests[0].pending_match_id || matchedRequests[0].id,
+    match_id: matchedRequests[0].match_id || matchedRequests[0].pending_match_id || matchedRequests[0].id,
     post: matchedRequests[0]
   } : null);
 
@@ -325,7 +326,7 @@ export default function DayDetailPanel() {
               {activeBooking.guestPhone && (
                 <div className="ddp-booking-row">
                   <span className="ddp-booking-label">טלפון</span>
-                  <span className="ddp-booking-value" dir="ltr">{activeBooking.guestPhone}</span>
+                  <span className="ddp-booking-value" dir="ltr">{formatPhoneNumber(activeBooking.guestPhone)}</span>
                 </div>
               )}
               {activeBooking.notes && (

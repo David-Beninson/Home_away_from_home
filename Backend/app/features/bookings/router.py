@@ -374,11 +374,18 @@ def get_match_details(
     }
     icebreakers = AgentService.generate_icebreakers(host_info, guest_info)
     
+    recipient_user = guest_user if is_host else host_user
+    recipient_phone = recipient_user.phone_number if (recipient_user and not (is_host and is_guest_anonymous)) else None
+
     return {
         "match_id": str(match.id),
         "status": match.status,
         "host_name": host_name,
         "guest_name": guest_name,
+        "host_phone": host_user.phone_number if host_user else None,
+        "guest_phone": guest_user.phone_number if (guest_user and not is_guest_anonymous) else None,
+        "other_party_phone": recipient_phone,
+        "phone_number": recipient_phone,
         "whatsapp_link": whatsapp_link,
         "icebreakers": icebreakers
     }

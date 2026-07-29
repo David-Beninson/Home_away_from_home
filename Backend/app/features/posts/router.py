@@ -97,6 +97,7 @@ class PostConnectionManager:
                         await conn["websocket"].send_json(guest_posts_data)
                 except Exception as e:
                     print(f"[WebSocket Broadcast Error] Failed sending update to user {conn['user_id']}: {e}")
+                    self.disconnect(conn["websocket"])
 
     async def broadcast_event(self, event_data: dict):
         """Send a custom JSON event payload to all active clients."""
@@ -105,6 +106,7 @@ class PostConnectionManager:
                 await conn["websocket"].send_json(event_data)
             except Exception as e:
                 print(f"[WebSocket Event Broadcast Error] Failed sending to user {conn['user_id']}: {e}")
+                self.disconnect(conn["websocket"])
 
 post_manager = PostConnectionManager()
 

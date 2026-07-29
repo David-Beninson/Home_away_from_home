@@ -40,9 +40,13 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
         <div className="chat-icebreakers-wrapper">
           <div className="chat-icebreakers-list scrollbar-none">
             <div className="chat-icebreaker-loading-pill">
-              <Sparkles size={13} className="icebreaker-sparkle animate-pulse" />
-              <span>ה-AI מכין עבורך שאלות תיאום...</span>
-              <Loader2 size={12} className="spin-icon" />
+              <Sparkles size={13} className="icebreaker-sparkle" />
+              <span>ה-AI מכין עבורך שאלות תיאום</span>
+              <span className="chat-typing-dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </span>
             </div>
           </div>
         </div>

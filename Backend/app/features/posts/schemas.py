@@ -34,12 +34,16 @@ class GuestPostResponse(GuestPostBase):
     is_urgent: bool
     created_at: datetime
     guest_name: str
+    guest_phone: Optional[str] = None
+    phone_number: Optional[str] = None
     unit_name: Optional[str] = None
     is_anonymous: bool = True
     is_direct_request: bool = False
     claimed_by_host_id: Optional[uuid.UUID] = None
     claimed_by_host_name: Optional[str] = None
+    claimed_by_host_phone: Optional[str] = None
     claimed_by_host_city: Optional[str] = None
     pending_match_id: Optional[uuid.UUID] = None
+    match_id: Optional[uuid.UUID] = None
 
 

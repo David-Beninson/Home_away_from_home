@@ -56,3 +56,17 @@ class HostSearchResponse(BaseModel):
         if self.user and self.user.full_name:
             return self.user.full_name
         return "מארח ללא שם"
+
+    @computed_field
+    @property
+    def phone_number(self) -> Optional[str]:
+        if self.user and self.user.phone_number:
+            return self.user.phone_number
+        return None
+
+    @computed_field
+    @property
+    def phone(self) -> Optional[str]:
+        if self.user and self.user.phone_number:
+            return self.user.phone_number
+        return None

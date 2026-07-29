@@ -5,6 +5,7 @@ import { TrashIcon } from '../Common/Icons';
 import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
 import '../../pages/Admin/Admin.css';
+import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 
 export default function AdminBookings() {
   const [data, setData] = useState({ matches: [], posts: [] });
@@ -12,6 +13,7 @@ export default function AdminBookings() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [activeTab, setActiveTab] = useState('posts'); // posts, matches
+  const [selectedMatch, setSelectedMatch] = useState(null);
 
   useEffect(() => {
     async function loadBookings() {
@@ -117,7 +119,7 @@ export default function AdminBookings() {
       {/* Matches Tab */}
       {activeTab === 'matches' && (
         <Table
-          headers={['שם האורח', 'שם המארח', 'תאריך האירוח', 'נוצר בתאריך', 'סטטוס שידוך']}
+          headers={['שם האורח', 'שם המארח', 'תאריך האירוח', 'נוצר בתאריך', 'סטטוס שידוך', 'פרטים']}
           dataLength={data.matches.length}
           fallbackText="לא נמצאו שידוכים פעילים במערכת."
         >
@@ -132,9 +134,31 @@ export default function AdminBookings() {
                   {match.status === 'matched' ? 'מאושר' : match.status === 'pending' ? 'בהמתנה למארח' : 'נדחה/בוטל'}
                 </span>
               </td>
+              <td>
+                <button
+                  onClick={() => setSelectedMatch(match)}
+                  className="btn-action"
+                  style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: '#f3f4f6', cursor: 'pointer' }}
+                >
+                  👁️ צפה בפרטים
+                </button>
+              </td>
             </tr>
           ))}
         </Table>
+      )}
+
+      {selectedMatch && (
+        <HostingDetailsModal
+          isOpen={Boolean(selectedMatch)}
+          onClose={() => setSelectedMatch(null)}
+          data={{
+            ...selectedMatch,
+            other_party_name: `מארח: ${selectedMatch.host_name} | אורח: ${selectedMatch.guest_name}`,
+            hosting_date: selectedMatch.requested_date
+          }}
+          isHostOverride={true}
+        />
       )}
     </PageContainer>
   );

@@ -53,7 +53,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
     );
   }
 
-  const matchId = post.match_id || post.id;
+  const matchId = post.match_id || post.pending_match_id || post.id;
   const otherPartyName = userRole === 'guest' 
     ? (post.claimed_by_host_name || post.host_name || 'מארח')
     : displayName;
@@ -62,8 +62,14 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
   const modalData = {
     ...post,
     other_party_name: otherPartyName,
-    other_party_phone: post.guest_phone || post.phone || post.phone_number || post.host_phone,
-    hosting_date: hostingDate
+    other_party_phone: post.guest_phone || post.phone || post.phone_number || post.host_phone || post.claimed_by_host_phone,
+    hosting_date: hostingDate,
+    unit_name: post.unit_name,
+    service_type: post.service_type,
+    origin_city: post.origin_city || post.guest_city,
+    guests_count: post.guests_count,
+    kashrut_level: post.kashrut || post.kashrut_level,
+    description: post.description
   };
 
   return (
@@ -227,6 +233,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
           isOpen={showDetailsModal}
           data={modalData}
           userRole={userRole}
+          isHostOverride={userRole === 'host'}
           onClose={() => setShowDetailsModal(false)}
         />
       )}

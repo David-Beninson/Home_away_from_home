@@ -4,11 +4,14 @@ import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
 import '../../pages/Admin/Admin.css';
 
+import { HostDetailsModal } from '../HostDetails/HostDetailsModal';
+
 export default function AdminListings() {
   const [hosts, setHosts] = useState([]);
   const [kashrutOptions, setKashrutOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedHost, setSelectedHost] = useState(null);
   
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,7 +89,7 @@ export default function AdminListings() {
 
       {/* Hosts Table */}
       <Table 
-        headers={['שם המארח', 'עיר / שכונה', 'רמת כשרות', 'אוריינטציה דתית', 'חלונות זמינות', 'אירוח חירום']}
+        headers={['שם המארח', 'עיר / שכונה', 'רמת כשרות', 'אוריינטציה דתית', 'חלונות זמינות', 'אירוח חירום', 'פרטי מארח']}
         dataLength={filteredHosts.length}
         fallbackText="לא נמצאו מארחים או דירות העונים לסינון הנוכחי."
       >
@@ -110,9 +113,27 @@ export default function AdminListings() {
                 {host.emergency_available ? 'זמין לחירום' : 'אירוח רגיל'}
               </span>
             </td>
+            <td>
+              <button
+                onClick={() => setSelectedHost(host)}
+                className="btn-action"
+                style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: '#f3f4f6', cursor: 'pointer' }}
+              >
+                👁️ כרטיס מארח
+              </button>
+            </td>
           </tr>
         ))}
       </Table>
+
+      {selectedHost && (
+        <HostDetailsModal
+          isOpen={Boolean(selectedHost)}
+          onClose={() => setSelectedHost(null)}
+          host={selectedHost}
+        />
+      )}
     </PageContainer>
   );
 }
+

@@ -24,16 +24,29 @@ if settings.LANGCHAIN_TRACING_V2 and settings.LANGCHAIN_API_KEY:
     os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
     os.environ["LANGCHAIN_PROJECT"] = settings.LANGCHAIN_PROJECT
 
-class HFInferenceAPILLM(LLM):
-    """Custom LangChain LLM wrapper that calls the Hugging Face OpenAI-compatible completions API.
-    This handles model routing automatically while maintaining LangChain & LangSmith tracing compatibility.
-    """
-    model_id: str
-    token: str
+import json
+
+def _parse_headers(headers_raw: str | dict | None) -> dict:
+    if isinstance(headers_raw, dict):
+        return headers_raw
+    if not headers_raw:
+        return {}
+    try:
+        return json.loads(headers_raw)
+    except Exception:
+        return {}
+
+class OpenAICompatibleLLM(LLM):
+    """Custom LangChain LLM wrapper for OpenAI-compatible LLM endpoints."""
+    provider: str = "openai"
+    model_name: str = "qwen2.5vl:7b-q8_0"
+    api_base: str = "https://yummy-words-run.loca.lt/v1"
+    timeout_ms: int = 300000
+    extra_headers: dict = {}
 
     @property
     def _llm_type(self) -> str:
-        return "hf_inference_api"
+        return self.provider
 
     def _call(
         self,
@@ -42,8 +55,7 @@ class HFInferenceAPILLM(LLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-        """Call Hugging Face Inference API Router."""
-        # Parse Llama 3 format if present to send structured messages
+        """Call OpenAI-compatible chat completions API."""
         messages = []
         system_match = re.search(r"<\|start_header_id\|>system<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>", prompt, re.DOTALL)
         user_match = re.search(r"<\|start_header_id\|>user<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>", prompt, re.DOTALL)
@@ -52,24 +64,26 @@ class HFInferenceAPILLM(LLM):
             messages.append({"role": "system", "content": system_match.group(1).strip()})
             messages.append({"role": "user", "content": user_match.group(1).strip()})
         else:
-            messages.append({"role": "user", "content": prompt})
+            messages.append({"role": "user", "content": prompt.strip()})
 
-        # Resolve model name mapping for deprecated models
-        target_model = self.model_id
-        if target_model == "meta-llama/Meta-Llama-3-8B-Instruct":
-            target_model = "meta-llama/Llama-3.1-8B-Instruct:deepinfra"
+        headers = {"Content-Type": "application/json"}
+        if self.extra_headers:
+            headers.update(self.extra_headers)
+
+        endpoint = f"{self.api_base.rstrip('/')}/chat/completions"
+        timeout_sec = float(self.timeout_ms) / 1000.0 if self.timeout_ms else 300.0
 
         try:
             response = httpx.post(
-                "https://router.huggingface.co/v1/chat/completions",
-                headers={"Authorization": f"Bearer {self.token}"},
+                endpoint,
+                headers=headers,
                 json={
-                    "model": target_model,
+                    "model": self.model_name,
                     "messages": messages,
                     "temperature": 0.7,
                     "max_tokens": 512,
                 },
-                timeout=20.0,
+                timeout=timeout_sec,
             )
             if response.status_code == 200:
                 data = response.json()
@@ -79,15 +93,18 @@ class HFInferenceAPILLM(LLM):
             else:
                 raise ValueError(f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
-            print(f"[HFInferenceAPILLM] Error: {e}")
+            print(f"[OpenAICompatibleLLM] Error calling endpoint {endpoint}: {e}")
             raise e
 
-# Initialize custom LLM wrapper
+# Initialize custom LLM wrapper loaded from environment variables
 llm = None
-if settings.HF_ACCESS_TOKEN and settings.HF_MODEL:
-    llm = HFInferenceAPILLM(
-        model_id=settings.HF_MODEL,
-        token=settings.HF_ACCESS_TOKEN
+if settings.LLM_API_BASE and settings.LLM_MODEL:
+    llm = OpenAICompatibleLLM(
+        provider=settings.LLM_PROVIDER,
+        model_name=settings.LLM_MODEL,
+        api_base=settings.LLM_API_BASE,
+        timeout_ms=settings.LLM_TIMEOUT,
+        extra_headers=_parse_headers(settings.LLM_HEADERS),
     )
 
 def format_llama_prompt(system_prompt: str, user_prompt: str) -> str:
@@ -244,31 +261,12 @@ class AgentService:
     def generate_embedding(text: str) -> list[float]:
         """
         Generate a 1536-dim normalized embedding for `text`.
-        Priority: Hugging Face → deterministic hash fallback.
+        Uses deterministic hash-based generation.
         """
         if not text:
             return [0.0] * 1536
 
-        if settings.HF_ACCESS_TOKEN and settings.HF_MODEL:
-            try:
-                response = httpx.post(
-                    f"https://router.huggingface.co/hf-inference/models/{settings.HF_MODEL}",
-                    headers={"Authorization": f"Bearer {settings.HF_ACCESS_TOKEN}"},
-                    json={"inputs": text},
-                    timeout=10.0,
-                )
-                if response.status_code == 200:
-                    data = response.json()
-                    while isinstance(data, list) and data and isinstance(data[0], list):
-                        data = data[0]
-                    if isinstance(data, list) and all(isinstance(x, (int, float)) for x in data):
-                        return _normalize(_pad_or_truncate(list(data)))
-                else:
-                    print(f"[HF] status {response.status_code}: {response.text}")
-            except Exception as e:
-                print(f"[HF] error: {e}. Falling back to hash embedding.")
-
-        # 2. Deterministic hash-based fallback (no external calls)
+        # Deterministic hash-based embedding generation
         digest = hashlib.sha256(text.encode("utf-8")).digest()
         vector = [((digest[i % 32] + i * 17) % 256 / 127.5) - 1.0 for i in range(1536)]
         return _normalize(vector)
@@ -330,4 +328,28 @@ class AgentService:
         except Exception as e:
             print(f"[AgentService] error running LangGraph: {e}")
             return get_default_icebreakers(user_role)
+
+    @staticmethod
+    def chat(message: str) -> str:
+        """Process guest chat query through the LLM."""
+        if not message or not message.strip():
+            return "אנא הקלד שאלה ואשמח לעזור!"
+
+        if not llm:
+            return "סליחה, שירות ה-AI אינו זמין כעת. אנא נסה שוב מאוחר יותר."
+
+        system_prompt = (
+            "אתה העוזר החכם של פלטפורמת 'מארחים לשבת' (Hosting for Shabbat).\n"
+            "תפקידך לסייע לאורחים ומארחים בשאלות לגבי אירוח שבת, כשרות, לינה, תהליך הבקשות, וטיפים לתיאום ציפיות.\n"
+            "ענה בנעימות, בסבלנות, ובשפה עברית רהוטה וברורה. התשובות צריכות להיות תמציתיות וממוקדות."
+        )
+
+        prompt = format_llama_prompt(system_prompt, message.strip())
+        try:
+            response = llm.invoke(prompt)
+            return response.strip()
+        except Exception as e:
+            print(f"[AgentService.chat] Error: {e}")
+            return "מצטער, נתקלתי בבעיה בעיבוד השאלה שלך. אנא נסה שוב או נסה לנסח מחדש."
+
 

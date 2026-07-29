@@ -15,18 +15,61 @@ export function useChatMessages(activeChat) {
 
   // Connect WebSocket when activeChat changes
   useEffect(() => {
-    if (!activeChat || !user) return;
-    if (activeChatIdRef.current === activeChat.match_id) return; // already connected
+    if (!activeChat || !user) {
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+        pingIntervalRef.current = null;
+      }
+      if (wsRef.current) {
+        const staleSocket = wsRef.current;
+        wsRef.current = null;
+        staleSocket.onopen = null;
+        staleSocket.onmessage = null;
+        staleSocket.onclose = null;
+        staleSocket.onerror = null;
+        if (
+          staleSocket.readyState === WebSocket.OPEN ||
+          staleSocket.readyState === WebSocket.CONNECTING
+        ) {
+          try {
+            staleSocket.close(1000, 'Chat inactive');
+          } catch {
+            // ignore close races
+          }
+        }
+      }
+      activeChatIdRef.current = null;
+      return;
+    }
+
+    const matchId = activeChat.match_id;
+    if (wsRef.current && activeChatIdRef.current === matchId) {
+      return;
+    }
 
     // Close previous socket
     if (wsRef.current) {
-      wsRef.current.close();
+      const previousSocket = wsRef.current;
       wsRef.current = null;
+      previousSocket.onopen = null;
+      previousSocket.onmessage = null;
+      previousSocket.onclose = null;
+      previousSocket.onerror = null;
+      if (
+        previousSocket.readyState === WebSocket.OPEN ||
+        previousSocket.readyState === WebSocket.CONNECTING
+      ) {
+        try {
+          previousSocket.close(1000, 'Switching chat');
+        } catch {
+          // ignore close races
+        }
+      }
     }
 
     // Clear messages for the new chat immediately
     setMessages([]);
-    activeChatIdRef.current = activeChat.match_id;
+    activeChatIdRef.current = matchId;
 
     // Mark as read
     if (activeChat.unread_count > 0) {
@@ -83,12 +126,40 @@ export function useChatMessages(activeChat) {
       .catch(err => console.error('[Chat] Failed to fetch history:', err));
 
     return () => {
-      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
-      socket.close();
-      wsRef.current = null;
-      activeChatIdRef.current = null;
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+        pingIntervalRef.current = null;
+      }
+
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onclose = null;
+      socket.onerror = null;
+
+      if (wsRef.current === socket) {
+        wsRef.current = null;
+      }
+      if (activeChatIdRef.current === matchId) {
+        activeChatIdRef.current = null;
+      }
+
+      if (socket.readyState === WebSocket.OPEN) {
+        try {
+          socket.close(1000, 'Chat effect cleanup');
+        } catch {
+          // ignore close races
+        }
+      } else if (socket.readyState === WebSocket.CONNECTING) {
+        socket.onopen = () => {
+          try {
+            socket.close(1000, 'Chat effect cleanup');
+          } catch {
+            // ignore close races
+          }
+        };
+      }
     };
-  }, [activeChat?.match_id, dispatch, user]);
+  }, [activeChat?.match_id, dispatch, user?.id]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {

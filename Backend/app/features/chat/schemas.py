@@ -22,6 +22,8 @@ class ChatPreviewResponse(BaseModel):
     match_id: uuid.UUID
     other_party_name: str
     other_party_avatar: Optional[str] = None
+    other_party_phone: Optional[str] = None
+    phone_number: Optional[str] = None
     hosting_date: datetime
     last_message: Optional[str] = None
     last_message_time: Optional[datetime] = None

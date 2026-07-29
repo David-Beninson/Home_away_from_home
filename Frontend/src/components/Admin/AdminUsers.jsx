@@ -3,6 +3,7 @@ import { adminApi } from '../../api/api';
 import { LockIcon, UnlockIcon, CheckCircleIcon, TrashIcon, ChevronLeftIcon } from '../Common/Icons';
 import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
+import { formatPhoneNumber } from '../../utils/phone';
 import '../../pages/Admin/Admin.css';
 
 export default function AdminUsers() {
@@ -288,7 +289,7 @@ export default function AdminUsers() {
               </div>
               <div className="info-item">
                 <span className="info-label">מספר טלפון:</span>
-                <span className="info-value ltr-column">{selectedUser.phone_number}</span>
+                <span className="info-value ltr-column">{formatPhoneNumber(selectedUser.phone_number)}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">תאריך הרשמה:</span>

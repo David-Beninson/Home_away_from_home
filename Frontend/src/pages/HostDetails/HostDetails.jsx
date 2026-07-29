@@ -87,27 +87,31 @@ export default function HostDetails() {
             user_id: found.user_id,
             full_name: found.host_name || found.user?.full_name || '',
             city: found.city || '',
+            neighborhood: found.neighborhood || '',
             kashrut_level: found.kashrut_level || '',
-            has_lodging: found.availability_windows
-              ? found.availability_windows.includes('לינה')
-              : false,
+            religious_orientation: found.religious_orientation || '',
+            has_lodging: found.has_lodging !== undefined
+              ? found.has_lodging
+              : Boolean(found.availability_windows?.includes('לינה')),
             available_spots: found.available_spots !== undefined ? found.available_spots : 0,
-            total_spots: found.total_spots || 0,
+            total_spots: found.total_spots || found.max_guests || 0,
             match_percentage:
               found.match_score !== undefined && found.match_score !== null
                 ? found.match_score
-                : null,
-            biography: found.free_text_notes || '',
-            tags: [
+                : (found.match_percentage ?? 85),
+            biography: found.free_text_notes || found.biography || '',
+            tags: found.vibe_tags?.length ? found.vibe_tags : [
               found.neighborhood,
               found.religious_orientation,
               found.kashrut_level ? (found.kashrut_level === 'MEHADRIN' ? 'מהדרין' : 'כשר') : ''
             ].filter(Boolean),
             image_url: found.image_url || null,
             rating: found.rating || null,
-            reviews_count: found.reviews_count || 0,
+            reviews_count: found.reviews_count || found.review_count || 0,
             phone_number: found.phone_number || found.user?.phone_number || '',
-            shabbat_date: found.shabbat_date || found.requested_date || found.available_date || null
+            shabbat_date: found.shabbat_date || found.requested_date || found.available_date || null,
+            upcoming_open_dates: found.upcoming_open_dates || [],
+            upcoming_open_days: found.upcoming_open_days || []
           };
           setHost(mapped);
 
@@ -179,14 +183,7 @@ export default function HostDetails() {
     }
   };
 
-  const handleSendMessage = () => {
-    const rawPhone = host?.phone_number || host?.phone || '0541234567';
-    const cleanPhone = rawPhone.replace(/\D/g, '');
-    const text = encodeURIComponent(`שלום ${hostName}, שאלתי לגבי אירוח לשבת דרך אפליקציית שבת מארח.`);
-    window.open(`https://wa.me/972${cleanPhone.replace(/^0/, '')}?text=${text}`, '_blank');
-  };
-
-  // Dynamic values with fallbacks matching exact mockup requirements
+  const phone = host?.phone_number || host?.phone || host?.user?.phone_number || '';
   const hostName = host?.full_name || host?.host_name || '';
   const city = host?.city || '';
   const imageUrl = !imageError && host?.image_url ? host.image_url : DEFAULT_IMAGE;
@@ -212,7 +209,13 @@ export default function HostDetails() {
 
   const rating = host?.rating !== undefined && host?.rating !== null ? Number(host.rating).toFixed(1) : '0.0';
   const reviewsCount = host?.reviews_count ?? host?.review_count ?? 0;
-  const phone = host?.phone_number || host?.phone || '';
+
+  const handleSendMessage = () => {
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '');
+    const text = encodeURIComponent(`שלום ${hostName}, שאלתי לגבי אירוח לשבת דרך אפליקציית שבת מארח.`);
+    window.open(`https://wa.me/972${cleanPhone.replace(/^0/, '')}?text=${text}`, '_blank');
+  };
 
   const upcomingFridayDate = formatHostOpenDates(host) || getUpcomingFridayDateStr(host?.shabbat_date);
 

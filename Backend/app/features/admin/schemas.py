@@ -62,6 +62,18 @@ class PostModerationResponse(ORMResponse):
     created_at: datetime
     is_urgent: bool
 
+    @computed_field
+    @property
+    def guest_phone(self) -> Optional[str]:
+        if getattr(self, "guest_profile", None) and getattr(self.guest_profile, "user", None):
+            return self.guest_profile.user.phone_number
+        return None
+
+    @computed_field
+    @property
+    def phone_number(self) -> Optional[str]:
+        return self.guest_phone
+
 class MatchModerationResponse(ORMResponse):
     id: Union[uuid.UUID, str]
     guest_post_id: Union[uuid.UUID, str]
@@ -81,6 +93,20 @@ class MatchModerationResponse(ORMResponse):
         if getattr(self, "host_profile", None) and getattr(self.host_profile, "user", None):
             return self.host_profile.user.full_name
         return "Unknown Host"
+
+    @computed_field
+    @property
+    def host_phone(self) -> Optional[str]:
+        if getattr(self, "host_profile", None) and getattr(self.host_profile, "user", None):
+            return self.host_profile.user.phone_number
+        return None
+
+    @computed_field
+    @property
+    def guest_phone(self) -> Optional[str]:
+        if getattr(self, "guest_post", None) and getattr(self.guest_post, "guest_profile", None) and getattr(self.guest_post.guest_profile, "user", None):
+            return self.guest_post.guest_profile.user.phone_number
+        return None
 
     @computed_field
     @property

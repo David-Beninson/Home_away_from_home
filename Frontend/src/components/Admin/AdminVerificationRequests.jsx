@@ -1,65 +1,9 @@
 import { useState, useEffect } from 'react';
 import { adminApi } from '../../api/api';
 import PageContainer from '../Common/PageContainer/PageContainer';
-import { ChatMessageList } from '../Chats/ChatMessageList';
-import { ChatInput } from '../Chats/ChatInput';
-import { useSupportChat } from '../../hooks/useSupportChat';
-import { X, User } from 'lucide-react';
-import '../../pages/Chats/Chats.css';
-import '../../pages/Admin/Admin.css';
+import { AdminSupportChatModal } from './AdminSupportChatModal';
+import { AdminRejectModal } from './AdminRejectModal';
 
-// Sub-component wrapper using existing chat components and live WebSocket hook
-function AdminSupportChatWindow({ targetUserId, targetUserName, onClose }) {
-  const {
-    messages,
-    messageText,
-    setMessageText,
-    sendMessage,
-    messagesEndRef,
-    currentUserId,
-  } = useSupportChat(targetUserId);
-
-  const activeChat = {
-    other_party_name: targetUserName
-  };
-
-  return (
-    <div className="admin-chat-modal-overlay">
-      <div className="admin-chat-modal-box">
-        <div className="chat-header">
-          <div className="chat-header-user">
-            <div className="chat-header-avatar">
-              <User size={20} />
-            </div>
-            <div>
-              <h3 className="chat-header-title">צ'אט תמיכה: {targetUserName}</h3>
-              <div className="chat-header-date">תקשורת בזמן אמת מול המשתמש במסך החסימה</div>
-            </div>
-          </div>
-          <div className="chat-header-actions">
-            <button onClick={onClose} className="admin-chat-close-btn">
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-
-        <ChatMessageList
-          messages={messages}
-          activeChat={activeChat}
-          currentUserId={currentUserId}
-          messagesEndRef={messagesEndRef}
-        />
-
-        <ChatInput
-          messageText={messageText}
-          setMessageText={setMessageText}
-          sendMessage={sendMessage}
-          activeChat={activeChat}
-        />
-      </div>
-    </div>
-  );
-}
 
 export default function AdminVerificationRequests() {
   const [requests, setRequests] = useState([]);
@@ -278,7 +222,7 @@ export default function AdminVerificationRequests() {
 
       {/* Support Chat Modal for Admin */}
       {activeChatUser && (
-        <AdminSupportChatWindow
+        <AdminSupportChatModal
           targetUserId={activeChatUser.userId}
           targetUserName={activeChatUser.userName}
           onClose={() => setActiveChatUser(null)}
@@ -287,44 +231,16 @@ export default function AdminVerificationRequests() {
 
       {/* Reject Modal */}
       {rejectingId && (
-        <div className="admin-reject-modal-overlay">
-          <div className="admin-reject-modal-box">
-            <h3 className="admin-reject-title">דחיית בקשת אימות</h3>
-            <p className="admin-reject-desc">
-              אנא ציין את סיבת הדחייה שתופיע למשתמש במסך הנעילה (למשל: "התמונה מטושטשת", "תעודה לא קריאה"):
-            </p>
-
-            <form onSubmit={handleRejectSubmit}>
-              <textarea
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="רשום את נימוק הדחייה..."
-                required
-                className="admin-reject-textarea"
-              />
-
-              <div className="admin-reject-actions">
-                <button
-                  type="button"
-                  onClick={() => { setRejectingId(null); setRejectionReason(''); }}
-                  disabled={Boolean(processingId)}
-                  className="admin-reject-cancel-btn"
-                >
-                  ביטול
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={Boolean(processingId)}
-                  className="admin-reject-confirm-btn"
-                >
-                  {processingId === rejectingId ? 'שולח דחייה... ⏳' : 'שלח דחייה'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AdminRejectModal
+          rejectingId={rejectingId}
+          rejectionReason={rejectionReason}
+          setRejectionReason={setRejectionReason}
+          onSubmit={handleRejectSubmit}
+          onClose={() => { setRejectingId(null); setRejectionReason(''); }}
+          isProcessing={Boolean(processingId)}
+        />
       )}
+
     </PageContainer>
   );
 }

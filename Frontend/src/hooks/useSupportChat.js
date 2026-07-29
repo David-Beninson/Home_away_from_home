@@ -51,6 +51,8 @@ export function useSupportChat(targetUserId = null) {
     let pingInterval = null;
     let reconnectTimeout = null;
     let isMounted = true;
+    let reconnectAttempt = 0;
+    const MAX_RECONNECT_DELAY_MS = 30000;
 
     const connectWebSocket = () => {
       let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -72,6 +74,7 @@ export function useSupportChat(targetUserId = null) {
       socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {
+        reconnectAttempt = 0;
         console.log('🟢 Connected to Support Chat WebSocket');
         if (pingInterval) clearInterval(pingInterval);
         pingInterval = setInterval(() => {
@@ -98,9 +101,11 @@ export function useSupportChat(targetUserId = null) {
       socket.onclose = () => {
         if (pingInterval) clearInterval(pingInterval);
         if (isMounted) {
+          const delay = Math.min(1000 * 2 ** reconnectAttempt, MAX_RECONNECT_DELAY_MS);
+          reconnectAttempt += 1;
           reconnectTimeout = setTimeout(() => {
             connectWebSocket();
-          }, 3000);
+          }, delay);
         }
       };
 

@@ -135,4 +135,9 @@ export const verificationApi = {
     api.post('/verification/support-messages', { content, target_user_id: targetUserId }),
 };
 
+// AI Agent API
+export const agentApi = {
+  chat: (message) => api.post('/agent/chat', { message }),
+};
+
 export default api;

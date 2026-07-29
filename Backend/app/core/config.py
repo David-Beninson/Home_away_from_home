@@ -19,8 +19,12 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str
     ADMIN_PASSWORD: str
 
-    HF_ACCESS_TOKEN: str | None = None
-    HF_MODEL: str | None = None
+    # Primary LLM Configuration
+    LLM_PROVIDER: str = "openai"
+    LLM_MODEL: str = "qwen2.5vl:7b-q8_0"
+    LLM_API_BASE: str = "https://yummy-words-run.loca.lt/v1"
+    LLM_TIMEOUT: int = 300000
+    LLM_HEADERS: str = '{"Bypass-Tunnel-Reminders": "true"}'
 
     # LangSmith / LangChain Tracing
     LANGCHAIN_TRACING_V2: bool = False

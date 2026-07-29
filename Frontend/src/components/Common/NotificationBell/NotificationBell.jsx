@@ -27,6 +27,8 @@ export default function NotificationBell() {
     let pingInterval = null;
     let reconnectTimeout = null;
     let isComponentMounted = true;
+    let reconnectAttempt = 0;
+    const MAX_RECONNECT_DELAY_MS = 30000;
 
     const connectWebSocket = () => {
       // Dynamic WS/WSS URL resolution
@@ -48,6 +50,7 @@ export default function NotificationBell() {
       socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {
+        reconnectAttempt = 0;
         console.log("🟢 Connected to live notifications WS");
 
         // Start heartbeat ping every 25 seconds
@@ -86,12 +89,13 @@ export default function NotificationBell() {
         console.log("🔴 Disconnected from live notifications WS");
         if (pingInterval) clearInterval(pingInterval);
 
-        // Auto reconnect after 4 seconds if component is still mounted
         if (isComponentMounted) {
+          const delay = Math.min(1000 * 2 ** reconnectAttempt, MAX_RECONNECT_DELAY_MS);
+          reconnectAttempt += 1;
           reconnectTimeout = setTimeout(() => {
             console.log("🔄 Attempting to reconnect to live notifications WS...");
             connectWebSocket();
-          }, 4000);
+          }, delay);
         }
       };
 
@@ -108,7 +112,21 @@ export default function NotificationBell() {
       if (pingInterval) clearInterval(pingInterval);
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (socket) {
-        socket.close();
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close(1000, 'Component unmounted');
+        } else if (socket.readyState === WebSocket.CONNECTING) {
+          socket.onopen = () => {
+            try {
+              socket.close(1000, 'Component unmounted');
+            } catch {
+              // ignore close races
+            }
+          };
+        }
       }
     };
   }, [userId, dispatch]);
