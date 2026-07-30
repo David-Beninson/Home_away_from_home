@@ -103,8 +103,6 @@ body.dark-theme {
 body {
   margin: 0;
   padding: 0;
-  direction: rtl; /* Global RTL for Hebrew support */
-  text-align: right; 
   background-color: var(--bg); /* Body dynamically reads the active theme variable */
   color: var(--text);
   transition: background-color 0.3s ease, color 0.3s ease;

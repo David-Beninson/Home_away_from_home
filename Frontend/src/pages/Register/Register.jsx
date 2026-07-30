@@ -4,9 +4,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setAuthCredentials, fetchCurrentUser } from '../../store/authSlice';
 import { Shield, Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './Register.css';
 
 export default function Register() {
+  const { t } = useTranslation(['common/auth']);
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -63,11 +65,11 @@ export default function Register() {
         headers: { 'Content-Type': 'application/json' }
       });
       if (response.status === 200 || response.status === 201) {
-        setSuccess('קוד אימות חדש נשלח למייל שלך.');
+        setSuccess(t('common/auth:success.otp_resent'));
         setResendCountdown(30);
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'בקשת קוד אימות חדש נכשלה.');
+      setError(err.response?.data?.detail || t('common/auth:errors.resend_failed'));
     } finally {
       setLoading(false);
     }
@@ -82,7 +84,7 @@ export default function Register() {
 
     if (step === 1) {
       if (formData.password && formData.confirm_password && formData.password !== formData.confirm_password) {
-        setError('הסיסמאות אינן תואמות.');
+        setError(t('common/auth:errors.passwords_mismatch'));
         return;
       }
 
@@ -99,18 +101,18 @@ export default function Register() {
         });
 
         if (response.status === 200 || response.status === 201) {
-          setSuccess('קוד אימות נשלח למייל שלך.');
+          setSuccess(t('common/auth:success.otp_sent'));
           setResendCountdown(30);
           setStep(2);
         }
       } catch (err) {
-        setError(err.response?.data?.detail || 'הרשמה נכשלה. אנא ודא שהפרטים אינם רשומים כבר במערכת.');
+        setError(err.response?.data?.detail || t('common/auth:errors.register_failed'));
       } finally {
         setLoading(false);
       }
     } else {
       if (!otpCode || otpCode.length !== 6) {
-        setError('נא להזין קוד אימות תקין בעל 6 ספרות.');
+        setError(t('common/auth:errors.invalid_otp_format'));
         return;
       }
 
@@ -131,7 +133,7 @@ export default function Register() {
         });
 
         if (response.data && response.data.access_token) {
-          setSuccess('ההרשמה והאימות בוצעו בהצלחה!');
+          setSuccess(t('common/auth:success.register_success'));
           localStorage.setItem('token', response.data.access_token);
           
           // 1. ADD 'async' right here vvv
@@ -145,7 +147,7 @@ export default function Register() {
           }, 1500);
         }
       } catch (err) {
-        setError(err.response?.data?.detail || 'קוד האימות אינו תקין או פג תוקף.');
+        setError(err.response?.data?.detail || t('common/auth:errors.invalid_otp'));
       } finally {
         setLoading(false);
       }
@@ -164,14 +166,14 @@ export default function Register() {
                 className={`toggle-btn-option ${!isLoginActive ? 'active' : ''}`}
                 onClick={() => navigate('/register')}
               >
-                הרשמה
+                {t('common/auth:tabs.register')}
               </button>
               <button
                 type="button"
                 className={`toggle-btn-option ${isLoginActive ? 'active' : ''}`}
                 onClick={() => navigate('/login')}
               >
-                התחברות
+                {t('common/auth:tabs.login')}
               </button>
             </div>
           </div>
@@ -179,8 +181,8 @@ export default function Register() {
 
         <div className="login-header">
           <Shield size={48} color="#2563eb" className="login-shield-icon" fill="#2563eb" />
-          <h2>יצירת חשבון חדש</h2>
-          <p>הצטרף למערכת אירוח החיילים בסופי שבוע</p>
+          <h2>{t('common/auth:register_header.title')}</h2>
+          <p>{t('common/auth:register_header.subtitle')}</p>
         </div>
 
         {error && <div className="login-error">{error}</div>}
@@ -190,49 +192,49 @@ export default function Register() {
           {step === 1 ? (
             <>
               <div className="form-group">
-                <label htmlFor="full_name">שם מלא</label>
+                <label htmlFor="full_name">{t('common/auth:fields.full_name_label')}</label>
                 <input
                   type="text"
                   id="full_name"
                   required
-                  placeholder="ישראל ישראלי"
+                  placeholder={t('common/auth:fields.full_name_placeholder')}
                   value={formData.full_name}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">כתובת אימייל</label>
+                <label htmlFor="email">{t('common/auth:fields.email_label')}</label>
                 <input
                   type="email"
                   id="email"
                   required
-                  placeholder="name@example.com"
+                  placeholder={t('common/auth:fields.email_placeholder')}
                   value={formData.email}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone_number">מספר טלפון</label>
+                <label htmlFor="phone_number">{t('common/auth:fields.phone_label')}</label>
                 <input
                   type="tel"
                   id="phone_number"
                   required
-                  placeholder="0501234567"
+                  placeholder={t('common/auth:fields.phone_placeholder')}
                   value={formData.phone_number}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="password">סיסמה</label>
+                <label htmlFor="password">{t('common/auth:fields.password_label')}</label>
                 <div className="password-input-wrapper">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="password"
                     required
-                    placeholder="••••••••"
+                    placeholder={t('common/auth:fields.password_placeholder')}
                     value={formData.password}
                     onChange={handleChange}
                   />
@@ -240,7 +242,7 @@ export default function Register() {
                     type="button"
                     className="password-toggle-btn"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+                    aria-label={showPassword ? t('common/auth:aria.hide_password') : t('common/auth:aria.show_password')}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -248,13 +250,13 @@ export default function Register() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="confirm_password">אימות סיסמה</label>
+                <label htmlFor="confirm_password">{t('common/auth:fields.confirm_password_label')}</label>
                 <div className="password-input-wrapper">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     id="confirm_password"
                     required
-                    placeholder="הקלד שוב את הסיסמה"
+                    placeholder={t('common/auth:fields.confirm_password_placeholder')}
                     value={formData.confirm_password}
                     onChange={handleChange}
                   />
@@ -262,7 +264,7 @@ export default function Register() {
                     type="button"
                     className="password-toggle-btn"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+                    aria-label={showConfirmPassword ? t('common/auth:aria.hide_password') : t('common/auth:aria.show_password')}
                   >
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -271,7 +273,7 @@ export default function Register() {
 
               {/* Custom Pill Switcher for User Type */}
               <div className="form-group">
-                <label>אני רוצה להרשם כ...</label>
+                <label>{t('common/auth:fields.role_label')}</label>
                 <div className="auth-toggle-pill">
                   <div className="toggle-options-container">
                     <button
@@ -279,37 +281,37 @@ export default function Register() {
                       className={`toggle-btn-option ${formData.user_type === 'guest' ? 'active' : ''}`}
                       onClick={() => setFormData((prev) => ({ ...prev, user_type: 'guest' }))}
                     >
-                      צבא / שירות לאומי
+                      {t('common/auth:fields.role_guest')}
                     </button>
                     <button
                       type="button"
                       className={`toggle-btn-option ${formData.user_type === 'host' ? 'active' : ''}`}
                       onClick={() => setFormData((prev) => ({ ...prev, user_type: 'host' }))}
                     >
-                      משפחה מארחת
+                      {t('common/auth:fields.role_host')}
                     </button>
                   </div>
                 </div>
               </div>
 
               <button type="submit" className="login-btn" disabled={loading}>
-                {loading ? 'שולח קוד אימות...' : 'המשך לקבלת קוד'}
+                {loading ? t('common/auth:buttons.register_step1_loading') : t('common/auth:buttons.register_step1')}
               </button>
             </>
           ) : (
             <>
               <div className="otp-banner">
-                קוד אימות נשלח לכתובת המייל: {formData.email}
+                {t('common/auth:otp.banner', { email: formData.email })}
               </div>
 
               <div className="form-group">
-                <label htmlFor="otpCode">קוד אימות (6 ספרות)</label>
+                <label htmlFor="otpCode">{t('common/auth:fields.otp_label')}</label>
                 <input
                   type="text"
                   id="otpCode"
                   maxLength="6"
                   required
-                  placeholder="123456"
+                  placeholder={t('common/auth:fields.otp_placeholder')}
                   className="otp-input"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
@@ -318,24 +320,24 @@ export default function Register() {
 
               {resendCountdown > 0 ? (
                 <div className="otp-timer-note">
-                  ניתן לשלוח קוד חדש בעוד {resendCountdown} שניות
+                  {t('common/auth:otp.timer_note', { seconds: resendCountdown })}
                 </div>
               ) : (
                 <div className="otp-resend-container">
-                  <span>לא קיבלת את הקוד? </span>
+                  <span>{t('common/auth:otp.did_not_receive')}</span>
                   <button
                     type="button"
                     onClick={handleResendOTP}
                     disabled={loading}
                     className="otp-resend-btn"
                   >
-                    שלח שוב
+                    {t('common/auth:buttons.resend_otp')}
                   </button>
                 </div>
               )}
 
               <button type="submit" className="login-btn" disabled={loading}>
-                {loading ? 'מבצע הרשמה...' : 'השלם הרשמה'}
+                {loading ? t('common/auth:buttons.register_step2_loading') : t('common/auth:buttons.register_step2')}
               </button>
 
               <button
@@ -344,15 +346,15 @@ export default function Register() {
                 onClick={() => setStep(1)}
                 disabled={loading}
               >
-                חזור לפרטים אישיים
+                {t('common/auth:buttons.back_to_details')}
               </button>
             </>
           )}
         </form>
 
         <div className="login-footer">
-          <span>כבר יש לך חשבון?</span>
-          <span className="signup-link" onClick={() => navigate('/login')}>התחבר כאן</span>
+          <span>{t('common/auth:footer.has_account')}</span>
+          <span className="signup-link" onClick={() => navigate('/login')}>{t('common/auth:footer.login_here')}</span>
         </div>
       </div>
     </div>

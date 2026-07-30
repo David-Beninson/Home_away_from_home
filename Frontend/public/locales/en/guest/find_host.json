@@ -1,0 +1,54 @@
+{
+  "loading": "Loading hosts...",
+  "badges": {
+    "sleepover": "Sleepover",
+    "mehadrin": "Mehadrin"
+  },
+  "spots": "Spots",
+  "empty": {
+    "title": "No hosts found in the database",
+    "subtitle": "Try changing your search terms, removing filters, or choosing a different city.",
+    "reset_btn": "Reset Filters & Search"
+  },
+  "header": {
+    "default_city": "Jerusalem",
+    "title": "Find a Host for Shabbat",
+    "friday_format": "{{today}} | Candle lighting Parashat {{parasha}}: {{candle_lighting}} ({{city}})",
+    "saturday_format": "{{today}} | Next Shabbat: Parashat {{parasha}} ({{friday_date}}): {{candle_lighting}} ({{city}})",
+    "weekday_format": "Candle lighting Parashat {{parasha}} ({{friday_date}}): {{candle_lighting}} ({{city}})"
+  },
+  "grid": {
+    "retry": "Retry",
+    "loading": "Loading hosts from the database..."
+  },
+  "filters": {
+    "search_placeholder": "Search by family name or city...",
+    "labels": {
+      "region": "Region:",
+      "kashrut": "Kashrut:",
+      "lodging": "With Sleepover Only",
+      "vibe": "🎭 Table Vibe:",
+      "sort": "Sort by:"
+    },
+    "regions": {
+      "all": "All",
+      "center": "Center",
+      "jerusalem": "Jerusalem",
+      "north": "North",
+      "south": "South"
+    },
+    "kashrut": {
+      "all": "All",
+      "kosher": "Kosher",
+      "mehadrin": "Mehadrin"
+    },
+    "sort": {
+      "ai": "⚡ AI Match",
+      "rating": "Rating",
+      "spots": "Spots",
+      "name": "Name"
+    },
+    "results_count": "Hosts",
+    "vibes": ["#Lively_Table", "#Quiet_and_Calm", "#Singing_and_Dancing", "#Ethnic_Food", "#Young_Adults_and_Friends"]
+  }
+}

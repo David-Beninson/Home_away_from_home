@@ -1,0 +1,27 @@
+{
+  "links": {
+    "home": "Home",
+    "find_host": "Find a Host",
+    "my_requests": "My Requests",
+    "requests_board": "Requests Board",
+    "chats": "Chats",
+    "admin_dashboard": "Dashboard",
+    "user_management": "User Management",
+    "verifications": "Verifications & Filtering",
+    "listings": "Listings & Hosts",
+    "bookings": "Requests",
+    "alerts": "Alerts",
+    "profile": "Profile"
+  },
+  "aria": {
+    "nav_menu": "Navigation menu",
+    "go_home": "Go to homepage"
+  },
+  "hello_user": "Hello {{name}}!",
+  "dropdown": {
+    "my_profile": "My Profile",
+    "light_mode": "Light Mode",
+    "dark_mode": "Dark Mode",
+    "logout": "Logout"
+  }
+}

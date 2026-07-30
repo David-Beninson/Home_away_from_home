@@ -1,0 +1,21 @@
+{
+  "title": "System Alerts (Anomalous Reviews)",
+  "empty_state": "No anomalous alerts at the moment.",
+  "review_id": "Review ID",
+  "reviewer": "From (Reviewer)",
+  "reviewee": "About (Reviewee)",
+  "rating": "Rating",
+  "stars": "Stars",
+  "auto_flagged": "Auto Flagged",
+  "user_flagged": "User Flagged",
+  "content": "Review Content:",
+  "hide_review": "Hide this review",
+  "yes": "Yes",
+  "no": "No",
+  "messages": {
+    "error_loading": "Error loading alerts.",
+    "confirm_hide": "Are you sure you want to hide this review?",
+    "success_hide": "Review successfully hidden.",
+    "error_hide": "Error hiding review."
+  }
+}

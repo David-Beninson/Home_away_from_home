@@ -1,0 +1,102 @@
+{
+  "title": "User Management",
+  "subtitle": "Click a row in the table to view detailed user profile and perform administrative actions",
+  "stats": {
+    "total": "Total",
+    "hosts": "Hosts",
+    "guests": "Guests",
+    "suspended": "Suspended",
+    "banned": "Banned"
+  },
+  "filters": {
+    "search_placeholder": "Search by name, email or phone...",
+    "all_roles": "All Roles",
+    "role_host": "Hosts (Host)",
+    "role_guest": "Guests (Guest)",
+    "role_admin": "Admins (Admin)",
+    "all_statuses": "All Statuses",
+    "status_active": "Active",
+    "status_suspended": "Suspended",
+    "status_banned": "Permanently Banned"
+  },
+  "table": {
+    "headers": ["User", "Role", "Status", ""],
+    "fallback": "No users found matching the current filters.",
+    "view_details": "View Details"
+  },
+  "roles": {
+    "host": "Host",
+    "guest": "Guest",
+    "admin": "Admin"
+  },
+  "statuses": {
+    "active": "Active",
+    "suspended": "Suspended",
+    "banned": "Banned"
+  },
+  "messages": {
+    "error_loading": "Error loading users data from server.",
+    "error_status_update": "Failed to update user status.",
+    "error_delete": "Failed to delete user.",
+    "error_verify": "Verification action failed.",
+    "success_active": "User status updated to Active",
+    "success_suspended": "User status updated to Suspended",
+    "success_banned": "User status updated to Permanently Banned",
+    "success_delete": "User successfully deleted from system.",
+    "success_verify": "Soldier/National Service verification updated successfully.",
+    "success_unverify": "Verification successfully removed."
+  },
+  "details": {
+    "back_to_list": "Back to Users List",
+    "actions": {
+      "support_chat": "Support Chat",
+      "activate": "Activate User",
+      "suspend": "Suspend User",
+      "ban": "Ban Permanently",
+      "delete": "Delete User"
+    },
+    "info": {
+      "email": "Email Address:",
+      "phone": "Phone Number:",
+      "registered": "Registration Date:",
+      "not_specified": "Not specified",
+      "soldier_verification": "Soldier/National Service Verification:",
+      "verified_soldier": "Verified Soldier",
+      "not_verified": "Not verified",
+      "change_verification": "Change Verification",
+      "biography": "About / Biography:"
+    },
+    "posts": {
+      "title": "User Posts and Requests",
+      "headers": ["Requested Date", "Request Description", "Guest Count", "Status"],
+      "status_open": "Open",
+      "status_matched": "Matched",
+      "fallback": "No active posts or requests for this user."
+    },
+    "matches": {
+      "title": "User Matches and Hosting",
+      "headers": ["Guest", "Host", "Date", "Status"],
+      "fallback": "No hosting or matches recorded for this user."
+    }
+  },
+  "modals": {
+    "suspend": {
+      "title": "Confirm User Suspension",
+      "body": "Are you sure you want to suspend the user \"{{name}}\"? This action will temporarily lock the user out of the app, but they will still have access to the support chat with management.",
+      "confirm": "Confirm Suspension"
+    },
+    "ban": {
+      "title": "Confirm User Ban",
+      "body": "Are you sure you want to permanently ban the user \"{{name}}\"? This action will completely lock the user out of all parts of the app and its services.",
+      "confirm": "Confirm Ban"
+    },
+    "delete": {
+      "title": "Confirm User Deletion",
+      "body": "Are you sure you want to completely delete the user \"{{name}}\" from the system? This action cannot be undone.",
+      "confirm": "Confirm Deletion"
+    },
+    "reason_label": "Reason for action:",
+    "reason_placeholder": "Please detail the reason for this action (will be shown to the user)...",
+    "cancel": "Cancel"
+  }
+}

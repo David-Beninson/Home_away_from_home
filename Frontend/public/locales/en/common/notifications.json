@@ -1,0 +1,42 @@
+{
+  "alert_message": "Attention!\n\n{{message}}",
+  "aria_label": "Notifications",
+  "title": "Notifications",
+  "new_count": "{{count}} New",
+  "mark_all_read": "Mark all as read",
+  "filter_all": "All ({{count}})",
+  "filter_unread": "Unread ({{count}})",
+  "empty_unread": "You have no unread notifications",
+  "empty_all": "You have no notifications",
+  "tooltip_unread": "Unread",
+  "now": "Just now",
+  "tooltip_mark_read": "Mark as read",
+  "tooltip_delete": "Delete notification",
+  "backend": {
+    "titles": {
+      "new_verification": "New Verification Request Pending 🪪",
+      "new_admin_message": "New Message from System Admin 💬",
+      "admin_reply": "New Reply from System Admin 💬",
+      "support_message_from": "Support Message from {{name}} 💬",
+      "account_approved": "Your Account was Approved! 🎉",
+      "account_rejected": "Verification Request Denied ⚠️",
+      "new_guest_request": "New Shabbat Hosting Request",
+      "new_host_offer": "New Hosting Offer!",
+      "booking_cancelled": "Hosting Cancelled",
+      "new_message_from": "New Message from {{name}}",
+      "booking_approved": "Hosting Approved",
+      "booking_rejected": "Hosting Request Denied"
+    },
+    "messages": {
+      "pending_admin_approval": "Waiting for admin approval",
+      "sent_support_message": "{{name}} sent you a support message",
+      "account_approved_desc": "Your profile was properly approved and all access restrictions have been removed.",
+      "account_rejected_desc": "Please contact support for more information",
+      "uploaded_docs": "User {{name}} uploaded documents for verification (AI Score: {{score}}%).",
+      "rejection_reason": "Rejection reason: {{reason}}",
+      "received_hosting_request": "You received a hosting request from {{name}}",
+      "host_offered": "Host {{name}} offered to host you for Shabbat! Click to approve or reject.",
+      "guest_cancelled": "Note: Guest {{name}} cancelled their hosting request. You can update your availability in the dashboard to allow other guests to apply."
+    }
+  }
+}

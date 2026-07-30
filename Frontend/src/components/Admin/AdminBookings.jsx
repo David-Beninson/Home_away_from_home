@@ -6,8 +6,10 @@ import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
 import '../../pages/Admin/Admin.css';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
+import { useTranslation } from 'react-i18next';
 
 export default function AdminBookings() {
+  const { t } = useTranslation(['admin/bookings']);
   const [data, setData] = useState({ matches: [], posts: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ export default function AdminBookings() {
         setData(response.data);
       } catch (err) {
         console.error('Failed to load bookings:', err);
-        setError('שגיאה בטעינת נתוני בקשות.');
+        setError(t('admin/bookings:messages.error_loading'));
       } finally {
         setLoading(false);
       }
@@ -32,7 +34,7 @@ export default function AdminBookings() {
   }, []);
 
   const handleDeletePost = async (postId) => {
-    if (!window.confirm('האם אתה בטוח שברצונך למחוק בקשת אירוח זו לצמיתות?')) {
+    if (!window.confirm(t('admin/bookings:posts.confirm_delete'))) {
       return;
     }
 
@@ -46,18 +48,18 @@ export default function AdminBookings() {
         ...prevData,
         posts: prevData.posts.filter(p => p.id !== postId)
       }));
-      setSuccessMsg('בקשת האירוח נמחקה בהצלחה.');
+      setSuccessMsg(t('admin/bookings:posts.success_delete'));
     } catch (err) {
       console.error('Failed to delete post:', err);
-      setError('מחיקת בקשת אירוח נכשלה. אנא נסה שוב.');
+      setError(t('admin/bookings:posts.error_delete'));
     }
   };
 
   return (
     <PageContainer loading={loading} error={error} successMsg={successMsg}>
       <div className="admin-page-header">
-        <h2 className="admin-page-title">בקשות ושידוכים במערכת</h2>
-        <p className="admin-page-subtitle">ניהול ומודרציה של בקשות אירוח פתוחות והיסטוריית שידוכי שבת</p>
+        <h2 className="admin-page-title">{t('admin/bookings:title')}</h2>
+        <p className="admin-page-subtitle">{t('admin/bookings:subtitle')}</p>
       </div>
 
       {/* Tabs */}
@@ -66,22 +68,22 @@ export default function AdminBookings() {
           onClick={() => setActiveTab('posts')}
           className={`admin-sub-tab ${activeTab === 'posts' ? 'active' : ''}`}
         >
-          בקשות אירוח פתוחות ({data.posts.filter(p => p.status === 'open').length})
+          {t('admin/bookings:tabs.posts', { count: data.posts.filter(p => p.status === 'open').length })}
         </button>
         <button
           onClick={() => setActiveTab('matches')}
           className={`admin-sub-tab ${activeTab === 'matches' ? 'active' : ''}`}
         >
-          שידוכים במערכת ({data.matches.length})
+          {t('admin/bookings:tabs.matches', { count: data.matches.length })}
         </button>
       </div>
 
       {/* Posts Tab */}
       {activeTab === 'posts' && (
         <Table
-          headers={['שם האורח', 'תאריך מבוקש', 'מספר אורחים', 'תיאור / הערות', 'סטטוס בקשה', 'נוצר בתאריך', 'פעולות']}
+          headers={t('admin/bookings:posts.headers', { returnObjects: true })}
           dataLength={data.posts.length}
-          fallbackText="אין בקשות אירוח כרגע."
+          fallbackText={t('admin/bookings:posts.fallback')}
         >
           {data.posts.map(post => (
             <tr key={post.id}>
@@ -89,7 +91,7 @@ export default function AdminBookings() {
               <td>
                 <div className="flex-align-center">
                   <span>{formatDate(post.requested_date)}</span>
-                  {post.is_urgent && <span className="badge urgent">דחוף!</span>}
+                  {post.is_urgent && <span className="badge urgent">{t('admin/bookings:posts.urgent')}</span>}
                 </div>
               </td>
               <td>{post.guests_count}</td>
@@ -98,7 +100,7 @@ export default function AdminBookings() {
               </td>
               <td>
                 <span className={`badge ${post.status === 'open' ? 'active' : 'host'}`}>
-                  {post.status === 'open' ? 'פתוח למענה' : 'שודך'}
+                  {post.status === 'open' ? t('admin/bookings:posts.status_open') : t('admin/bookings:posts.status_matched')}
                 </span>
               </td>
               <td>{formatDate(post.created_at)}</td>
@@ -106,7 +108,7 @@ export default function AdminBookings() {
                 <button
                   onClick={() => handleDeletePost(post.id)}
                   className="btn-action delete-post"
-                  title="מחק בקשה לצמיתות"
+                  title={t('admin/bookings:posts.delete_tooltip')}
                 >
                   <TrashIcon />
                 </button>
@@ -119,9 +121,9 @@ export default function AdminBookings() {
       {/* Matches Tab */}
       {activeTab === 'matches' && (
         <Table
-          headers={['שם האורח', 'שם המארח', 'תאריך האירוח', 'נוצר בתאריך', 'סטטוס שידוך', 'פרטים']}
+          headers={t('admin/bookings:matches.headers', { returnObjects: true })}
           dataLength={data.matches.length}
-          fallbackText="לא נמצאו שידוכים פעילים במערכת."
+          fallbackText={t('admin/bookings:matches.fallback')}
         >
           {data.matches.map(match => (
             <tr key={match.id}>
@@ -131,7 +133,7 @@ export default function AdminBookings() {
               <td>{formatDate(match.created_at)}</td>
               <td>
                 <span className={`badge ${match.status === 'matched' ? 'active' : match.status === 'pending' ? 'pending' : 'suspended'}`}>
-                  {match.status === 'matched' ? 'מאושר' : match.status === 'pending' ? 'בהמתנה למארח' : 'נדחה/בוטל'}
+                  {match.status === 'matched' ? t('admin/bookings:matches.status_matched') : match.status === 'pending' ? t('admin/bookings:matches.status_pending') : t('admin/bookings:matches.status_suspended')}
                 </span>
               </td>
               <td>
@@ -140,7 +142,7 @@ export default function AdminBookings() {
                   className="btn-action"
                   style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: '#f3f4f6', cursor: 'pointer' }}
                 >
-                  👁️ צפה בפרטים
+                  {t('admin/bookings:matches.view_details')}
                 </button>
               </td>
             </tr>
@@ -154,7 +156,7 @@ export default function AdminBookings() {
           onClose={() => setSelectedMatch(null)}
           data={{
             ...selectedMatch,
-            other_party_name: `מארח: ${selectedMatch.host_name} | אורח: ${selectedMatch.guest_name}`,
+            other_party_name: t('admin/bookings:matches.override_details', { host: selectedMatch.host_name, guest: selectedMatch.guest_name }),
             hosting_date: selectedMatch.requested_date
           }}
           isHostOverride={true}

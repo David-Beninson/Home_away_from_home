@@ -1,0 +1,25 @@
+{
+  "title": "Reviews for {{name}}",
+  "pending": {
+    "title": "Share Your Experience",
+    "intro": "The Shabbat hosting has ended. We'd love it if you shared your experience to help our community!",
+    "error_rating": "Please provide a rating between 1 and 5 stars.",
+    "error_content": "Please provide content for the review.",
+    "error_submit": "Error submitting review, please try again.",
+    "rating_label": "Rating (Required)",
+    "content_label": "How was the hosting?",
+    "content_placeholder": "Tell us...",
+    "severe_label": "Report a safety issue or severe behavior (immediate alert to admins)",
+    "btn_later": "Remind Me Later",
+    "btn_submit": "Submit Review",
+    "btn_submitting": "Submitting..."
+  },
+  "list": {
+    "title_default": "Reviews",
+    "loading": "Loading reviews...",
+    "error_load": "Error loading reviews.",
+    "no_reviews": "No reviews to show yet.",
+    "anon_name": "Anonymous",
+    "btn_close": "Close"
+  }
+}

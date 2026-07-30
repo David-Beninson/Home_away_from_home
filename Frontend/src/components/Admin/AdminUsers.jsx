@@ -5,9 +5,11 @@ import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
 import { formatPhoneNumber } from '../../utils/phone';
 import { AdminSupportChatModal } from './AdminSupportChatModal';
+import { useTranslation } from 'react-i18next';
 import '../../pages/Admin/Admin.css';
 
 export default function AdminUsers() {
+  const { t } = useTranslation(['admin/users']);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userBookingsData, setUserBookingsData] = useState({ matches: [], posts: [] });
@@ -38,7 +40,7 @@ export default function AdminUsers() {
         setUserBookingsData(bookingsRes.data || { matches: [], posts: [] });
       } catch (err) {
         console.error('Failed to fetch admin users data:', err);
-        setError('שגיאה בטעינת נתוני משתמשים מהשרת.');
+        setError(t('admin/users:messages.error_loading'));
       } finally {
         setLoading(false);
       }
@@ -58,10 +60,13 @@ export default function AdminUsers() {
         setSelectedUser(prev => ({ ...prev, account_status: updatedUser.account_status }));
       }
 
-      setSuccessMsg(`המשתמש עודכן לסטטוס: ${newStatus === 'active' ? 'פעיל' : newStatus === 'suspended' ? 'מושעה' : 'חסום לצמיתות'}`);
+      const successStatus = newStatus === 'active' ? t('admin/users:messages.success_active') 
+                          : newStatus === 'suspended' ? t('admin/users:messages.success_suspended') 
+                          : t('admin/users:messages.success_banned');
+      setSuccessMsg(successStatus);
     } catch (err) {
       console.error('Failed to update status:', err);
-      setError('עדכון סטטוס המשתמש נכשל.');
+      setError(t('admin/users:messages.error_status_update'));
     } finally {
       setConfirmModal({ isOpen: false, type: '', user: null, reason: '' });
     }
@@ -84,10 +89,10 @@ export default function AdminUsers() {
       if (selectedUser && selectedUser.id === userId) {
         setSelectedUser(null);
       }
-      setSuccessMsg('המשתמש נמחק בהצלחה מהמערכת.');
+      setSuccessMsg(t('admin/users:messages.success_delete'));
     } catch (err) {
       console.error('Failed to delete user:', err);
-      setError('מחיקת המשתמש נכשלה.');
+      setError(t('admin/users:messages.error_delete'));
     } finally {
       setConfirmModal({ isOpen: false, type: '', user: null });
     }
@@ -104,10 +109,10 @@ export default function AdminUsers() {
       if (selectedUser && selectedUser.id === userId) {
         setSelectedUser(prev => ({ ...prev, is_soldier_or_national_service: response.data.is_soldier_or_national_service }));
       }
-      setSuccessMsg(targetState ? 'אימות חייל/שירות לאומי עודכן בהצלחה.' : 'ביטול אימות בוצע בהצלחה.');
+      setSuccessMsg(targetState ? t('admin/users:messages.success_verify') : t('admin/users:messages.success_unverify'));
     } catch (err) {
       console.error('Failed to verify guest:', err);
-      setError('פעולת האימות נכשלה.');
+      setError(t('admin/users:messages.error_verify'));
     }
   };
 
@@ -155,17 +160,17 @@ export default function AdminUsers() {
         <>
           <div className="admin-page-header flex-between">
             <div>
-              <h2 className="admin-page-title">ניהול משתמשים</h2>
-              <p className="admin-page-subtitle">לחץ על שורה בטבלה לצפייה בתיק משתמש מפורט וביצוע פעולות ניהול</p>
+              <h2 className="admin-page-title">{t('admin/users:title')}</h2>
+              <p className="admin-page-subtitle">{t('admin/users:subtitle')}</p>
             </div>
 
             {/* Quick Stat Chips */}
             <div className="admin-stats-chips">
-              <span className="stat-chip">סה"כ: <strong>{users.length}</strong></span>
-              <span className="stat-chip host">מארחים: <strong>{totalHostsCount}</strong></span>
-              <span className="stat-chip guest">אורחים: <strong>{totalGuestsCount}</strong></span>
-              <span className="stat-chip suspended" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>מושהים: <strong>{totalSuspendedCount}</strong></span>
-              <span className="stat-chip banned" style={{ backgroundColor: '#f8d7da', color: '#721c24' }}>חסומים: <strong>{totalBannedCount}</strong></span>
+              <span className="stat-chip">{t('admin/users:stats.total')}: <strong>{users.length}</strong></span>
+              <span className="stat-chip host">{t('admin/users:stats.hosts')}: <strong>{totalHostsCount}</strong></span>
+              <span className="stat-chip guest">{t('admin/users:stats.guests')}: <strong>{totalGuestsCount}</strong></span>
+              <span className="stat-chip suspended" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>{t('admin/users:stats.suspended')}: <strong>{totalSuspendedCount}</strong></span>
+              <span className="stat-chip banned" style={{ backgroundColor: '#f8d7da', color: '#721c24' }}>{t('admin/users:stats.banned')}: <strong>{totalBannedCount}</strong></span>
             </div>
           </div>
 
@@ -173,7 +178,7 @@ export default function AdminUsers() {
           <div className="search-filter-bar">
             <input 
               type="text" 
-              placeholder="חיפוש לפי שם, אימייל או טלפון..." 
+              placeholder={t('admin/users:filters.search_placeholder')}
               className="admin-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -183,28 +188,28 @@ export default function AdminUsers() {
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
             >
-              <option value="all">כל התפקידים</option>
-              <option value="host">מארחים (Host)</option>
-              <option value="guest">אורחים (Guest)</option>
-              <option value="admin">מנהלים (Admin)</option>
+              <option value="all">{t('admin/users:filters.all_roles')}</option>
+              <option value="host">{t('admin/users:filters.role_host')}</option>
+              <option value="guest">{t('admin/users:filters.role_guest')}</option>
+              <option value="admin">{t('admin/users:filters.role_admin')}</option>
             </select>
             <select 
               className="admin-select"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">כל הסטטוסים</option>
-              <option value="active">פעילים</option>
-              <option value="suspended">מושהים</option>
-              <option value="banned">חסומים לצמיתות</option>
+              <option value="all">{t('admin/users:filters.all_statuses')}</option>
+              <option value="active">{t('admin/users:filters.status_active')}</option>
+              <option value="suspended">{t('admin/users:filters.status_suspended')}</option>
+              <option value="banned">{t('admin/users:filters.status_banned')}</option>
             </select>
           </div>
 
           {/* Interactive Modern Table */}
           <Table 
-            headers={['משתמש', 'תפקיד', 'סטטוס', '']}
+            headers={t('admin/users:table.headers', { returnObjects: true })}
             dataLength={filteredUsers.length}
-            fallbackText="לא נמצאו משתמשים העונים לסינון הנוכחי."
+            fallbackText={t('admin/users:table.fallback')}
           >
             {filteredUsers.map(user => (
               <tr 
@@ -228,14 +233,14 @@ export default function AdminUsers() {
                 {/* Role Column */}
                 <td>
                   <span className={`badge ${user.user_type}`}>
-                    {user.user_type === 'host' ? 'מארח' : user.user_type === 'guest' ? 'אורח' : 'מנהל'}
+                    {user.user_type === 'host' ? t('admin/users:roles.host') : user.user_type === 'guest' ? t('admin/users:roles.guest') : t('admin/users:roles.admin')}
                   </span>
                 </td>
 
                 {/* Status Column */}
                 <td>
                   <span className={`badge ${user.account_status === 'active' ? 'active' : user.account_status === 'suspended' ? 'suspended' : 'danger'}`}>
-                    {user.account_status === 'active' ? 'פעיל' : user.account_status === 'suspended' ? 'מושעה' : 'חסום'}
+                    {user.account_status === 'active' ? t('admin/users:statuses.active') : user.account_status === 'suspended' ? t('admin/users:statuses.suspended') : t('admin/users:statuses.banned')}
                   </span>
                 </td>
 
@@ -243,7 +248,7 @@ export default function AdminUsers() {
                 <td>
                   <div className="user-view-btn-wrapper">
                     <span className="btn-view-user">
-                      <span>צפה בפרטים</span>
+                      <span>{t('admin/users:table.view_details')}</span>
                       <ChevronLeftIcon className="arrow-icon-animated" />
                     </span>
                   </div>
@@ -259,7 +264,7 @@ export default function AdminUsers() {
         <div className="admin-user-detail-view">
           {/* Back Navigation Bar */}
           <button className="btn-back" onClick={() => setSelectedUser(null)}>
-            ← חזרה לרשימת המשתמשים
+            ← {t('admin/users:details.back_to_list')}
           </button>
 
           {/* Header Card: User Name + Role + Top Action Buttons */}
@@ -272,16 +277,15 @@ export default function AdminUsers() {
                 <h2 className="admin-user-name">{selectedUser.full_name}</h2>
                 <div className="flex-align-center gap-8 margin-top-4">
                   <span className={`badge ${selectedUser.user_type}`}>
-                    {selectedUser.user_type === 'host' ? 'מארח' : selectedUser.user_type === 'guest' ? 'אורח' : 'מנהל'}
+                    {selectedUser.user_type === 'host' ? t('admin/users:roles.host') : selectedUser.user_type === 'guest' ? t('admin/users:roles.guest') : t('admin/users:roles.admin')}
                   </span>
                   <span className={`badge ${selectedUser.account_status === 'active' ? 'active' : selectedUser.account_status === 'suspended' ? 'suspended' : 'danger'}`}>
-                    {selectedUser.account_status === 'active' ? 'פעיל' : selectedUser.account_status === 'suspended' ? 'מושעה' : 'חסום'}
+                    {selectedUser.account_status === 'active' ? t('admin/users:statuses.active') : selectedUser.account_status === 'suspended' ? t('admin/users:statuses.suspended') : t('admin/users:statuses.banned')}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Admin Actions Bar */}
             <div className="admin-detail-actions">
               {/* Support Chat Button */}
               <button 
@@ -290,7 +294,7 @@ export default function AdminUsers() {
                 style={{ backgroundColor: '#17a2b8' }}
               >
                 <span>💬</span>
-                <span>צ'אט תמיכה</span>
+                <span>{t('admin/users:details.actions.support_chat')}</span>
               </button>
 
               {/* Activate Button */}
@@ -300,7 +304,7 @@ export default function AdminUsers() {
                   className="btn-admin-action btn-activate"
                 >
                   <UnlockIcon />
-                  <span>הפעל משתמש</span>
+                  <span>{t('admin/users:details.actions.activate')}</span>
                 </button>
               )}
 
@@ -311,7 +315,7 @@ export default function AdminUsers() {
                   className="btn-admin-action btn-suspend"
                 >
                   <LockIcon />
-                  <span>השעה משתמש</span>
+                  <span>{t('admin/users:details.actions.suspend')}</span>
                 </button>
               )}
 
@@ -322,7 +326,7 @@ export default function AdminUsers() {
                   className="btn-admin-action btn-delete"
                 >
                   <LockIcon />
-                  <span>חסום לצמיתות</span>
+                  <span>{t('admin/users:details.actions.ban')}</span>
                 </button>
               )}
 
@@ -332,7 +336,7 @@ export default function AdminUsers() {
                 className="btn-admin-action btn-delete"
               >
                 <TrashIcon />
-                <span>מחק משתמש</span>
+                <span>{t('admin/users:details.actions.delete')}</span>
               </button>
             </div>
           </div>
@@ -341,30 +345,30 @@ export default function AdminUsers() {
           <div className="admin-card margin-bottom-20">
             <div className="user-info-grid">
               <div className="info-item">
-                <span className="info-label">כתובת אימייל:</span>
+                <span className="info-label">{t('admin/users:details.info.email')}</span>
                 <span className="info-value">{selectedUser.email}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">מספר טלפון:</span>
+                <span className="info-label">{t('admin/users:details.info.phone')}</span>
                 <span className="info-value ltr-column">{formatPhoneNumber(selectedUser.phone_number)}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">תאריך הרשמה:</span>
+                <span className="info-label">{t('admin/users:details.info.registered')}</span>
                 <span className="info-value">
-                  {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString('he-IL') : 'לא צוין'}
+                  {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString('he-IL') : t('admin/users:details.info.not_specified')}
                 </span>
               </div>
               {selectedUser.user_type === 'guest' && (
                 <div className="info-item">
-                  <span className="info-label">אימות חייל/שירות לאומי:</span>
+                  <span className="info-label">{t('admin/users:details.info.soldier_verification')}</span>
                   <div className="flex-align-center">
                     <span className={`badge ${selectedUser.is_soldier_or_national_service ? 'verified' : 'pending'}`}>
-                      {selectedUser.is_soldier_or_national_service ? 'חייל מאומת' : 'לא מאומת'}
+                      {selectedUser.is_soldier_or_national_service ? t('admin/users:details.info.verified_soldier') : t('admin/users:details.info.not_verified')}
                     </span>
                     <button 
                       onClick={() => handleVerifySoldier(selectedUser.id, selectedUser.is_soldier_or_national_service)}
                       className="btn-action verify-soldier margin-right-8"
-                      title="שנה אימות"
+                      title={t('admin/users:details.info.change_verification')}
                     >
                       <CheckCircleIcon />
                     </button>
@@ -373,7 +377,7 @@ export default function AdminUsers() {
               )}
               {selectedUser.biography && (
                 <div className="info-item full-width">
-                  <span className="info-label">אודות / ביוגרפיה:</span>
+                  <span className="info-label">{t('admin/users:details.info.biography')}</span>
                   <span className="info-value">{selectedUser.biography}</span>
                 </div>
               )}
@@ -383,11 +387,11 @@ export default function AdminUsers() {
           {/* User Posts / Requests Table */}
           <div className="admin-card margin-bottom-20">
             <div className="admin-card-header">
-              <h3 className="admin-card-title">פוסטים ובקשות של המשתמש</h3>
+              <h3 className="admin-card-title">{t('admin/users:details.posts.title')}</h3>
             </div>
             {userPosts.length > 0 ? (
               <Table 
-                headers={['תאריך מבוקש', 'תיאור הבקשה', 'כמות אורחים', 'סטטוס']}
+                headers={t('admin/users:details.posts.headers', { returnObjects: true })}
                 dataLength={userPosts.length}
               >
                 {userPosts.map(post => (
@@ -397,25 +401,25 @@ export default function AdminUsers() {
                     <td>{post.guests_count}</td>
                     <td>
                       <span className={`badge ${post.status === 'open' ? 'active' : 'verified'}`}>
-                        {post.status === 'open' ? 'פתוח' : 'הותאם'}
+                        {post.status === 'open' ? t('admin/users:details.posts.status_open') : t('admin/users:details.posts.status_matched')}
                       </span>
                     </td>
                   </tr>
                 ))}
               </Table>
             ) : (
-              <div className="admin-table-fallback">אין פוסטים או בקשות פעילות למשתמש זה.</div>
+              <div className="admin-table-fallback">{t('admin/users:details.posts.fallback')}</div>
             )}
           </div>
 
           {/* User Matches & Reviews Table */}
           <div className="admin-card">
             <div className="admin-card-header">
-              <h3 className="admin-card-title">התאמות ואירוחים של המשתמש</h3>
+              <h3 className="admin-card-title">{t('admin/users:details.matches.title')}</h3>
             </div>
             {userMatches.length > 0 ? (
               <Table 
-                headers={['אורח', 'מארח', 'תאריך', 'סטטוס']}
+                headers={t('admin/users:details.matches.headers', { returnObjects: true })}
                 dataLength={userMatches.length}
               >
                 {userMatches.map(match => (
@@ -430,7 +434,7 @@ export default function AdminUsers() {
                 ))}
               </Table>
             ) : (
-              <div className="admin-table-fallback">אין אירוחים או התאמות רשומות למשתמש זה.</div>
+              <div className="admin-table-fallback">{t('admin/users:details.matches.fallback')}</div>
             )}
           </div>
         </div>
@@ -443,26 +447,22 @@ export default function AdminUsers() {
         <div className="modal-backdrop" onClick={() => setConfirmModal({ isOpen: false, type: '', user: null, reason: '' })}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">
-              {confirmModal.type === 'suspended' ? 'אישור השעיית משתמש' : 
-               confirmModal.type === 'banned' ? 'אישור חסימת משתמש (Ban)' : 'אישור מחיקת משתמש'}
+              {confirmModal.type === 'suspended' ? t('admin/users:modals.suspend.title') : 
+               confirmModal.type === 'banned' ? t('admin/users:modals.ban.title') : t('admin/users:modals.delete.title')}
             </h3>
             <p className="modal-body">
-              {confirmModal.type === 'suspended' ? (
-                `האם אתה בטוח שברצונך להשעות את המשתמש "${confirmModal.user?.full_name}"? פעולה זו תנעל את המשתמש זמנית מהאפליקציה, אך תשאיר לו גישה לצ'אט תמיכה מול הנהלת המערכת.`
-              ) : confirmModal.type === 'banned' ? (
-                `האם אתה בטוח שברצונך לחסום לצמיתות את המשתמש "${confirmModal.user?.full_name}"? פעולה זו תנעל את המשתמש לחלוטין מכל חלקי האפליקציה והשירותים בה.`
-              ) : (
-                `האם אתה בטוח שברצונך למחוק לחלוטין את המשתמש "${confirmModal.user?.full_name}" מהמערכת? פעולה זו אינה ניתנת לביטול.`
-              )}
+              {confirmModal.type === 'suspended' ? t('admin/users:modals.suspend.body', { name: confirmModal.user?.full_name })
+              : confirmModal.type === 'banned' ? t('admin/users:modals.ban.body', { name: confirmModal.user?.full_name })
+              : t('admin/users:modals.delete.body', { name: confirmModal.user?.full_name })}
             </p>
 
             {(confirmModal.type === 'suspended' || confirmModal.type === 'banned') && (
               <div style={{ marginTop: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>סיבת הפעולה:</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>{t('admin/users:modals.reason_label')}</label>
                 <textarea
                   style={{ width: '100%', padding: '0.8rem', borderRadius: '5px', border: '1px solid #ddd' }}
                   rows={3}
-                  placeholder="אנא פרט את הסיבה לפעולה זו (תוצג למשתמש)..."
+                  placeholder={t('admin/users:modals.reason_placeholder')}
                   value={confirmModal.reason}
                   onChange={(e) => setConfirmModal({ ...confirmModal, reason: e.target.value })}
                 />
@@ -483,13 +483,13 @@ export default function AdminUsers() {
                 }}
                 disabled={(confirmModal.type === 'suspended' || confirmModal.type === 'banned') && !confirmModal.reason.trim()}
               >
-                {confirmModal.type === 'suspended' ? 'אישור השעיה' : confirmModal.type === 'banned' ? 'אישור חסימה' : 'אישור מחיקה'}
+                {confirmModal.type === 'suspended' ? t('admin/users:modals.suspend.confirm') : confirmModal.type === 'banned' ? t('admin/users:modals.ban.confirm') : t('admin/users:modals.delete.confirm')}
               </button>
               <button 
                 className="btn-modal-cancel"
                 onClick={() => setConfirmModal({ isOpen: false, type: '', user: null, reason: '' })}
               >
-                ביטול
+                {t('admin/users:modals.cancel')}
               </button>
             </div>
           </div>

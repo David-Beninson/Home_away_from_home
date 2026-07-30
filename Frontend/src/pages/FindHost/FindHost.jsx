@@ -4,9 +4,11 @@ import useHostSearch from '../../hooks/useHostSearch';
 import FindHostHeader from '../../components/FindHost/FindHostHeader';
 import SearchFilterPanel from '../../components/FindHost/SearchFilterPanel';
 import { Sparkles, Star, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './FindHost.css';
 
 export default function FindHost() {
+  const { t } = useTranslation(['guest/find_host']);
   const navigate = useNavigate();
   const {
     hosts,
@@ -66,7 +68,7 @@ export default function FindHost() {
 
       {/* 3. Dynamic Hosts Grid, Loading & Empty States */}
       {loading && (!topHosts || topHosts.length === 0) ? (
-        <div className="gh-hosts-loading">טוען מארחים...</div>
+        <div className="gh-hosts-loading">{t('guest/find_host:loading')}</div>
       ) : (
         <div className="gh-hosts-grid">
           {topHosts.map((host) => {
@@ -88,9 +90,9 @@ export default function FindHost() {
                     onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
                   />
                   <div className="gh-card-badges">
-                    {host.has_lodging && <span className="gh-badge-night">🌙 לינה</span>}
+                    {host.has_lodging && <span className="gh-badge-night">🌙 {t('guest/find_host:badges.sleepover')}</span>}
                     <div className="gh-badge-right-group">
-                      {isKosher && <span className="gh-badge-kosher">🛡️ מהדרין</span>}
+                      {isKosher && <span className="gh-badge-kosher">🛡️ {t('guest/find_host:badges.mehadrin')}</span>}
                       <span className="gh-badge-match">
                         <Sparkles size={12} /> {matchScore}%
                       </span>
@@ -122,7 +124,7 @@ export default function FindHost() {
                         </span>
                       ))}
                     </div>
-                    <div className="gh-spots-text">{host.available_spots || host.spots || 0} מקומות</div>
+                    <div className="gh-spots-text">{host.available_spots || host.spots || 0} {t('guest/find_host:spots')}</div>
                   </div>
                 </div>
               </div>

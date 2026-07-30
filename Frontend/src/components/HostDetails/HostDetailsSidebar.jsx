@@ -1,5 +1,6 @@
 import { Zap, Star, Phone, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { formatPhoneNumber } from '../../utils/phone';
+import { useTranslation } from 'react-i18next';
 
 export default function HostDetailsSidebar({
   matchPercentage,
@@ -15,8 +16,9 @@ export default function HostDetailsSidebar({
   guestBookingStatus,
   onReviewsClick
 }) {
+  const { t } = useTranslation(['guest/host_details']);
   const isBlocked = guestBookingStatus?.can_request === false;
-  const disabledReason = guestBookingStatus?.reason || 'לא ניתן לשלוח בקשת אירוח נוספת';
+  const disabledReason = guestBookingStatus?.reason || t('guest/host_details:sidebar.disabled_reason_default');
 
   return (
     <div className="sidebar-booking-card">
@@ -35,7 +37,7 @@ export default function HostDetailsSidebar({
         >
           <Star className="star-icon-filled" />
           <span className="rating-score">{rating}</span>
-          <span className="rating-count">({reviewsCount} ביקורות)</span>
+          <span className="rating-count">{t('guest/host_details:sidebar.reviews_count', { count: reviewsCount })}</span>
         </button>
       </div>
 
@@ -46,7 +48,7 @@ export default function HostDetailsSidebar({
       <div className="sidebar-action-buttons">
         <a href={`tel:${phone}`} className="sidebar-phone-btn" title={phone ? formatPhoneNumber(phone) : ''}>
           <Phone className="btn-icon" />
-          {phone ? formatPhoneNumber(phone) : 'שיחה'}
+          {phone ? formatPhoneNumber(phone) : t('guest/host_details:sidebar.btn_call')}
         </a>
         <button
           type="button"
@@ -54,7 +56,7 @@ export default function HostDetailsSidebar({
           className="sidebar-message-btn"
         >
           <MessageCircle className="btn-icon" />
-          הודעה
+          {t('guest/host_details:sidebar.btn_message')}
         </button>
       </div>
 
@@ -67,27 +69,27 @@ export default function HostDetailsSidebar({
         className="sidebar-booking-btn"
       >
         {requestStatus === 'submitting' ? (
-          'שולח בקשה...'
+          t('guest/host_details:sidebar.btn_submitting')
         ) : isBlocked ? (
-          'חוסר אפשרות לבקש אירוח'
+          t('guest/host_details:sidebar.btn_blocked')
         ) : requestStatus === 'success' ? (
           <>
             <CheckCircle2 className="success-icon" />
-            בקשת אירוח נשלחה!
+            {t('guest/host_details:sidebar.btn_success')}
           </>
         ) : (
-          'שלח בקשת אירוח'
+          t('guest/host_details:sidebar.btn_submit')
         )}
       </button>
 
       {/* Urgency Footnote */}
       {availableSpots > 0 ? (
         <p className="spots-urgency-text text-amber">
-         פנוי לאירוח של עד {availableSpots} חבר'ה!
+         {t('guest/host_details:sidebar.urgency_available', { count: availableSpots })}
         </p>
       ) : (
         <p className="spots-urgency-text text-red">
-          אזלו המקומות לסופ"ש הקרוב
+          {t('guest/host_details:sidebar.urgency_full')}
         </p>
       )}
 

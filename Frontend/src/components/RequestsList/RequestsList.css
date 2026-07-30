@@ -6,7 +6,7 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 16px;
-  direction: rtl;
+
 }
 
 /* Pending Offer Box Styles */
@@ -16,7 +16,7 @@
   border-radius: 12px;
   padding: 14px;
   margin: 12px 0;
-  direction: rtl;
+
 }
 
 .pending-offer-title {
@@ -159,7 +159,7 @@
 }
 
 .user-info-container {
-  text-align: right;
+
 }
 
 .user-name-row {
@@ -195,7 +195,7 @@
   color: var(--text);
   font-size: 0.875rem;
   line-height: 1.6;
-  text-align: right;
+
   margin: 0;
 }
 
@@ -549,7 +549,7 @@ body.dark-theme .request-card.inline-edit-card {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-muted);
-  text-align: right;
+
 }
 
 .inline-edit-select,

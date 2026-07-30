@@ -1,0 +1,27 @@
+{
+  "links": {
+    "home": "בית",
+    "find_host": "מצא מארח",
+    "my_requests": "הבקשות שלי",
+    "requests_board": "לוח בקשות",
+    "chats": "צ׳אטים",
+    "admin_dashboard": "לוח בקרה",
+    "user_management": "ניהול משתמשים",
+    "verifications": "אימותים וסינון",
+    "listings": "דירות ומארחים",
+    "bookings": "בקשות",
+    "alerts": "התראות",
+    "profile": "פרופיל"
+  },
+  "aria": {
+    "nav_menu": "תפריט ניווט",
+    "go_home": "העבר לדף הבית"
+  },
+  "hello_user": "שלום {{name}}!",
+  "dropdown": {
+    "my_profile": "הפרופיל שלי",
+    "light_mode": "מצב בהיר",
+    "dark_mode": "מצב כהה",
+    "logout": "התנתקות"
+  }
+}

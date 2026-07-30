@@ -7,7 +7,7 @@
   gap: 20px;
   background: var(--bg);
   color: var(--text);
-  direction: rtl;
+
 }
 
 /* Tabbed top navigation instead of separate sidebar app */
@@ -182,7 +182,7 @@
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: right;
+
   font-size: 0.9rem;
 }
 
@@ -435,7 +435,7 @@
 
 .ltr-column {
   direction: ltr;
-  text-align: right;
+
 }
 
 .action-group {
@@ -734,15 +734,15 @@
 }
 
 .margin-right-8 {
-  margin-right: 8px;
+  margin-inline-start: 8px;
 }
 
 /* Modal Overlay & Card */
 .modal-backdrop {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-end: 0;
+  inset-inline-start: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
@@ -761,7 +761,7 @@
   max-width: 440px;
   width: 90%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  direction: rtl;
+
 }
 
 .modal-title {
@@ -919,7 +919,7 @@
   height: 10px;
   border-radius: 50%;
   display: inline-block;
-  margin-left: 8px;
+  margin-inline-end: 8px;
   flex-shrink: 0;
   background-color: var(--dot-color, transparent);
 }
@@ -1016,7 +1016,7 @@
 /* Classic Column Chart Layout (Standard Bar Chart with Gridlines & Y-Axis) */
 .classic-column-chart-container {
   display: flex;
-  direction: rtl;
+
   gap: 12px;
   height: 210px;
   padding: 16px 8px 8px 8px;
@@ -1045,8 +1045,8 @@
 .chart-grid-lines {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-end: 0;
+  inset-inline-start: 0;
   bottom: 24px;
   display: flex;
   flex-direction: column;
@@ -1070,8 +1070,8 @@
 .chart-columns-flex {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-end: 0;
+  inset-inline-start: 0;
   bottom: 0;
   display: flex;
   align-items: flex-end;
@@ -1121,7 +1121,7 @@
 .admin-chat-modal-overlay {
   position: fixed;
   top: 0;
-  left: 0;
+  inset-inline-end: 0;
   width: 100vw;
   height: 100vh;
   background-color: rgba(0,0,0,0.65);
@@ -1339,7 +1339,7 @@
 .admin-reject-modal-overlay {
   position: fixed;
   top: 0;
-  left: 0;
+  inset-inline-end: 0;
   width: 100vw;
   height: 100vh;
   background-color: rgba(0,0,0,0.5);

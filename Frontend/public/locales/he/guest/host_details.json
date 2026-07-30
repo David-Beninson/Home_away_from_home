@@ -1,0 +1,83 @@
+{
+  "page": {
+    "loading": "טוען פרטי משפחה מארחת...",
+    "default_host": "משפחה מארחת",
+    "kashrut": {
+      "mehadrin": "מהדרין",
+      "kosher": "כשר"
+    },
+    "default_message_wa": "שלום {{name}}, שאלתי לגבי אירוח לשבת דרך אפליקציית שבת מארח.",
+    "toast_success": "בקשת אירוח נשלחה בהצלחה אל {{name}}!",
+    "toast_error_duplicate": "כבר שלחת בקשת אירוח למארח זה או שקיימת בקשה פעילה."
+  },
+  "header": {
+    "back_btn": "חיפוש"
+  },
+  "hero": {
+    "lodging_available": "לינה זמינה",
+    "meals_only": "ארוחות בלבד"
+  },
+  "stats": {
+    "spots_label": "מקומות",
+    "kashrut_label": "כשרות",
+    "lodging_label": "לינה",
+    "lodging_yes": "זמינה",
+    "lodging_no": "ללא"
+  },
+  "about": {
+    "title": "קצת עלינו"
+  },
+  "sidebar": {
+    "disabled_reason_default": "לא ניתן לשלוח בקשת אירוח נוספת",
+    "reviews_count": "({{count}} ביקורות)",
+    "btn_call": "שיחה",
+    "btn_message": "הודעה",
+    "btn_submitting": "שולח בקשה...",
+    "btn_blocked": "חוסר אפשרות לבקש אירוח",
+    "btn_success": "בקשת אירוח נשלחה!",
+    "btn_submit": "שלח בקשת אירוח",
+    "urgency_available": "פנוי לאירוח של עד {{count}} חבר'ה!",
+    "urgency_full": "אזלו המקומות לסופ\"ש הקרוב"
+  },
+  "booking_modal": {
+    "title": "שליחת בקשת אירוח",
+    "subtitle": "מארח: {{name}}",
+    "label_dates": "בחר תאריכים / לילות אירוח (ניתן לסמן מספר תאריכים):",
+    "label_date_type": "אירוח ולינה",
+    "label_guests": "כמה חבר'ה מגיעים?",
+    "guests_count": "{{count}} חבר'ה",
+    "guests_1": "חבר'ה 1",
+    "guests_max": "עד {{count}} חבר'ה פנויים",
+    "label_in_return": "אם אתם מביאים משהו או רוצים לתת – תכתבו פה (אופציונלי):",
+    "placeholder_in_return": "למשל: נביא עוגה לשבת, יין, נעזור בהכנות...",
+    "label_notes": "הערות נוספות (אופציונלי):",
+    "placeholder_notes": "למשל: נגיע ביום שישי בצהריים, שומרים כשרות למהדרין...",
+    "btn_submitting": "שולח בקשה...",
+    "btn_submit": "אישור ושליחת בקשת אירוח",
+    "btn_cancel": "ביטול",
+    "months": {
+      "jan": "בינואר",
+      "feb": "בפברואר",
+      "mar": "במרץ",
+      "apr": "באפריל",
+      "may": "במאי",
+      "jun": "ביוני",
+      "jul": "ביולי",
+      "aug": "באוגוסט",
+      "sep": "בספטמבר",
+      "oct": "באוקטובר",
+      "nov": "בנובמבר",
+      "dec": "בדצמבר"
+    },
+    "days": {
+      "sun": "ראשון",
+      "mon": "שני",
+      "tue": "שלישי",
+      "wed": "רביעי",
+      "thu": "חמישי",
+      "fri": "שישי",
+      "sat": "שבת"
+    },
+    "date_format": "יום {{day}}, {{date}} {{month}}"
+  }
+}

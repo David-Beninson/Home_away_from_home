@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Star, Loader2 } from 'lucide-react';
 import { reviewsApi } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 import './Reviews.css';
 
 const ReviewsListModal = ({ open, onClose, targetType, targetId, title }) => {
+  const { t } = useTranslation(['common/reviews']);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,7 +26,7 @@ const ReviewsListModal = ({ open, onClose, targetType, targetId, title }) => {
         }
         setReviews(res?.data || []);
       } catch (err) {
-        setError('שגיאה בטעינת הביקורות.');
+        setError(t('common/reviews:list.error_load'));
       } finally {
         setLoading(false);
       }
@@ -40,7 +42,7 @@ const ReviewsListModal = ({ open, onClose, targetType, targetId, title }) => {
         <div className="chat-modal-header">
           <div className="chat-modal-title">
             <Star size={20} className="chat-modal-icon text-amber" />
-            <h3>{title || 'ביקורות'}</h3>
+            <h3>{title || t('common/reviews:list.title_default')}</h3>
           </div>
           <button 
             type="button" 
@@ -55,18 +57,18 @@ const ReviewsListModal = ({ open, onClose, targetType, targetId, title }) => {
           {loading ? (
             <div className="reviews-loading">
               <Loader2 className="spin-icon" size={24} />
-              <span>טוען ביקורות...</span>
+              <span>{t('common/reviews:list.loading')}</span>
             </div>
           ) : error ? (
             <div className="review-error">{error}</div>
           ) : reviews.length === 0 ? (
-            <div className="no-reviews">אין עדיין ביקורות להצגה.</div>
+            <div className="no-reviews">{t('common/reviews:list.no_reviews')}</div>
           ) : (
             <div className="reviews-list">
               {reviews.map((review, idx) => (
                 <div key={review.id || idx} className="review-item">
                   <div className="review-header">
-                    <span className="reviewer-name">{review.reviewer_name || 'אנונימי'}</span>
+                    <span className="reviewer-name">{review.reviewer_name || t('common/reviews:list.anon_name')}</span>
                     <div className="review-stars">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star 
@@ -89,7 +91,7 @@ const ReviewsListModal = ({ open, onClose, targetType, targetId, title }) => {
 
         <div className="chat-modal-footer">
           <button onClick={onClose} className="chat-modal-btn-close">
-            סגור
+            {t('common/reviews:list.btn_close')}
           </button>
         </div>
       </div>

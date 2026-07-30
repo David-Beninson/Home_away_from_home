@@ -2,13 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { Sparkles, Send, Check, Bot, Loader2 } from 'lucide-react';
 import { BRAND_TITLE } from '../../config/brand';
 import { agentApi } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeGuestAiAgent() {
+  const { t } = useTranslation(['guest/home']);
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'agent',
-      text: `שלום! אני העוזר החכם של ${BRAND_TITLE} 👋\nאני יכול לעזור למצוא מארח, להסביר ציוני התאמה, ולענות על כל שאלה. במה אוכל לעזור?`,
+      text: t('guest/home:agent.welcome_msg', { brand: BRAND_TITLE }),
     },
   ]);
   const [inputText, setInputText] = useState('');
@@ -39,7 +41,7 @@ export default function HomeGuestAiAgent() {
 
     try {
       const res = await agentApi.chat(query.trim());
-      const agentReply = res.data?.response || 'מצטער, לא התקבלה תשובה. אנא נסה שוב.';
+      const agentReply = res.data?.response || t('guest/home:agent.error_no_reply');
       setMessages((prev) => [
         ...prev,
         {
@@ -55,7 +57,7 @@ export default function HomeGuestAiAgent() {
         {
           id: Date.now() + 1,
           sender: 'agent',
-          text: 'מצטער, נתקלתי בבעיה בחיבור לשרת ה-AI. אנא ודא שהחיבור תקין ונסה שוב.',
+          text: t('guest/home:agent.error_connection'),
         },
       ]);
     } finally {
@@ -71,18 +73,18 @@ export default function HomeGuestAiAgent() {
   };
 
   const suggestions = [
-    'מה ההבדל בין כשר למהדרין?',
-    'יש מארחים בתל אביב עם לינה?',
-    'איך שולחים בקשת אירוח?',
-    'מתי צריך להגיע לשבת?',
+    t('guest/home:agent.suggestions.kosher'),
+    t('guest/home:agent.suggestions.tel_aviv'),
+    t('guest/home:agent.suggestions.request'),
+    t('guest/home:agent.suggestions.arrive'),
   ];
 
   return (
     <section className="gh-ai-section">
       <div className="gh-section-header">
-        <h3>שאל את הסוכן החכם</h3>
+        <h3>{t('guest/home:agent.title')}</h3>
         <span className="gh-badge-new">
-          <Sparkles size={14} /> AI · חדש
+          <Sparkles size={14} /> {t('guest/home:agent.new_badge')}
         </span>
       </div>
 
@@ -95,9 +97,9 @@ export default function HomeGuestAiAgent() {
                 <Bot size={20} />
               </div>
               <div>
-                <h4>עוזר חכם - {BRAND_TITLE}</h4>
+                <h4>{t('guest/home:agent.header_title', { brand: BRAND_TITLE })}</h4>
                 <p>
-                  מענה מיידי לכל שאלה <span className="gh-online-dot"></span> פעיל
+                  {t('guest/home:agent.header_subtitle')} <span className="gh-online-dot"></span> {t('guest/home:agent.status_online')}
                 </p>
               </div>
             </div>
@@ -126,7 +128,7 @@ export default function HomeGuestAiAgent() {
                   <Bot size={16} />
                 </div>
                 <div className="gh-message-bubble gh-loading-bubble">
-                  <span>מחפש את התשובה בשבילך</span>
+                  <span>{t('guest/home:agent.loading_text')}</span>
                   <span className="gh-typing-dots">
                     <span>.</span>
                     <span>.</span>
@@ -164,7 +166,7 @@ export default function HomeGuestAiAgent() {
               </button>
               <input
                 type="text"
-                placeholder="שאל אותי כל שאלה על אירוח שבת..."
+                placeholder={t('guest/home:agent.input_placeholder')}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -179,22 +181,22 @@ export default function HomeGuestAiAgent() {
           <div className="gh-features-icon">
             <Sparkles size={24} color="#2563eb" />
           </div>
-          <h4>מה הסוכן יכול לעשות?</h4>
+          <h4>{t('guest/home:agent.features_title')}</h4>
           <ul className="gh-features-list">
             <li>
-              <Check size={16} className="gh-check" /> לעזור לך לבחור מארח לפי ציון ההתאמה
+              <Check size={16} className="gh-check" /> {t('guest/home:agent.features.match')}
             </li>
             <li>
-              <Check size={16} className="gh-check" /> לענות על שאלות כשרות ולינה
+              <Check size={16} className="gh-check" /> {t('guest/home:agent.features.kosher')}
             </li>
             <li>
-              <Check size={16} className="gh-check" /> להסביר איך עובד לוח הבקשות
+              <Check size={16} className="gh-check" /> {t('guest/home:agent.features.board')}
             </li>
             <li>
-              <Check size={16} className="gh-check" /> לתת מידע על אזורים בארץ
+              <Check size={16} className="gh-check" /> {t('guest/home:agent.features.areas')}
             </li>
             <li>
-              <Check size={16} className="gh-check" /> לענות על שאלות כלליות על שבת
+              <Check size={16} className="gh-check" /> {t('guest/home:agent.features.general')}
             </li>
           </ul>
         </div>

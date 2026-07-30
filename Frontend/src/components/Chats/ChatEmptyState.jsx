@@ -1,11 +1,15 @@
-
-import { MessageSquare } from 'lucide-react';
+import { MessageSquareOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function ChatEmptyState() {
+  const { t } = useTranslation(['chat/chats']);
   return (
     <div className="chat-empty-state">
-      <MessageSquare className="chat-empty-icon" />
-      <p>בחר שיחה כדי להתחיל להודעות</p>
+      <div className="chat-empty-icon">
+        <MessageSquareOff size={48} />
+      </div>
+      <h2>{t('chat/chats:empty_state.title')}</h2>
+      <p>{t('chat/chats:empty_state.subtitle')}</p>
     </div>
   );
 }

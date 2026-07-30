@@ -14,7 +14,7 @@
   position: sticky;
   top: 0;
   z-index: 900;
-  direction: rtl;
+
   /* Crucial for Hebrew alignment! */
   transition: all 0.3s ease;
 }
@@ -147,7 +147,7 @@
   align-items: center;
   justify-content: center;
   padding: 2px;
-  margin-right: 4px;
+  margin-inline-start: 4px;
   box-shadow: 0 2px 4px rgba(249, 115, 22, 0.2);
 }
 
@@ -211,7 +211,7 @@
 .profile-dropdown-menu {
   position: absolute;
   top: 130%;
-  left: 0;
+  inset-inline-end: 0;
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -224,7 +224,7 @@
   flex-direction: column;
   z-index: 1000;
   animation: slideDownFade 0.2s ease forwards;
-  direction: rtl;
+
 }
 
 .dark-theme .profile-dropdown-menu {
@@ -288,12 +288,12 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  text-align: right;
+
   transition: background-color 0.2s;
 }
 
 .dropdown-text-space {
-  margin-right: 8px;
+  margin-inline-start: 8px;
 }
 
 .dropdown-item:hover {
@@ -311,7 +311,7 @@
 .dropdown-icon {
   width: 18px;
   height: 18px;
-  margin-left: 10px;
+  margin-inline-end: 10px;
 }
 
 .logout-item {
@@ -332,7 +332,7 @@
   color: var(--text-main, #0f172a);
   cursor: pointer;
   padding: 8px;
-  margin-left: 8px;
+  margin-inline-end: 8px;
   border-radius: 8px;
   transition: background-color 0.2s;
   align-items: center;
@@ -374,7 +374,7 @@
     flex-direction: column;
     gap: 4px;
     position: absolute;
-    left: 50%;
+    inset-inline-end: 50%;
     transform: translateX(-50%);
   }
 
@@ -407,7 +407,7 @@
     display: flex;
     position: fixed;
     top: 0;
-    right: -280px; /* Hide off-screen to the right (RTL) */
+    inset-inline-start: -280px; /* Hide off-screen to the right (RTL) */
     width: 280px;
     height: 100vh;
     height: 100dvh;
@@ -426,7 +426,7 @@
   }
 
   .navbar-links-container.open {
-    right: 0;
+    inset-inline-start: 0;
   }
 
   .mobile-menu-header {
@@ -481,7 +481,7 @@
     display: block;
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-end: 0;
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.4);

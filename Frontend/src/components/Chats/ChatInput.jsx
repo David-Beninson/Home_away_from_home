@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Send, Sparkles, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/api';
 
 export function ChatInput({ messageText, setMessageText, sendMessage, activeChat, messages = [] }) {
+  const { t } = useTranslation(['chat/chats']);
   const currentUser = useSelector((state) => state.auth.user);
   const userRole = currentUser?.user_type || 'guest';
   const [suggestions, setSuggestions] = useState([]);
@@ -45,7 +46,7 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
     return (
       <div className="chat-input-wrapper">
         <div className="chat-input-disabled-banner">
-          הצ'אט יתאפשר רק לאחר אישור האירוח
+          {t('chat/chats:input.disabled_banner')}
         </div>
       </div>
     );
@@ -58,7 +59,7 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
           <div className="chat-icebreakers-list scrollbar-none">
             <div className="chat-icebreaker-loading-pill">
               <Sparkles size={13} className="icebreaker-sparkle" />
-              <span>הAI שלנו מנתח את שיחת הצ'אט</span>
+              <span>{t('chat/chats:input.ai_analyzing')}</span>
               <span className="chat-typing-dots">
                 <span>.</span>
                 <span>.</span>
@@ -72,13 +73,13 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
           <div className="chat-icebreakers-header">
             <span className="chat-ai-badge">
               <Sparkles size={12} />
-              <span>הצעות לשיחה </span>
+              <span>{t('chat/chats:input.ai_suggestions_title')}</span>
             </span>
             <button 
               type="button" 
               className="chat-ai-refresh-btn" 
               onClick={fetchSuggestions}
-              title="רענן הצעות AI"
+              title={t('chat/chats:input.btn_refresh_ai')}
             >
               <RefreshCw size={12} />
             </button>
@@ -90,7 +91,7 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
                 type="button"
                 className="chat-icebreaker-pill"
                 onClick={() => handleQuickClick(suggestion)}
-                title="לחץ לבחירת הצעת התשובה"
+                title={t('chat/chats:input.btn_suggestion_tooltip')}
               >
                 {suggestion}
               </button>
@@ -101,7 +102,7 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
       <form onSubmit={sendMessage} className="chat-input-form">
         <input
           type="text"
-          placeholder="הקלד הודעה..."
+          placeholder={t('chat/chats:input.placeholder')}
           className="chat-input"
           value={messageText}
           onChange={e => setMessageText(e.target.value)}

@@ -6,10 +6,12 @@ import { postsApi, bookingsApi } from '../../api/api';
 import { checkPostUrgency } from '../../utils/date';
 import { fetchPosts } from '../../store/requestsSlice';
 import { isUpcomingOrActiveChat } from '../../utils/chatUtils';
+import { useTranslation } from 'react-i18next';
 import './RequestsList.css';
 
 
 export default function RequestsList({ userRole: userRoleProp }) {
+  const { t } = useTranslation(['guest/requests']);
   const dispatch = useDispatch();
   const { posts, loading, error } = useSelector((state) => state.requests);
   const user = useSelector((state) => state.auth.user);
@@ -121,7 +123,7 @@ export default function RequestsList({ userRole: userRoleProp }) {
           : Array.isArray(detail)
           ? detail.map(e => e.msg || e.detail).join(', ')
           : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
-        alert('שגיאה באישור הבקשה: ' + errorMsg);
+        alert(t('guest/requests:list.error_approve', { error: errorMsg }));
       } finally {
         setClaimingPostId(null);
       }
@@ -134,17 +136,17 @@ export default function RequestsList({ userRole: userRoleProp }) {
   const waitingHostCount = activePosts.filter(p => p.status === 'pending' && Boolean(p.is_direct_request)).length;
 
   const filterTabs = currentRole === 'guest' ? [
-    { id: 'waiting_host', label: waitingHostCount > 0 ? `מחכה לאישור מארח (${waitingHostCount})` : 'מחכה לאישור מארח' },
-    { id: 'pending', label: pendingForGuestCount > 0 ? `ממתין לאישורך (${pendingForGuestCount})` : 'ממתין לאישורך' },
-    { id: 'open', label: 'מחפש מארח' },
-    { id: 'all', label: 'הכל' },
-    { id: 'approved', label: 'מאושר' },
+    { id: 'waiting_host', label: waitingHostCount > 0 ? t('guest/requests:list.filter_waiting_host', { count: waitingHostCount }) : t('guest/requests:list.filter_waiting_host_zero') },
+    { id: 'pending', label: pendingForGuestCount > 0 ? t('guest/requests:list.filter_pending_guest', { count: pendingForGuestCount }) : t('guest/requests:list.filter_pending_guest_zero') },
+    { id: 'open', label: t('guest/requests:list.filter_open') },
+    { id: 'all', label: t('guest/requests:list.filter_all') },
+    { id: 'approved', label: t('guest/requests:list.filter_approved') },
   ] : [
-    { id: 'urgent', label: 'מחכה לאישור דחוף' },
-    { id: 'pending', label: 'ממתין' },
-    { id: 'all', label: 'הכל' },
-    { id: 'approved', label: 'מאושר' },
-    { id: 'rejected', label: 'נדחה' },
+    { id: 'urgent', label: t('guest/requests:list.filter_urgent') },
+    { id: 'pending', label: t('guest/requests:list.filter_pending_host') },
+    { id: 'all', label: t('guest/requests:list.filter_all') },
+    { id: 'approved', label: t('guest/requests:list.filter_approved') },
+    { id: 'rejected', label: t('guest/requests:list.filter_rejected') },
   ];
 
 
@@ -164,7 +166,7 @@ export default function RequestsList({ userRole: userRoleProp }) {
 
       {loading && displayedPosts.length === 0 ? (
         <div className="loading-container">
-          <p>טוען בקשות אירוח...</p>
+          <p>{t('guest/requests:list.loading')}</p>
         </div>
       ) : !loading && error && displayedPosts.length === 0 ? (
         <div className="empty-state">
@@ -172,7 +174,7 @@ export default function RequestsList({ userRole: userRoleProp }) {
         </div>
       ) : displayedPosts.length === 0 ? (
         <div className="empty-state">
-          <p>אין בקשות בקטגוריה זו כרגע.</p>
+          <p>{t('guest/requests:list.empty_category')}</p>
         </div>
       ) : (
         displayedPosts.map((post) => (
@@ -195,7 +197,7 @@ export default function RequestsList({ userRole: userRoleProp }) {
             onClick={() => setIsHistoryOpen(prev => !prev)}
           >
             <span className="requests-history-title">
-              היסטוריית בקשות ({pastRequests.length})
+              {t('guest/requests:list.history_title', { count: pastRequests.length })}
             </span>
             <span className={`requests-history-chevron ${isHistoryOpen ? 'open' : ''}`}>
               ▼

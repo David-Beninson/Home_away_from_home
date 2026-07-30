@@ -1,23 +1,25 @@
 import { useState } from 'react';
 import { Utensils, Zap, Moon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&h=400&fit=crop&auto=format';
 
 export default function HostCardMedia({ host }) {
+  const { t } = useTranslation(['common/host_card']);
   const [imageError, setImageError] = useState(false);
 
   const imageUrl = !imageError && host?.image_url ? host.image_url : DEFAULT_IMAGE;
-  const hostName = host?.full_name || host?.host_name || 'משפחת כהן';
+  const hostName = host?.full_name || host?.host_name || t('common/host_card:default_name');
   const hasLodging = host?.has_lodging !== undefined ? host.has_lodging : true;
 
   // Kashrut label formatter
   const getKashrutLabel = (level) => {
-    if (!level) return 'מהדרין';
+    if (!level) return t('common/host_card:kashrut.mehadrin');
     const norm = String(level).toLowerCase();
-    if (norm === 'glatt_mehadrin' || norm === 'mehadrin') return 'מהדרין';
-    if (norm === 'kosher' || norm === 'כשר') return 'כשר';
-    if (norm === 'basic') return 'כשר בסיסי';
-    if (norm === 'none') return 'ללא כשרות';
+    if (norm === 'glatt_mehadrin' || norm === 'mehadrin') return t('common/host_card:kashrut.mehadrin');
+    if (norm === 'kosher' || norm === 'כשר') return t('common/host_card:kashrut.kosher');
+    if (norm === 'basic') return t('common/host_card:kashrut.basic');
+    if (norm === 'none') return t('common/host_card:kashrut.none');
     return level;
   };
 
@@ -64,7 +66,7 @@ export default function HostCardMedia({ host }) {
       {hasLodging && (
         <div className="card-badge-lodging">
           <Moon size={12} className="badge-icon-xs" />
-          לינה
+          {t('common/host_card:lodging')}
         </div>
       )}
     </div>

@@ -3,9 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout, fetchCurrentUser } from '../../../store/authSlice';
 import { verificationApi } from '../../../api/api';
 import { useSupportChat } from '../../../hooks/useSupportChat';
+import { useTranslation } from 'react-i18next';
 import './SuspendedOverlay.css';
 
 export default function SuspendedOverlay() {
+  const { t } = useTranslation(['common/suspended']);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
 
@@ -67,12 +69,12 @@ export default function SuspendedOverlay() {
   const handleSubmitDocuments = async (e) => {
     e.preventDefault();
     if (!selfieFile || !docFile) {
-      setErrorMsg('אנא העלה גם תמונת פרופיל / סלפי וגם תעודת זהות / חוגר.');
+      setErrorMsg(t('common/suspended:errors.missing_files'));
       return;
     }
 
     if (verificationType === 'lone_soldier' && !secondaryDocFile) {
-      setErrorMsg('חובה להעלות תעודת בודד או עולה חדש.');
+      setErrorMsg(t('common/suspended:errors.missing_secondary'));
       return;
     }
 
@@ -105,7 +107,7 @@ export default function SuspendedOverlay() {
       const { data } = err.response || {};
       // Avoid rendering raw objects/arrays in JSX which throws React errors
       const formatted = (data && data.detail) ? (Array.isArray(data.detail) ? data.detail.map(d => d.msg || JSON.stringify(d)).join(', ') : (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail))) : null;
-      setErrorMsg(formatted || 'העלאת המסמכים נכשלה. אנא נסה שוב.');
+      setErrorMsg(formatted || t('common/suspended:errors.upload_failed'));
     }
   };
 
@@ -119,7 +121,7 @@ export default function SuspendedOverlay() {
         </div>
 
         <button className="logout-btn-overlay" onClick={() => dispatch(logout())}>
-          יציאה מהחשבון 🚪
+          {t('common/suspended:header.logout')}
         </button>
       </header>
 
@@ -143,22 +145,22 @@ export default function SuspendedOverlay() {
 
             <div>
               <h2 className="status-title">
-                {status === 'pending_submission' && 'אימות זהות נדרש לשימוש במערכת'}
-                {status === 'pending_ai' && 'סורק מסמכים (בינה מלאכותית)...'}
-                {status === 'pending_admin' && 'המסמכים בבדיקת צוות הנהלת המערכת'}
-                {status === 'rejected' && 'בקשת האימות נדחתה'}
-                {status === 'suspended' && 'חשבונך מושהה מהמערכת'}
+                {status === 'pending_submission' && t('common/suspended:status_titles.pending_submission')}
+                {status === 'pending_ai' && t('common/suspended:status_titles.pending_ai')}
+                {status === 'pending_admin' && t('common/suspended:status_titles.pending_admin')}
+                {status === 'rejected' && t('common/suspended:status_titles.rejected')}
+                {status === 'suspended' && t('common/suspended:status_titles.suspended')}
               </h2>
               <div className="status-subtitle">
-                {status === 'pending_submission' && 'כדי להבטיח את ביטחון הקהילה, אנא העלה מסמכי אימות מתאימים.'}
-                {status === 'pending_admin' && 'המסמכים שלך נסרקו בהצלחה והועברו לאישור סופי. תקבל עדכון מנהל בהקדם.'}
-                {status === 'rejected' && (verificationDetails?.rejection_reason || 'התמונה לא הייתה קריאה. אנא העלה מסמכים מחדש.')}
+                {status === 'pending_submission' && t('common/suspended:status_subtitles.pending_submission')}
+                {status === 'pending_admin' && t('common/suspended:status_subtitles.pending_admin')}
+                {status === 'rejected' && (verificationDetails?.rejection_reason || t('common/suspended:status_subtitles.default_rejection'))}
                 {status === 'suspended' && (
                   <>
-                    לצערנו חשבונך מושהה מהמערכת. אנא פנו למנהלים דרך הצ'אט למטה.
+                    {t('common/suspended:status_subtitles.suspended_desc')}
                     {statusReason && (
                       <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold' }}>
-                        סיבת השעיה: {statusReason}
+                        {t('common/suspended:status_subtitles.suspension_reason')}{statusReason}
                       </div>
                     )}
                   </>
@@ -171,17 +173,17 @@ export default function SuspendedOverlay() {
           {(status === 'pending_submission' || status === 'rejected') && submitStep === 0 && (
             <form onSubmit={handleSubmitDocuments}>
               <div className="verify-type-section">
-                <span className="verification-type-label">סוג אימות נדרש:</span>
+                <span className="verification-type-label">{t('common/suspended:form.type_label')}</span>
                 <div className="verify-type-options">
                   {user?.user_type === 'host' ? (
                     <div className="verify-type-badge">
                       <span>🏠</span>
-                      <span>אימות מארח</span>
+                      <span>{t('common/suspended:form.host_type')}</span>
                     </div>
                   ) : (
                     <div className="verify-type-badge">
                       <span>🪖</span>
-                      <span>אימות משרת בודד/ה (צבא / שירות לאומי)</span>
+                      <span>{t('common/suspended:form.guest_type')}</span>
                     </div>
                   )}
                 </div>
@@ -192,7 +194,7 @@ export default function SuspendedOverlay() {
                   <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'selfie')} />
                   <div className="upload-icon">📸</div>
                   <div className="upload-field-title">
-                    {verificationType === 'civilian' ? 'תמונת פרופיל / סלפי' : 'תמונת סלפי'}
+                    {verificationType === 'civilian' ? t('common/suspended:form.selfie_host') : t('common/suspended:form.selfie_guest')}
                   </div>
                   {selfieFile && <div className="file-preview-name">✓ {selfieFile.name}</div>}
                 </label>
@@ -201,7 +203,7 @@ export default function SuspendedOverlay() {
                   <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'doc')} />
                   <div className="upload-icon">🪪</div>
                   <div className="upload-field-title">
-                    {verificationType === 'civilian' ? 'תעודת זהות ' : 'ת"ז או חוגר'}
+                    {verificationType === 'civilian' ? t('common/suspended:form.id_host') : t('common/suspended:form.id_guest')}
                   </div>
                   {docFile && <div className="file-preview-name">✓ {docFile.name}</div>}
                 </label>
@@ -210,7 +212,7 @@ export default function SuspendedOverlay() {
                   <label className="upload-field-box">
                     <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'secondary_doc')} />
                     <div className="upload-icon">📄</div>
-                    <div className="upload-field-title">תעודת בודד או עולה חדש</div>
+                    <div className="upload-field-title">{t('common/suspended:form.secondary_doc')}</div>
                     {secondaryDocFile && <div className="file-preview-name">✓ {secondaryDocFile.name}</div>}
                   </label>
                 )}
@@ -223,7 +225,7 @@ export default function SuspendedOverlay() {
               )}
 
               <button type="submit" className="submit-verify-btn">
-                שלח לבדיקה, ואישור מנהל 🚀
+                {t('common/suspended:form.submit')}
               </button>
             </form>
           )}
@@ -232,13 +234,13 @@ export default function SuspendedOverlay() {
           {isSubmitting && (
             <div className="ai-steps-container">
               <div className="ai-step-item">
-                {submitStep >= 1 ? '✅' : '⏳'} <span>מעלה קבצים לשרת מאובטח...</span>
+                {submitStep >= 1 ? '✅' : '⏳'} <span>{t('common/suspended:ai_progress.uploading')}</span>
               </div>
               <div className="ai-step-item">
-                {submitStep >= 2 ? <div className="ai-step-spinner" /> : '⏳'} <span>סורק פנים ותעודה (מופעל על ידי בינה מלאכותית)...</span>
+                {submitStep >= 2 ? <div className="ai-step-spinner" /> : '⏳'} <span>{t('common/suspended:ai_progress.scanning')}</span>
               </div>
               <div className="ai-step-item">
-                {submitStep >= 3 ? '✅' : '⏳'} <span>מעביר לתור אישור סופי של מנהלי המערכת...</span>
+                {submitStep >= 3 ? '✅' : '⏳'} <span>{t('common/suspended:ai_progress.queueing')}</span>
               </div>
             </div>
           )}
@@ -247,10 +249,10 @@ export default function SuspendedOverlay() {
           {status === 'pending_admin' && (
             <div className="pending-admin-info-card">
               <div className="pending-admin-info-title">
-                ציון התאמה וסריקת AI: {verificationDetails?.ai_confidence_score || '85.0'}%
+                {t('common/suspended:admin_stats.ai_score', { score: verificationDetails?.ai_confidence_score || '85.0' })}
               </div>
               <div className="pending-admin-info-desc">
-                הבקשה שלך נמצאת בראש תור המנהלים. הודעה תישלח ברגע שהפרופיל יאושר.
+                {t('common/suspended:admin_stats.queue_msg')}
               </div>
             </div>
           )}
@@ -260,13 +262,13 @@ export default function SuspendedOverlay() {
         <div className="admin-support-box">
           <div className="support-title">
             <span>💬</span>
-            <span>צ'אט תמיכה מול הנהלת המערכת</span>
+            <span>{t('common/suspended:chat.title')}</span>
           </div>
 
           <div className="support-chat-placeholder">
             {messages.length === 0 ? (
               <div className="support-empty-state">
-                שלום! אנו כאן לעזור לך בכל שאלה.
+                {t('common/suspended:chat.empty')}
               </div>
             ) : (
               messages.map((msg) => {
@@ -289,7 +291,7 @@ export default function SuspendedOverlay() {
           <form onSubmit={sendMessage} className="support-input-row">
             <input
               type="text"
-              placeholder="כתוב הודעה למנהלים..."
+              placeholder={t('common/suspended:chat.placeholder')}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyDown={(e) => {
@@ -299,7 +301,7 @@ export default function SuspendedOverlay() {
                 }
               }}
             />
-            <button type="submit" disabled={!messageText.trim()}>שלח ✉️</button>
+            <button type="submit" disabled={!messageText.trim()}>{t('common/suspended:chat.send')}</button>
           </form>
         </div>
       </div>

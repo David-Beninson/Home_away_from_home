@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { X, Star } from 'lucide-react';
 import { reviewsApi } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 import './Reviews.css';
 
 const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
+  const { t } = useTranslation(['common/reviews']);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [content, setContent] = useState('');
@@ -15,11 +17,11 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
 
   const handleSubmit = async () => {
     if (rating < 1) {
-      setError('נא לספק דירוג בין 1 ל-5 כוכבים.');
+      setError(t('common/reviews:pending.error_rating'));
       return;
     }
     if (!content.trim()) {
-      setError('נא לספק תוכן לביקורת.');
+      setError(t('common/reviews:pending.error_content'));
       return;
     }
 
@@ -35,7 +37,7 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
       });
       onSuccess();
     } catch (err) {
-      setError('שגיאה בשליחת הביקורת, אנא נסה שנית.');
+      setError(t('common/reviews:pending.error_submit'));
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,7 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
         <div className="chat-modal-header">
           <div className="chat-modal-title">
             <Star size={20} className="chat-modal-icon text-amber" />
-            <h3>שתף/י את החוויה שלך</h3>
+            <h3>{t('common/reviews:pending.title')}</h3>
           </div>
           <button 
             type="button" 
@@ -60,14 +62,14 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
 
         <div className="chat-modal-body">
           <p className="review-intro">
-            האירוח לשבת הסתיים. נשמח אם תשתפו את החוויה כדי לעזור לקהילה שלנו!
+            {t('common/reviews:pending.intro')}
           </p>
           
           {error && <div className="review-error">{error}</div>}
 
           <div className="review-form">
             <div className="review-rating-group">
-              <label>דירוג (חובה)</label>
+              <label>{t('common/reviews:pending.rating_label')}</label>
               <div className="stars-container">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -88,12 +90,12 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
             </div>
             
             <div className="review-content-group">
-              <label>איך היה האירוח?</label>
+              <label>{t('common/reviews:pending.content_label')}</label>
               <textarea
                 rows={4}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="ספר/י לנו..."
+                placeholder={t('common/reviews:pending.content_placeholder')}
                 required
               />
             </div>
@@ -104,21 +106,21 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
                 checked={isSevere}
                 onChange={(e) => setIsSevere(e.target.checked)}
               />
-              <span className="text-red">דווח על בעיית בטיחות או התנהגות חמורה (התרעה מיידית למנהלים)</span>
+              <span className="text-red">{t('common/reviews:pending.severe_label')}</span>
             </label>
           </div>
         </div>
 
         <div className="chat-modal-footer">
           <button onClick={onClose} className="chat-modal-btn-close" disabled={loading}>
-            הזכר לי מאוחר יותר
+            {t('common/reviews:pending.btn_later')}
           </button>
           <button 
             onClick={handleSubmit} 
             className="review-submit-btn"
             disabled={loading}
           >
-            {loading ? 'שולח...' : 'שלח ביקורת'}
+            {loading ? t('common/reviews:pending.btn_submitting') : t('common/reviews:pending.btn_submit')}
           </button>
         </div>
       </div>

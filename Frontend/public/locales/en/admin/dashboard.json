@@ -1,0 +1,35 @@
+{
+  "title": "Dashboard and Statistics",
+  "subtitle": "Classic and detailed overview of system performance and metrics",
+  "error_loading": "Error loading dashboard data. Please make sure you are logged in correctly.",
+  "total": "Total",
+  "metrics": {
+    "registered_hosts": "Registered Hosts",
+    "registered_guests": "Registered Guests",
+    "soldiers": "Soldiers and National Service",
+    "active_matches": "Active Matches",
+    "match_rate": "Match Success Rate",
+    "open_posts": "Open Requests",
+    "suspended_users": "Suspended Users",
+    "banned_users": "Banned Users"
+  },
+  "charts": {
+    "users_distribution": "System Users Distribution",
+    "requests_status": "Hosting Requests Status",
+    "matches_status": "System Matches Status",
+    "top_cities": "Top Cities in System (Hosts)",
+    "kashrut_levels": "Kashrut Levels Breakdown",
+    "empty_cities": "No cities have been defined by hosts yet",
+    "empty_kashrut": "No kashrut data in the system yet"
+  },
+  "chart_labels": {
+    "hosts": "Registered Hosts",
+    "guests": "Regular Guests",
+    "soldiers": "Soldiers / National Service",
+    "open_requests": "Open Requests",
+    "urgent_requests": "Urgent Requests",
+    "matched_requests": "Matched Requests",
+    "active_matches": "Active Matches",
+    "pending_matches": "Pending Matches"
+  }
+}

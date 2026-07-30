@@ -6,36 +6,11 @@ import { fetchCurrentUser, logout } from '../../store/authSlice';
 import { LogOutIcon, SettingsIcon } from '../../components/Common/Icons';
 import { getUserInitials } from '../../utils/user';
 import { getProfileFieldDefinitions, formatFieldValue } from './profileFieldsConfig';
+import { useTranslation } from 'react-i18next';
 import './Profile.css';
 
-// Translation dictionary for dynamic fields
-const labelTranslations = {
-  // Guest Fields
-  "Giving To Host": "מביא/ה מתנה למארח",
-  "Food Preferences": "העדפות מזון",
-  "Kosher Food": "אוכל כשר",
-  "Guest Address": "כתובת מגורים",
-  "Unit Description": "יחידה צבאית",
-  "Food Allergies": "אלרגיות / רגישויות",
-  "Religious Level": "דת",
-  "Gender": "מין",
-  "Service Type": "סוג שירות",
-  "Release Date": "תאריך שחרור",
-  "Is Anonymous": "פרופיל אנונימי",
-
-  // Host Fields
-  "Residential Address": "כתובת מגורים",
-  "Neighborhood Type": "סוג שכונה",
-  "Pets Description": "חיות מחמד",
-  "Housing Type": "סוג דיור",
-  "Max Guests": "מקסימום אורחים",
-  "Kashrut Level": "רמת כשרות",
-  "Num Beds": "מספר מיטות",
-  "Num Bedrooms": "מספר חדרי שינה",
-  "Accessibility Level": "נגישות"
-};
-
 export default function ProfilePage() {
+  const { t } = useTranslation(['profile/profile']);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -98,15 +73,15 @@ export default function ProfilePage() {
       // Refresh the current user profile in Redux store
       await dispatch(fetchCurrentUser()).unwrap();
 
-      setMessage({ type: 'success', text: 'הפרופיל עודכן בהצלחה!' });
+      setMessage({ type: 'success', text: t('profile/profile:messages.success') });
       setIsEditing(false); // Switch back to read-only view on success
     } catch (err) {
       console.error('Failed to update profile:', err);
       const detail = err.response?.data?.detail;
       const errorText = Array.isArray(detail)
         ? detail.map((d) => d.msg || JSON.stringify(d)).join(', ')
-        : (detail || 'שגיאה בעדכון הפרופיל. נסה שוב.');
-      setMessage({ type: 'error', text: `שגיאה בעדכון הפרופיל: ${errorText}` });
+        : (detail || t('profile/profile:messages.error_default'));
+      setMessage({ type: 'error', text: t('profile/profile:messages.error_prefix', { error: errorText }) });
     } finally {
       setSaving(false);
     }
@@ -120,7 +95,7 @@ export default function ProfilePage() {
   if (loading && !user) {
     return (
       <div className="profile-container">
-        <div className="loading-screen">טוען פרופיל...</div>
+        <div className="loading-screen">{t('profile/profile:loading')}</div>
       </div>
     );
   }
@@ -132,8 +107,16 @@ export default function ProfilePage() {
   const userInitial = getUserInitials(user);
   const locationSubtext =
     user.user_type === 'guest'
-      ? profileData.unit_name || profileData.guest_address || 'טרם עודכן מיקום/יחידה'
-      : profileData.residential_address || 'טרם עודכנה עיר מגורים';
+      ? profileData.unit_name || profileData.guest_address || t('profile/profile:location_unspecified_guest')
+      : profileData.residential_address || t('profile/profile:location_unspecified_host');
+
+  // Convert label string to translation key format
+  const getFieldLabel = (labelStr) => {
+    // Basic mapping for profileFieldsConfig labels -> translation keys
+    // E.g., 'Num Beds' -> 'num_beds', 'Food Allergies' -> 'food_allergies'
+    const key = labelStr.toLowerCase().replace(/ /g, '_').replace(/\//g, '');
+    return t(`profile/profile:fields.${key}`, labelStr);
+  };
 
   return (
     <div className="profile-container" dir="rtl">
@@ -141,7 +124,7 @@ export default function ProfilePage() {
         {!isEditing ? (
           /* ================= VIEW MODE ================= */
           <>
-            <h1 className="page-title">הפרופיל שלי</h1>
+            <h1 className="page-title">{t('profile/profile:title')}</h1>
 
             <div className="profile-hero">
               <div className="hero-top">
@@ -151,22 +134,22 @@ export default function ProfilePage() {
                   <p>{locationSubtext}</p>
                 </div>
                 <div className="hero-role">
-                  {user.user_type === 'host' ? 'משפחה מארחת' : 'חייל/ת (אורח)'}
+                  {user.user_type === 'host' ? t('profile/profile:role_host') : t('profile/profile:role_guest')}
                 </div>
               </div>
 
               <div className="hero-stats">
                 <div className="stat-item">
                   <span className="stat-value">0</span>
-                  <span className="stat-label">אירוחים</span>
+                  <span className="stat-label">{t('profile/profile:stats.hostings')}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-value">0</span>
-                  <span className="stat-label">מארחים</span>
+                  <span className="stat-label">{t('profile/profile:stats.hosts')}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-value">0</span>
-                  <span className="stat-label">לינות</span>
+                  <span className="stat-label">{t('profile/profile:stats.nights')}</span>
                 </div>
               </div>
             </div>
@@ -176,11 +159,11 @@ export default function ProfilePage() {
 
               {/* Base User Account Info */}
               <div className="detail-row">
-                <span className="detail-label">אימייל</span>
+                <span className="detail-label">{t('profile/profile:fields.email')}</span>
                 <span className="detail-value">{user.email}</span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">טלפון</span>
+                <span className="detail-label">{t('profile/profile:fields.phone')}</span>
                 <span className="detail-value" dir="ltr">{user.phone_number}</span>
               </div>
 
@@ -193,7 +176,7 @@ export default function ProfilePage() {
                   <div className="detail-row" key={key}>
                     <span className="detail-label">
                       {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
-                      {labelTranslations[fieldDef.label] || fieldDef.label}
+                      {getFieldLabel(fieldDef.label)}
                     </span>
                     <span className="detail-value">{formattedVal}</span>
                   </div>
@@ -204,11 +187,11 @@ export default function ProfilePage() {
             <div className="profile-footer-actions">
               <button className="btn-outline btn-logout" onClick={handleLogout}>
                 <LogOutIcon />
-                יציאה
+                {t('profile/profile:buttons.logout')}
               </button>
               <button className="btn-outline" onClick={() => setIsEditing(true)}>
                 <SettingsIcon />
-                עריכת פרופיל
+                {t('profile/profile:buttons.edit_profile')}
               </button>
             </div>
           </>
@@ -216,8 +199,8 @@ export default function ProfilePage() {
           /* ================= EDIT MODE ================= */
           <>
             <div className="profile-header">
-              <h2>עריכת פרופיל</h2>
-              <p>עדכן את הפרטים האישיים והעדפות האירוח שלך</p>
+              <h2>{t('profile/profile:edit.title')}</h2>
+              <p>{t('profile/profile:edit.subtitle')}</p>
             </div>
 
             {message.text && (
@@ -241,7 +224,7 @@ export default function ProfilePage() {
                     >
                       <label htmlFor={key}>
   {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
-  {labelTranslations[fieldDef.label] || fieldDef.label}
+  {getFieldLabel(fieldDef.label)}
                       </label >
 
   {
@@ -270,7 +253,7 @@ export default function ProfilePage() {
           checked={Boolean(profileData[key])}
           onChange={handleChange}
         />
-        <span className="checkbox-text">{profileData[key] ? 'כן' : 'לא'}</span>
+        <span className="checkbox-text">{profileData[key] ? t('profile/profile:edit.yes') : t('profile/profile:edit.no')}</span>
       </div>
     ) : (
       <input
@@ -295,10 +278,10 @@ export default function ProfilePage() {
       className="btn-outline btn-cancel-profile"
       onClick={() => setIsEditing(false)}
     >
-      ביטול
+      {t('profile/profile:buttons.cancel')}
     </button>
     <button type="submit" className="save-btn" disabled={saving}>
-      {saving ? 'שומר...' : 'שמור שינויים'}
+      {saving ? t('profile/profile:buttons.saving') : t('profile/profile:buttons.save')}
     </button>
   </div>
             </form >

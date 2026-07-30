@@ -96,11 +96,11 @@
 }
 
 .drp-nav-btn.prev {
-  right: 0;
+  inset-inline-start: 0;
 }
 
 .drp-nav-btn.next {
-  left: 0;
+  inset-inline-end: 0;
 }
 
 .drp-calendars {
@@ -198,10 +198,10 @@
   background: linear-gradient(135deg, rgb(27, 61, 123), rgb(37, 99, 235)) !important;
   color: white !important;
   font-weight: 700;
-  border-top-right-radius: 12px !important;
-  border-bottom-right-radius: 12px !important;
-  border-top-left-radius: 0 !important;
-  border-bottom-left-radius: 0 !important;
+  border-start-start-radius: 12px !important;
+  border-end-start-radius: 12px !important;
+  border-start-end-radius: 0 !important;
+  border-end-end-radius: 0 !important;
 }
 
 /* End Date */
@@ -210,10 +210,10 @@
   background: linear-gradient(135deg, rgb(27, 61, 123), rgb(37, 99, 235)) !important;
   color: white !important;
   font-weight: 700;
-  border-top-left-radius: 12px !important;
-  border-bottom-left-radius: 12px !important;
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
+  border-start-end-radius: 12px !important;
+  border-end-end-radius: 12px !important;
+  border-start-start-radius: 0 !important;
+  border-end-start-radius: 0 !important;
 }
 
 /* Single date selection when start and end are same or end is not set yet */

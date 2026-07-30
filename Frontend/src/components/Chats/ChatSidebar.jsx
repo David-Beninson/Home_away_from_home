@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react';
 import { ChatItem } from './ChatItem';
 import { isUpcomingOrActiveChat } from '../../utils/chatUtils';
+import { useTranslation } from 'react-i18next';
 
 export function ChatSidebar({ chats = [], loading, activeChat, onSelectChat }) {
+  const { t } = useTranslation(['chat/chats']);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const activeChats = chats.filter(isUpcomingOrActiveChat);
@@ -17,16 +19,16 @@ export function ChatSidebar({ chats = [], loading, activeChat, onSelectChat }) {
 
   return (
     <div className="chats-sidebar">
-      <div className="chats-sidebar-header">הצ׳אטים שלי</div>
+      <div className="chats-sidebar-header">{t('chat/chats:sidebar.title')}</div>
       <div className="chats-list">
         {loading && chats.length === 0 ? (
-          <p className="chats-status-message">טוען צ׳אטים...</p>
+          <p className="chats-status-message">{t('chat/chats:sidebar.loading')}</p>
         ) : chats.length === 0 ? (
-          <p className="chats-status-message">אין שיחות.</p>
+          <p className="chats-status-message">{t('chat/chats:sidebar.no_chats')}</p>
         ) : (
           <>
             {activeChats.length === 0 ? (
-              <p className="chats-status-message">אין שיחות פעילות.</p>
+              <p className="chats-status-message">{t('chat/chats:sidebar.no_active_chats')}</p>
             ) : (
               activeChats.map(chat => (
                 <ChatItem
@@ -46,7 +48,7 @@ export function ChatSidebar({ chats = [], loading, activeChat, onSelectChat }) {
                   onClick={() => setIsHistoryOpen(prev => !prev)}
                 >
                   <span className="chats-history-title">
-                    היסטוריית צ'אטים ({pastChats.length})
+                    {t('chat/chats:sidebar.history_title', { count: pastChats.length })}
                   </span>
                   <span className={`chats-history-chevron ${isHistoryOpen ? 'open' : ''}`}>
                     ▼

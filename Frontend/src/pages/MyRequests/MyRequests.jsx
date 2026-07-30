@@ -5,8 +5,10 @@ import './MyRequests.css';
 import RequestsList from '../../components/RequestsList/RequestsList';
 import CreatePostModal from '../../components/RequestsList/CreatePostModal';
 import { fetchPosts } from '../../store/requestsSlice';
+import { useTranslation } from 'react-i18next';
 
 export default function MyRequests() {
+  const { t } = useTranslation(['guest/requests']);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
 
@@ -18,7 +20,7 @@ export default function MyRequests() {
           onClick={() => setIsModalOpen((prev) => !prev)}
         >
           <Newspaper size={16} />
-          פרסם בקשה חדשה
+          {t('guest/requests:my_requests.create_btn')}
         </button>
       </div>
       <CreatePostModal

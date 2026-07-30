@@ -1,0 +1,83 @@
+{
+  "page": {
+    "loading": "Loading host family details...",
+    "default_host": "Host Family",
+    "kashrut": {
+      "mehadrin": "Mehadrin",
+      "kosher": "Kosher"
+    },
+    "default_message_wa": "Hello {{name}}, I was asking about Shabbat hosting through the Shabbat Host app.",
+    "toast_success": "Hosting request successfully sent to {{name}}!",
+    "toast_error_duplicate": "You have already sent a request to this host or there is an active request."
+  },
+  "header": {
+    "back_btn": "Search"
+  },
+  "hero": {
+    "lodging_available": "Lodging Available",
+    "meals_only": "Meals Only"
+  },
+  "stats": {
+    "spots_label": "Spots",
+    "kashrut_label": "Kashrut",
+    "lodging_label": "Lodging",
+    "lodging_yes": "Available",
+    "lodging_no": "None"
+  },
+  "about": {
+    "title": "About Us"
+  },
+  "sidebar": {
+    "disabled_reason_default": "Cannot send another hosting request",
+    "reviews_count": "({{count}} reviews)",
+    "btn_call": "Call",
+    "btn_message": "Message",
+    "btn_submitting": "Sending Request...",
+    "btn_blocked": "Unable to request hosting",
+    "btn_success": "Request Sent!",
+    "btn_submit": "Send Hosting Request",
+    "urgency_available": "Available for up to {{count}} guests!",
+    "urgency_full": "Sold out for the coming weekend"
+  },
+  "booking_modal": {
+    "title": "Send Hosting Request",
+    "subtitle": "Host: {{name}}",
+    "label_dates": "Select dates / nights (multiple dates can be selected):",
+    "label_date_type": "Hosting and Lodging",
+    "label_guests": "How many guests?",
+    "guests_count": "{{count}} Guests",
+    "guests_1": "1 Guest",
+    "guests_max": "Up to {{count}} available",
+    "label_in_return": "If you bring something or want to give – write here (optional):",
+    "placeholder_in_return": "For example: We'll bring a cake for Shabbat, wine, help with preparations...",
+    "label_notes": "Additional notes (optional):",
+    "placeholder_notes": "For example: Arriving Friday noon, require Mehadrin kosher...",
+    "btn_submitting": "Sending request...",
+    "btn_submit": "Confirm and Send Request",
+    "btn_cancel": "Cancel",
+    "months": {
+      "jan": "January",
+      "feb": "February",
+      "mar": "March",
+      "apr": "April",
+      "may": "May",
+      "jun": "June",
+      "jul": "July",
+      "aug": "August",
+      "sep": "September",
+      "oct": "October",
+      "nov": "November",
+      "dec": "December"
+    },
+    "days": {
+      "sun": "Sunday",
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday"
+    },
+    "date_format": "{{day}}, {{date}} {{month}}"
+  }
+}

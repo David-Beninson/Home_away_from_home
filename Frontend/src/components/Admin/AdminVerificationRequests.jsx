@@ -3,9 +3,10 @@ import { adminApi } from '../../api/api';
 import PageContainer from '../Common/PageContainer/PageContainer';
 import { AdminSupportChatModal } from './AdminSupportChatModal';
 import { AdminRejectModal } from './AdminRejectModal';
-
+import { useTranslation } from 'react-i18next';
 
 export default function AdminVerificationRequests() {
+  const { t } = useTranslation(['admin/verifications']);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,7 +23,7 @@ export default function AdminVerificationRequests() {
       setRequests(res.data || []);
     } catch (err) {
       console.error('Failed to load pending verifications:', err);
-      setError('שגיאה בטעינת בקשות אימות ממתינות.');
+      setError(t('admin/verifications:messages.error_loading'));
     } finally {
       setLoading(false);
     }
@@ -45,12 +46,12 @@ export default function AdminVerificationRequests() {
       setSuccessMsg('');
       setProcessingId(id);
       await adminApi.approveVerification(id);
-      setSuccessMsg('✓ בקשת האימות אושרה בהצלחה והמשתמש הועבר לסטטוס מאושר!');
+      setSuccessMsg(t('admin/verifications:messages.success_approve'));
       setRequests((prev) => prev.filter((r) => r.id !== id));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Failed to approve verification:', err);
-      setError('אישור הבקשה נכשל.');
+      setError(t('admin/verifications:messages.error_approve'));
     } finally {
       setProcessingId(null);
     }
@@ -65,22 +66,22 @@ export default function AdminVerificationRequests() {
       setSuccessMsg('');
       setProcessingId(rejectingId);
       await adminApi.rejectVerification(rejectingId, rejectionReason.trim());
-      setSuccessMsg('✓ הבקשה נדחתה בהצלחה והודעה נשלחה למשתמש.');
+      setSuccessMsg(t('admin/verifications:messages.success_reject'));
       setRequests((prev) => prev.filter((r) => r.id !== rejectingId));
       setRejectingId(null);
       setRejectionReason('');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Failed to reject verification:', err);
-      setError('דחיית הבקשה נכשלה.');
+      setError(t('admin/verifications:messages.error_reject'));
     } finally {
       setProcessingId(null);
     }
   };
 
   const getTypeName = (type) => {
-    if (type === 'lone_soldier') return 'משרת בודד/ה';
-    return '🏠 מארח';
+    if (type === 'lone_soldier') return t('admin/verifications:types.lone_soldier');
+    return t('admin/verifications:types.host');
   };
 
   const token = localStorage.getItem('token') || '';
@@ -103,8 +104,8 @@ export default function AdminVerificationRequests() {
   return (
     <PageContainer loading={loading} error={error}>
       <div className="admin-page-header">
-        <h2 className="admin-page-title">תור בקשות אימות וסינון (Moderation Queue)</h2>
-        <p className="admin-page-subtitle">סקירת מסמכים, ניתוח AI ואישור/דחייה של משתמשים חדשים במערכת</p>
+        <h2 className="admin-page-title">{t('admin/verifications:title')}</h2>
+        <p className="admin-page-subtitle">{t('admin/verifications:subtitle')}</p>
       </div>
 
       {successMsg && (
@@ -116,8 +117,8 @@ export default function AdminVerificationRequests() {
       {requests.length === 0 ? (
         <div className="admin-card admin-empty-card">
           <div className="admin-empty-icon">🎉</div>
-          <h3>אין בקשות אימות ממתינות בתור</h3>
-          <p>כל הבקשות נבדקו ואושרו על ידי צוות המנהלים.</p>
+          <h3>{t('admin/verifications:empty_state.title')}</h3>
+          <p>{t('admin/verifications:empty_state.desc')}</p>
         </div>
       ) : (
         <div className="admin-req-list">
@@ -145,7 +146,7 @@ export default function AdminVerificationRequests() {
               {/* Side-by-side Image Inspection Grid */}
               <div className={`admin-req-img-grid ${req.secondary_document_url ? 'grid-lone-soldier' : ''}`}>
                 <div className="admin-req-img-box">
-                  <div className="admin-req-img-title">תמונת סלפי 📸</div>
+                  <div className="admin-req-img-title">{t('admin/verifications:images.selfie')}</div>
                   <img
                     src={getFullUrl(req.selfie_url)}
                     alt="Selfie"
@@ -157,7 +158,7 @@ export default function AdminVerificationRequests() {
                 </div>
 
                 <div className="admin-req-img-box">
-                  <div className="admin-req-img-title">תעודת זהות / חוגר 🪪</div>
+                  <div className="admin-req-img-title">{t('admin/verifications:images.document')}</div>
                   <img
                     src={getFullUrl(req.document_url)}
                     alt="Document"
@@ -170,7 +171,7 @@ export default function AdminVerificationRequests() {
 
                 {req.secondary_document_url && (
                   <div className="admin-req-img-box">
-                    <div className="admin-req-img-title">תעודת בודד או עולה חדש 📄</div>
+                    <div className="admin-req-img-title">{t('admin/verifications:images.secondary')}</div>
                     <img
                       src={getFullUrl(req.secondary_document_url)}
                       alt="Secondary Document"
@@ -189,7 +190,7 @@ export default function AdminVerificationRequests() {
                   onClick={() => handleOpenSupportChat(req.user_id, req.user_full_name)}
                   className="admin-req-chat-btn"
                 >
-                  💬 צ'אט תמיכה
+                  {t('admin/verifications:actions.support_chat')}
                 </button>
 
                 <button
@@ -197,7 +198,7 @@ export default function AdminVerificationRequests() {
                   disabled={processingId === req.id}
                   className="admin-req-reject-btn"
                 >
-                  דחה בקשה ❌
+                  {t('admin/verifications:actions.reject')}
                 </button>
 
                 <button
@@ -208,10 +209,10 @@ export default function AdminVerificationRequests() {
                   {processingId === req.id ? (
                     <>
                       <span className="admin-btn-spinner" />
-                      <span>מאשר בקשה...</span>
+                      <span>{t('admin/verifications:actions.approving')}</span>
                     </>
                   ) : (
-                    <span>אישור והפעלת חשבון ✓</span>
+                    <span>{t('admin/verifications:actions.approve')}</span>
                   )}
                 </button>
               </div>

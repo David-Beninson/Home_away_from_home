@@ -1,6 +1,7 @@
 
 import HostCard from '../HostCard/HostCard';
 import EmptyResultsState from './EmptyResultsState';
+import { useTranslation } from 'react-i18next';
 
 export default function HostsGrid({
   hosts,
@@ -10,6 +11,7 @@ export default function HostsGrid({
   onBookingRequest,
   onResetFilters
 }) {
+  const { t } = useTranslation(['guest/find_host']);
   if (error) {
     return (
       <div className="alert alert-danger hosts-grid-error">
@@ -19,7 +21,7 @@ export default function HostsGrid({
             onClick={onRetry}
             className="hosts-grid-retry-btn"
           >
-            נסה שנית
+            {t('guest/find_host:grid.retry')}
           </button>
         )}
       </div>
@@ -29,7 +31,7 @@ export default function HostsGrid({
   if (loading) {
     return (
       <div className="hosts-grid-loading">
-        <p>טוען מארחים מתוך בסיס הנתונים...</p>
+        <p>{t('guest/find_host:grid.loading')}</p>
       </div>
     );
   }

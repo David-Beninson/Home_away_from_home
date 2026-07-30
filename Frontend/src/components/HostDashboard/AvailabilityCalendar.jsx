@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { navigateMonth, selectDate, computeDayStatus } from '../../store/availabilitySlice';
+import { useTranslation } from 'react-i18next';
 
 const HEBREW_MONTHS = [
   'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
@@ -41,6 +42,7 @@ const STATUS_LABEL = {
 
 export default function AvailabilityCalendar() {
   const dispatch = useDispatch();
+  const { t } = useTranslation(['host/dashboard']);
   const { rules, overrides, bookings, currentMonth, currentYear, selectedDate, viewMode } =
     useSelector((s) => s.availability);
   const posts = useSelector((s) => s.requests?.posts || []);
@@ -276,7 +278,7 @@ export default function AvailabilityCalendar() {
               className="ac-today-btn"
               onClick={() => setWeekOffset(0)}
             >
-              חזור לשבוע הנוכחי
+              {t('host/dashboard:calendar.btn_today')}
             </button>
           )}
           <button className="ac-nav-btn" id="cal-prev-nav" onClick={handlePrev} aria-label="קודם">
@@ -289,9 +291,9 @@ export default function AvailabilityCalendar() {
       </div>
 
       <div className="ac-legend">
-        <span className="legend-item"><span className="legend-dot dot--booked" />תפוס (יש אורח)</span>
-        <span className="legend-item"><span className="legend-dot dot--pending-flashing" />יש בקשה שטרם אושרה</span>
-        <span className="legend-item"><span className="legend-dot dot--notice" />מחכה לתשובת אורח</span>
+        <span className="legend-item"><span className="legend-dot dot--booked" />{t('host/dashboard:calendar.legend_booked')}</span>
+        <span className="legend-item"><span className="legend-dot dot--pending-flashing" />{t('host/dashboard:calendar.legend_pending')}</span>
+        <span className="legend-item"><span className="legend-dot dot--notice" />{t('host/dashboard:calendar.legend_notice')}</span>
       </div>
 
       {viewMode === 'month' ? (
@@ -321,14 +323,14 @@ export default function AvailabilityCalendar() {
                 >
                   <span className="ac-day-number">{cell.day}</span>
                   {cell.hasPendingRequest && (
-                    <span className="ac-pending-request-dot" title="יש בקשה שטרם אושרה" />
+                    <span className="ac-pending-request-dot" title={t('host/dashboard:calendar.badge_pending')} />
                   )}
                   {cell.hasWaitingGuest && (
-                    <span className="ac-waiting-guest-dot" title="מחכה לתשובת אורח" />
+                    <span className="ac-waiting-guest-dot" title={t('host/dashboard:calendar.badge_waiting')} />
                   )}
                   {cell.status === 'booked' && <span className="ac-booking-dot" />}
-                  {STATUS_LABEL[cell.status] && cell.status !== 'past' && (
-                    <span className="ac-day-label">{STATUS_LABEL[cell.status]}</span>
+                  {cell.status !== 'past' && t(`host/dashboard:calendar.status.${cell.status}`, { defaultValue: '' }) && (
+                    <span className="ac-day-label">{t(`host/dashboard:calendar.status.${cell.status}`)}</span>
                   )}
                 </button>
               )
@@ -356,16 +358,16 @@ export default function AvailabilityCalendar() {
               </div>
               <div className="agenda-status-col">
                 <span className={`agenda-badge agenda-badge--${cell.status}`}>
-                  {STATUS_LABEL[cell.status] || 'עבר'}
+                  {t(`host/dashboard:calendar.status.${cell.status}`, { defaultValue: t('host/dashboard:calendar.status.past') })}
                 </span>
                 {cell.hasPendingRequest && (
                   <span className="agenda-pending-tag">
-                    יש בקשה שטרם אושרה
+                    {t('host/dashboard:calendar.badge_pending')}
                   </span>
                 )}
                 {cell.hasWaitingGuest && (
                   <span className="agenda-waiting-tag">
-                    מחכה לתשובת אורח
+                    {t('host/dashboard:calendar.badge_waiting')}
                   </span>
                 )}
               </div>

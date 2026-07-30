@@ -1,0 +1,54 @@
+{
+  "loading": "טוען מארחים...",
+  "badges": {
+    "sleepover": "לינה",
+    "mehadrin": "מהדרין"
+  },
+  "spots": "מקומות",
+  "empty": {
+    "title": "לא נמצאו מארחים בבסיס הנתונים",
+    "subtitle": "נסה לשנות את מילות החיפוש, להסיר סינונים או לבחור עיר אחרת.",
+    "reset_btn": "איפוס סינונים וחיפוש"
+  },
+  "header": {
+    "default_city": "ירושלים",
+    "title": "מצא מארח לשבת",
+    "friday_format": "{{today}} | כניסת שבת פרשת {{parasha}}: {{candle_lighting}} ({{city}})",
+    "saturday_format": "{{today}} | השבת הבאה: פרשת {{parasha}} ({{friday_date}}): {{candle_lighting}} ({{city}})",
+    "weekday_format": "כניסת שבת פרשת {{parasha}} ({{friday_date}}): {{candle_lighting}} ({{city}})"
+  },
+  "grid": {
+    "retry": "נסה שנית",
+    "loading": "טוען מארחים מתוך בסיס הנתונים..."
+  },
+  "filters": {
+    "search_placeholder": "חפש לפי שם משפחה או עיר...",
+    "labels": {
+      "region": "אזור:",
+      "kashrut": "כשרות:",
+      "lodging": "עם לינה בלבד",
+      "vibe": "🎭 אווירת שולחן:",
+      "sort": "מיון:"
+    },
+    "regions": {
+      "all": "הכל",
+      "center": "מרכז",
+      "jerusalem": "ירושלים",
+      "north": "צפון",
+      "south": "דרום"
+    },
+    "kashrut": {
+      "all": "הכל",
+      "kosher": "כשר",
+      "mehadrin": "מהדרין"
+    },
+    "sort": {
+      "ai": "⚡ התאמה AI",
+      "rating": "דירוג",
+      "spots": "מקומות",
+      "name": "שם"
+    },
+    "results_count": "מארחים",
+    "vibes": ["#שולחן_תוסס", "#שקט_ורגוע", "#שירים_ורקודים", "#אוכל_עדתי", "#צעירים_וחברים"]
+  }
+}

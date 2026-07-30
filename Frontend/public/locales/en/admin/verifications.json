@@ -1,0 +1,30 @@
+{
+  "title": "Verification & Moderation Queue",
+  "subtitle": "Document review, AI analysis, and approval/rejection of new users",
+  "empty_state": {
+    "title": "No pending verification requests",
+    "desc": "All requests have been reviewed and approved by the management team."
+  },
+  "types": {
+    "lone_soldier": "Lone Soldier",
+    "host": "🏠 Host"
+  },
+  "images": {
+    "selfie": "Selfie 📸",
+    "document": "ID / Army ID 🪪",
+    "secondary": "Lone Soldier / New Immigrant Certificate 📄"
+  },
+  "actions": {
+    "support_chat": "💬 Support Chat",
+    "reject": "Reject Request ❌",
+    "approve": "Approve & Activate Account ✓",
+    "approving": "Approving..."
+  },
+  "messages": {
+    "error_loading": "Error loading pending verifications.",
+    "error_approve": "Failed to approve request.",
+    "error_reject": "Failed to reject request.",
+    "success_approve": "Verification request successfully approved and user activated!",
+    "success_reject": "Request successfully rejected and user notified."
+  }
+}

@@ -7,8 +7,10 @@ import PendingOfferBox from './PendingOfferBox';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 import ReviewsListModal from '../Reviews/ReviewsListModal';
 import { postsApi } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 export default function RequestCard({ post, userRole, onAction, isClaiming, onUpdateSuccess }) {
+  const { t } = useTranslation(['guest/requests']);
   const navigate = useNavigate();
   const [isEditingInline, setIsEditingInline] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -17,11 +19,11 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
 
   const handleCancel = async () => {
     if (post.status === 'matched' || post.status === 'approved') {
-      if (!window.confirm('האם את/ה בטוח/ה שברצונך לבטל? המארח יעודכן על כך.')) {
+      if (!window.confirm(t('guest/requests:card.cancel_confirm_matched'))) {
         return;
       }
     } else {
-      if (!window.confirm('האם לבטל בקשה זו?')) {
+      if (!window.confirm(t('guest/requests:card.cancel_confirm_open'))) {
         return;
       }
     }
@@ -32,7 +34,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
       if (onUpdateSuccess) onUpdateSuccess();
     } catch (err) {
       console.error('Failed to cancel post:', err);
-      alert('שגיאה בביטול הבקשה.');
+      alert(t('guest/requests:card.error_cancel'));
     } finally {
       setIsCancelling(false);
     }
@@ -40,10 +42,10 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
 
   // Determine displayed name
   const isAnon = post.is_anonymous || post.guest_name === 'Soldier' || post.guest_name === 'Anonymous Guest' || post.guest_name === 'אנונימי' || post.guest_name === 'חייל אנונימי' || post.guest_name === 'אורח אנונימי';
-  const displayName = isAnon ? 'אנונימי' : (post.guest_name || 'אורח');
+  const displayName = isAnon ? t('guest/requests:card.anon_name') : (post.guest_name || t('guest/requests:card.default_guest'));
 
-  const unit = post.unit_name || post.service_type || 'חייל';
-  const displayRegion = post.region || 'מרכז';
+  const unit = post.unit_name || post.service_type || t('guest/requests:card.default_unit');
+  const displayRegion = post.region || t('guest/requests:card.default_region');
   const dateFormatted = formatHebrewDate(post.requested_date);
   const subtitle = `${unit} · ${displayRegion} · ${dateFormatted}`;
 
@@ -56,17 +58,17 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
   const showUrgentNotice = isUnapproved && isUrgent;
   const isDirectRequest = Boolean(post.is_direct_request);
 
-  let statusLabel = 'פתוח';
+  let statusLabel = t('guest/requests:card.status_open');
   if (post.status === 'matched' || post.status === 'approved') {
-    statusLabel = 'אושר';
+    statusLabel = t('guest/requests:card.status_approved');
   } else if (post.status === 'pending') {
     if (isDirectRequest) {
-      statusLabel = userRole === 'host' ? 'ממתין לאישורך' : 'ממתין לאישור המארח';
+      statusLabel = userRole === 'host' ? t('guest/requests:card.status_pending_host_approval') : t('guest/requests:card.status_pending_host_response');
     } else {
-      statusLabel = userRole === 'guest' ? 'ממתין לאישורך' : 'ממתין לתשובת החייל';
+      statusLabel = userRole === 'guest' ? t('guest/requests:card.status_pending_guest_approval') : t('guest/requests:card.status_pending_guest_response');
     }
   } else if (post.status === 'cancelled' || post.status === 'CANCELLED') {
-    statusLabel = 'בוטל';
+    statusLabel = t('guest/requests:card.status_cancelled');
   }
 
   if (isEditingInline) {
@@ -84,7 +86,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
 
   const matchId = post.match_id || post.pending_match_id || post.id;
   const otherPartyName = userRole === 'guest' 
-    ? (post.claimed_by_host_name || post.host_name || 'מארח')
+    ? (post.claimed_by_host_name || post.host_name || t('guest/requests:card.about_host'))
     : displayName;
   const hostingDate = post.requested_date || post.start_date;
   const reviewTargetId = userRole === 'host' ? post.guest_user_id : post.claimed_by_host_user_id;
@@ -110,7 +112,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
             {showUrgentNotice && (
               <span className="status-badge urgent-badge">
                 <AlertCircle size={13} />
-                דחוף - בעוד {hoursLeft === 0 ? 'פחות משעה' : `${hoursLeft} שעות`}!
+                {t('guest/requests:card.urgent_notice', { hours: hoursLeft === 0 ? 'פחות משעה' : hoursLeft })}
               </span>
             )}
             <span className={`status-badge ${post.status === 'matched' ? 'matched' : post.status === 'pending' ? 'pending' : ''}`}>
@@ -128,7 +130,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                 onClick={() => setShowReviewsModal(true)}
               >
                 <Star className="w-3 h-3 inline-icon" style={{marginRight: '4px'}} />
-                {userRole === 'host' ? 'אודות המשרת/ת' : 'אודות המארח'}
+                {userRole === 'host' ? t('guest/requests:card.about_guest') : t('guest/requests:card.about_host')}
               </button>
             )}
           </div>
@@ -144,7 +146,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
             <div className="card-description-wrapper">
               {inReturnVal && (
                 <div className="card-bring-item">
-                  <span>מביאים לאירוח: </span>
+                  <span>{t('guest/requests:card.bring_item')}</span>
                   <span className="font-bold">{inReturnVal}</span>
                 </div>
               )}
@@ -158,11 +160,11 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
         <div className="card-tags">
           <span className="card-tag tag-kashrut">
             <Utensils className="w-3 h-3" />
-            {post.kashrut || 'כשר'}
+            {post.kashrut || t('guest/requests:card.kashrut_default')}
           </span>
           <span className="card-tag tag-guests">
             <Users className="w-3 h-3" />
-            {post.guests_count} אורחים
+            {t('guest/requests:card.guests_count', { count: post.guests_count })}
           </span>
           <span className="tag-time">{timeAgo}</span>
         </div>
@@ -198,14 +200,14 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                   className="card-matched-btn"
                 >
                   <MessageSquare size={16} />
-                  צ'אט
+                  {t('guest/requests:card.matched_chat')}
                 </button>
                 <button 
                   className="card-matched-btn"
                   onClick={() => setShowDetailsModal(true)}
                 >
                   <ExternalLink size={16} />
-                  פרטי אירוח
+                  {t('guest/requests:card.matched_details')}
                 </button>
                 {userRole === 'guest' && (
                   <button 
@@ -215,11 +217,11 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                     style={{ color: '#dc2626', borderColor: '#fca5a5', backgroundColor: '#fee2e2' }}
                   >
                     {isCancelling ? <Loader2 size={16} className="spin-icon" /> : <XCircle size={16} />}
-                    ביטול
+                    {t('guest/requests:card.matched_cancel')}
                   </button>
                 )}
               </div>
-              <p className="card-matched-status">האירוח אושר! ✓</p>
+              <p className="card-matched-status">{t('guest/requests:card.matched_success_banner')}</p>
             </div>
           ) : userRole === 'host' ? (
             post.status === 'pending' ? (
@@ -230,7 +232,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                   disabled={isClaiming}
                 >
                   {isClaiming ? <Loader2 className="w-4 h-4 spin-icon" /> : <Check className="w-4 h-4" />}
-                  <span>אישור בקשה</span>
+                  <span>{t('guest/requests:card.btn_approve_request')}</span>
                 </button>
               ) : (
                 <button
@@ -238,7 +240,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                   disabled={true}
                 >
                   <Clock className="w-4 h-4" />
-                  <span>ממתין לתשובת החייל...</span>
+                  <span>{t('guest/requests:card.btn_waiting_soldier')}</span>
                 </button>
               )
             ) : (
@@ -250,17 +252,17 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                 {isClaiming ? (
                   <>
                     <Loader2 className="w-4 h-4 spin-icon" />
-                    <span>שולח למערכת...</span>
+                    <span>{t('guest/requests:card.btn_sending')}</span>
                   </>
                 ) : showUrgentNotice ? (
                   <>
                     <Clock className="w-4 h-4" />
-                    <span>דרוש עכשיו</span>
+                    <span>{t('guest/requests:card.btn_claim_now')}</span>
                   </>
                 ) : (
                   <>
                     <Heart className="w-4 h-4" />
-                    <span>דרוש בקשה זו</span>
+                    <span>{t('guest/requests:card.btn_claim_request')}</span>
                   </>
                 )}
               </button>
@@ -274,7 +276,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                   style={{ flex: 1 }}
                 >
                   <Edit3 className="w-4 h-4" />
-                  <span>עריכת בקשה</span>
+                  <span>{t('guest/requests:card.btn_edit')}</span>
                 </button>
               )}
               {post.status !== 'cancelled' && post.status !== 'rejected' && post.status !== 'declined' && (
@@ -285,7 +287,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
                   style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '8px', fontWeight: '500' }}
                 >
                   {isCancelling ? <Loader2 className="w-4 h-4 spin-icon" /> : <XCircle className="w-4 h-4" />}
-                  <span>ביטול בקשה</span>
+                  <span>{t('guest/requests:card.btn_cancel')}</span>
                 </button>
               )}
             </div>

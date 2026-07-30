@@ -1,0 +1,55 @@
+{
+  "title": "My Profile",
+  "loading": "Loading profile...",
+  "role_host": "Host Family",
+  "role_guest": "Soldier (Guest)",
+  "location_unspecified_guest": "Location/Unit not updated",
+  "location_unspecified_host": "City not updated",
+  "stats": {
+    "hostings": "Hostings",
+    "hosts": "Hosts",
+    "nights": "Nights"
+  },
+  "fields": {
+    "email": "Email",
+    "phone": "Phone",
+    "giving_to_host": "Giving to Host",
+    "food_preferences": "Food Preferences",
+    "kosher_food": "Kosher Food",
+    "guest_address": "Residential Address",
+    "unit_description": "Military Unit",
+    "food_allergies": "Allergies / Sensitivities",
+    "religious_level": "Religion",
+    "gender": "Gender",
+    "service_type": "Service Type",
+    "release_date": "Release Date",
+    "is_anonymous": "Anonymous Profile",
+    "residential_address": "Residential Address",
+    "neighborhood_type": "Neighborhood Type",
+    "pets_description": "Pets",
+    "housing_type": "Housing Type",
+    "max_guests": "Max Guests",
+    "kashrut_level": "Kashrut Level",
+    "num_beds": "Number of Beds",
+    "num_bedrooms": "Number of Bedrooms",
+    "accessibility_level": "Accessibility"
+  },
+  "buttons": {
+    "logout": "Logout",
+    "edit_profile": "Edit Profile",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "saving": "Saving..."
+  },
+  "edit": {
+    "title": "Edit Profile",
+    "subtitle": "Update your personal details and hosting preferences",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "messages": {
+    "success": "Profile updated successfully!",
+    "error_default": "Error updating profile. Please try again.",
+    "error_prefix": "Error updating profile: {{error}}"
+  }
+}

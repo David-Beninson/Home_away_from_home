@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Edit3, Clock, X, Check, Loader2 } from 'lucide-react';
 import DateRangePicker from '../Common/DateRangePicker/DateRangePicker';
 import { postsApi } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
+  const { t } = useTranslation(['guest/requests']);
   const getDefaultDate = () => {
     const d = new Date();
     d.setDate(d.getDate() + ((5 + 7 - d.getDay()) % 7 || 7));
@@ -30,7 +32,7 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
   const handleSaveInline = async (e) => {
     e.preventDefault();
     if (!description.trim()) {
-      setError('אנא הזן תיאור לבקשת האירוח');
+      setError(t('guest/requests:inline_edit.error_desc'));
       return;
     }
     try {
@@ -56,18 +58,18 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
       if (onSuccess) onSuccess();
     } catch (err) {
       console.error('Failed to update post:', err);
-      setError(err.response?.data?.detail || 'שגיאה בעדכון הבקשה');
+      setError(err.response?.data?.detail || t('guest/requests:inline_edit.error_update'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const formattedDateLabel = () => {
-    if (!dateRange.startDate) return 'בחירת תאריכים';
+    if (!dateRange.startDate) return t('guest/requests:inline_edit.date_picker_default');
     const startStr = dateRange.startDate.toLocaleDateString('he-IL');
-    if (!dateRange.endDate) return `הגעה: ${startStr}`;
+    if (!dateRange.endDate) return t('guest/requests:inline_edit.date_arrival', { date: startStr });
     const endStr = dateRange.endDate.toLocaleDateString('he-IL');
-    const nights = dateRange.nightsCount > 0 ? ` (${dateRange.nightsCount} לילות)` : '';
+    const nights = dateRange.nightsCount > 0 ? t('guest/requests:inline_edit.date_nights', { count: dateRange.nightsCount }) : '';
     return `${startStr} - ${endStr}${nights}`;
   };
 
@@ -79,7 +81,7 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
             <div className="inline-edit-icon-badge">
               <Edit3 size={16} />
             </div>
-            <h4>עריכת בקשת אירוח</h4>
+            <h4>{t('guest/requests:inline_edit.title')}</h4>
           </div>
           <button
             type="button"
@@ -100,7 +102,7 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
             rows="3"
             dir="rtl"
             className="inline-edit-textarea"
-            placeholder="תאר את עצמך ומה אתה מחפש בשבת..."
+            placeholder={t('guest/requests:inline_edit.placeholder_desc')}
             required
           />
 
@@ -119,36 +121,36 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
 
           <div className="inline-edit-fields-grid">
             <div className="inline-field-group">
-              <label>אזור</label>
+              <label>{t('guest/requests:inline_edit.label_region')}</label>
               <select
                 dir="rtl"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
                 className="inline-edit-select"
               >
-                <option value="מרכז">מרכז</option>
-                <option value="ירושלים">ירושלים</option>
-                <option value="צפון">צפון</option>
-                <option value="דרום">דרום</option>
+                <option value="מרכז">{t('guest/requests:inline_edit.regions.center')}</option>
+                <option value="ירושלים">{t('guest/requests:inline_edit.regions.jerusalem')}</option>
+                <option value="צפון">{t('guest/requests:inline_edit.regions.north')}</option>
+                <option value="דרום">{t('guest/requests:inline_edit.regions.south')}</option>
               </select>
             </div>
 
             <div className="inline-field-group">
-              <label>כשרות</label>
+              <label>{t('guest/requests:inline_edit.label_kashrut')}</label>
               <select
                 dir="rtl"
                 value={kashrut}
                 onChange={(e) => setKashrut(e.target.value)}
                 className="inline-edit-select"
               >
-                <option value="כשר">כשר</option>
-                <option value="מהדרין">מהדרין</option>
-                <option value="רגיל">רגיל</option>
+                <option value="כשר">{t('guest/requests:inline_edit.kashrut_options.kosher')}</option>
+                <option value="מהדרין">{t('guest/requests:inline_edit.kashrut_options.mehadrin')}</option>
+                <option value="רגיל">{t('guest/requests:inline_edit.kashrut_options.regular')}</option>
               </select>
             </div>
 
             <div className="inline-field-group">
-              <label>מספר אורחים</label>
+              <label>{t('guest/requests:inline_edit.label_guests')}</label>
               <input
                 type="number"
                 min="1"
@@ -166,7 +168,7 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
                   checked={needsLodging}
                   onChange={(e) => setNeedsLodging(e.target.checked)}
                 />
-                <span>לינה נדרשת</span>
+                <span>{t('guest/requests:inline_edit.label_lodging')}</span>
               </label>
 
               <label className="inline-toggle-label">
@@ -175,7 +177,7 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
                 />
-                <span>אנונימי</span>
+                <span>{t('guest/requests:inline_edit.label_anonymous')}</span>
               </label>
             </div>
           </div>
@@ -188,7 +190,7 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
             className="inline-btn-cancel"
           >
             <X size={15} />
-            <span>ביטול</span>
+            <span>{t('guest/requests:inline_edit.btn_cancel')}</span>
           </button>
           <button
             type="submit"
@@ -200,7 +202,7 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
             ) : (
               <Check size={15} />
             )}
-            <span>{submitting ? 'שומר...' : 'שמור שינויים'}</span>
+            <span>{submitting ? t('guest/requests:inline_edit.btn_saving') : t('guest/requests:inline_edit.btn_save')}</span>
           </button>
         </div>
       </form>

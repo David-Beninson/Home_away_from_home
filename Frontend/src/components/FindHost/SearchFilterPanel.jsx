@@ -1,5 +1,6 @@
 
 import { Search, Moon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function SearchFilterPanel({
   searchTerm = '',
@@ -14,25 +15,27 @@ export default function SearchFilterPanel({
   onLodgingToggle,
   count = 0,
 }) {
+  const { t } = useTranslation(['guest/find_host']);
+
   const regions = [
-    { id: 'ALL', label: 'הכל' },
-    { id: 'מרכז', label: 'מרכז' },
-    { id: 'ירושלים', label: 'ירושלים' },
-    { id: 'צפון', label: 'צפון' },
-    { id: 'דרום', label: 'דרום' },
+    { id: 'ALL', label: t('guest/find_host:filters.regions.all') },
+    { id: 'מרכז', label: t('guest/find_host:filters.regions.center') },
+    { id: 'ירושלים', label: t('guest/find_host:filters.regions.jerusalem') },
+    { id: 'צפון', label: t('guest/find_host:filters.regions.north') },
+    { id: 'דרום', label: t('guest/find_host:filters.regions.south') },
   ];
 
   const kashrutOptions = [
-    { id: 'ALL', label: 'הכל' },
-    { id: 'kosher', label: 'כשר' },
-    { id: 'mehadrin', label: 'מהדרין' },
+    { id: 'ALL', label: t('guest/find_host:filters.kashrut.all') },
+    { id: 'kosher', label: t('guest/find_host:filters.kashrut.kosher') },
+    { id: 'mehadrin', label: t('guest/find_host:filters.kashrut.mehadrin') },
   ];
 
   const sortOptions = [
-    { id: 'AI', label: '⚡ התאמה AI' },
-    { id: 'RATING', label: 'דירוג' },
-    { id: 'SPOTS', label: 'מקומות' },
-    { id: 'NAME', label: 'שם' },
+    { id: 'AI', label: t('guest/find_host:filters.sort.ai') },
+    { id: 'RATING', label: t('guest/find_host:filters.sort.rating') },
+    { id: 'SPOTS', label: t('guest/find_host:filters.sort.spots') },
+    { id: 'NAME', label: t('guest/find_host:filters.sort.name') },
   ];
 
   return (
@@ -42,8 +45,8 @@ export default function SearchFilterPanel({
         <Search size={20} className="search-input-icon-svg" />
         <input
           type="text"
-          placeholder="חפש לפי שם משפחה או עיר..."
-          dir="rtl"
+          placeholder={t('guest/find_host:filters.search_placeholder')}
+          dir="auto"
           className="search-input-element"
           value={searchTerm}
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
@@ -54,7 +57,7 @@ export default function SearchFilterPanel({
       <div className="search-filter-row">
         {/* Region Filter */}
         <div className="filter-item-group">
-          <span className="filter-group-label">אזור:</span>
+          <span className="filter-group-label">{t('guest/find_host:filters.labels.region')}</span>
           <div className="filter-pills-container">
             {regions.map((reg) => {
               const isActive = regionFilter === reg.id;
@@ -74,7 +77,7 @@ export default function SearchFilterPanel({
 
         {/* Kashrut Filter */}
         <div className="filter-item-group">
-          <span className="filter-group-label">כשרות:</span>
+          <span className="filter-group-label">{t('guest/find_host:filters.labels.kashrut')}</span>
           <div className="filter-pills-container">
             {kashrutOptions.map((k) => {
               const isActive =
@@ -103,16 +106,16 @@ export default function SearchFilterPanel({
             onClick={onLodgingToggle}
           >
             <Moon size={14} className="moon-icon" />
-            עם לינה בלבד
+            {t('guest/find_host:filters.labels.lodging')}
           </button>
         </div>
       </div>
 
       {/* Vibe Filter Row */}
       <div className="filter-item-group vibe-filter-group">
-        <span className="filter-group-label">🎭 אווירת שולחן:</span>
+        <span className="filter-group-label">{t('guest/find_host:filters.labels.vibe')}</span>
         <div className="filter-pills-container scrollbar-none vibe-pills-nowrap">
-          {['#שולחן_תוסס', '#שקט_ורגוע', '#שירים_ורקודים', '#אוכל_עדתי', '#צעירים_וחברים'].map((vibeTag) => {
+          {t('guest/find_host:filters.vibes', { returnObjects: true }).map((vibeTag) => {
             const isActive = searchTerm === vibeTag || searchTerm.includes(vibeTag);
             return (
               <button
@@ -131,7 +134,7 @@ export default function SearchFilterPanel({
       {/* Sorting & Results Count Footer */}
       <div className="search-card-footer-row">
         <div className="sort-controls-group">
-          <span className="sort-group-label">מיון:</span>
+          <span className="sort-group-label">{t('guest/find_host:filters.labels.sort')}</span>
           <div className="sort-chips-container">
             {sortOptions.map((opt) => {
               const isActive = sortBy === opt.id || (opt.id === 'AI' && sortBy === 'DESC');
@@ -150,7 +153,7 @@ export default function SearchFilterPanel({
         </div>
 
         <p className="results-count-text">
-          <span className="results-count-number">{count}</span> מארחים
+          <span className="results-count-number">{count}</span> {t('guest/find_host:filters.results_count')}
         </p>
       </div>
     </div>

@@ -10,6 +10,7 @@ import {
 } from '../../store/availabilitySlice';
 import { fetchPosts, fetchAllRequests } from '../../store/requestsSlice';
 import { postsApi, bookingsApi } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const HEBREW_MONTHS = [
@@ -41,6 +42,7 @@ import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 import { formatPhoneNumber } from '../../utils/phone';
 
 export default function DayDetailPanel() {
+  const { t } = useTranslation(['host/dashboard']);
   const dispatch = useDispatch();
   const { selectedDate, rules, overrides, bookings } = useSelector((s) => s.availability);
   const posts = useSelector((s) => s.requests?.posts || []);
@@ -139,7 +141,7 @@ export default function DayDetailPanel() {
         : Array.isArray(detail)
           ? detail.map(e => e.msg || e.detail).join(', ')
           : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
-      alert('שגיאה באישור הבקשה: ' + errorMsg);
+      alert(t('host/dashboard:day_panel.error_approve', { msg: errorMsg }));
     } finally {
       setSubmittingId(null);
     }
@@ -162,7 +164,7 @@ export default function DayDetailPanel() {
         : Array.isArray(detail)
           ? detail.map(e => e.msg || e.detail).join(', ')
           : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
-      alert('שגיאה בדחיית הבקשה: ' + errorMsg);
+      alert(t('host/dashboard:day_panel.error_reject', { msg: errorMsg }));
     } finally {
       setSubmittingId(null);
     }
@@ -189,14 +191,14 @@ export default function DayDetailPanel() {
 
         <div className={`ddp-status-badge ${meta.className}`}>
           <span className="ddp-status-emoji">{meta.emoji}</span>
-          <span className="ddp-status-label">{meta.label}</span>
+          <span className="ddp-status-label">{t(`host/dashboard:day_panel.status.${status}`)}</span>
         </div>
 
         {/* ── Pending Requests List & Actions ── */}
         {pendingRequests.length > 0 && (
           <div className="ddp-pending-section">
             <h4 className="ddp-pending-title">
-              בקשות אירוח ממתינות ({pendingRequests.length}):
+              {t('host/dashboard:day_panel.pending_title', { count: pendingRequests.length })}
             </h4>
             {pendingRequests.map((post) => {
               const isCurrentSubmitting = submittingId === post.id;
@@ -215,15 +217,15 @@ export default function DayDetailPanel() {
                     {isWaitingGuest ? <Clock size={18} /> : <User size={18} />}
                     <h3>
                       {isWaitingGuest
-                        ? 'ממתין לאישור האורח'
+                        ? t('host/dashboard:day_panel.request_waiting')
                         : post.is_direct_request
-                          ? 'בקשת אירוח ישירה'
-                          : 'בקשת אירוח מלוח פוסטים'}
+                          ? t('host/dashboard:day_panel.request_direct')
+                          : t('host/dashboard:day_panel.request_board')}
                     </h3>
                   </div>
 
                   <div className="ddp-booking-row">
-                    <span className="ddp-booking-label">שם האורח</span>
+                    <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_guest_name')}</span>
                     <span className="ddp-booking-value font-bold">
                       {post.guest_name || post.guest_profile?.user?.full_name || 'אורח'}
                     </span>
@@ -231,29 +233,29 @@ export default function DayDetailPanel() {
 
                   {post.unit_name && (
                     <div className="ddp-booking-row">
-                      <span className="ddp-booking-label">יחידה / תפקיד</span>
+                      <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_unit')}</span>
                       <span className="ddp-booking-value">{post.unit_name}</span>
                     </div>
                   )}
 
                   <div className="ddp-booking-row">
-                    <span className="ddp-booking-label">כמות חבר'ה</span>
+                    <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_guests')}</span>
                     <span className="ddp-booking-value ddp-value-highlight">
-                      {post.guests_count || 1} חבר'ה
+                      {t('host/dashboard:day_panel.val_guests', { count: post.guests_count || 1 })}
                     </span>
                   </div>
 
                   {post.nights_count && post.nights_count > 1 && (
                     <div className="ddp-booking-row">
-                      <span className="ddp-booking-label">משך אירוח</span>
-                      <span className="ddp-booking-value">{post.nights_count} לילות</span>
+                      <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_nights')}</span>
+                      <span className="ddp-booking-value">{t('host/dashboard:day_panel.val_nights', { count: post.nights_count })}</span>
                     </div>
                   )}
 
                   {inReturnVal && (
                     <div className="ddp-booking-row ddp-return-box">
                       <span className="ddp-booking-label ddp-return-label">
-                        מביאים לאירוח
+                        {t('host/dashboard:day_panel.label_return')}
                       </span>
                       <span className="ddp-booking-value ddp-return-value">
                         {inReturnVal}
@@ -263,7 +265,7 @@ export default function DayDetailPanel() {
 
                   {cleanDesc && (
                     <div className="ddp-booking-row ddp-desc-row">
-                      <span className="ddp-booking-label">הערות האורח</span>
+                      <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_notes')}</span>
                       <span className="ddp-booking-value">{cleanDesc}</span>
                     </div>
                   )}
@@ -271,7 +273,7 @@ export default function DayDetailPanel() {
                   {isWaitingGuest ? (
                     <div className="ddp-waiting-notice">
                       <Clock size={16} />
-                      <span>הצעת אירוח נשלחה — ממתין לאישור האורח...</span>
+                      <span>{t('host/dashboard:day_panel.notice_waiting')}</span>
                     </div>
                   ) : (
                     <div className="ddp-request-actions">
@@ -281,7 +283,7 @@ export default function DayDetailPanel() {
                         className="ddp-btn-approve"
                       >
                         {isCurrentSubmitting ? <Loader2 size={16} className="spin-icon" /> : <Check size={16} />}
-                        <span>אישור בקשה</span>
+                        <span>{t('host/dashboard:day_panel.btn_approve')}</span>
                       </button>
 
                       <button
@@ -290,7 +292,7 @@ export default function DayDetailPanel() {
                         className="ddp-btn-reject"
                       >
                         {isCurrentSubmitting ? <Loader2 size={16} className="spin-icon" /> : <X size={16} />}
-                        <span>דחיית בקשה</span>
+                        <span>{t('host/dashboard:day_panel.btn_reject')}</span>
                       </button>
                     </div>
                   )}
@@ -305,22 +307,22 @@ export default function DayDetailPanel() {
             <div className="ddp-card-body">
               <div className="ddp-booking-header">
                 <User size={16} />
-                <h3>פרטי האורח/ים באירוח זה</h3>
+                <h3>{t('host/dashboard:day_panel.active_booking_title')}</h3>
               </div>
               <div className="ddp-booking-row">
-                <span className="ddp-booking-label">שם האורח</span>
+                <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_guest_name')}</span>
                 <span className="ddp-booking-value font-bold">{activeBooking.guestName || '—'}</span>
               </div>
               {activeBooking.unitName && (
                 <div className="ddp-booking-row">
-                  <span className="ddp-booking-label">יחידה / תפקיד</span>
+                  <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_unit')}</span>
                   <span className="ddp-booking-value">{activeBooking.unitName}</span>
                 </div>
               )}
               {activeBooking.guestsCount && (
                 <div className="ddp-booking-row">
-                  <span className="ddp-booking-label">כמות אורחים</span>
-                  <span className="ddp-booking-value ddp-value-highlight">{activeBooking.guestsCount} חבר'ה</span>
+                  <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_guests')}</span>
+                  <span className="ddp-booking-value ddp-value-highlight">{t('host/dashboard:day_panel.val_guests', { count: activeBooking.guestsCount })}</span>
                 </div>
               )}
               {activeBooking.guestPhone && (
@@ -331,7 +333,7 @@ export default function DayDetailPanel() {
               )}
               {activeBooking.notes && (
                 <div className="ddp-booking-row">
-                  <span className="ddp-booking-label">הערות</span>
+                  <span className="ddp-booking-label">{t('host/dashboard:day_panel.label_notes')}</span>
                   <span className="ddp-booking-value">{activeBooking.notes}</span>
                 </div>
               )}
@@ -362,17 +364,17 @@ export default function DayDetailPanel() {
                   className="ddp-chat-link"
                 >
                   <MessageSquare size={16} />
-                  צ'אט
+                  {t('host/dashboard:day_panel.btn_chat')}
                 </button>
                 <button
                   className="ddp-chat-link"
                   onClick={() => setShowDetailsModal(true)}
                 >
                   <ExternalLink size={16} />
-                  פרטי אירוח
+                  {t('host/dashboard:day_panel.btn_details')}
                 </button>
               </div>
-              <p className="ddp-matched-badge">האירוח אושר! ✓</p>
+              <p className="ddp-matched-badge">{t('host/dashboard:day_panel.active_booking_badge')}</p>
             </div>
           </div>
         )}
@@ -391,19 +393,19 @@ export default function DayDetailPanel() {
 
         {!isPast && status !== 'booked' && (
           <div className="ddp-actions">
-            <p className="ddp-actions-label">שנה סטטוס יום זה:</p>
+            <p className="ddp-actions-label">{t('host/dashboard:day_panel.action_label')}</p>
             {status !== 'open' ? (
               <button id="ddp-action-open" className="ddp-action-btn ddp-action-btn--open" onClick={handleOpen}>
-                <Unlock size={16} /> פתח לאירוח
+                <Unlock size={16} /> {t('host/dashboard:day_panel.action_open')}
               </button>
             ) : (
               <button id="ddp-action-close" className="ddp-action-btn ddp-action-btn--close" onClick={handleBlockDay}>
-                <Lock size={16} /> סגור תאריך זה
+                <Lock size={16} /> {t('host/dashboard:day_panel.action_close')}
               </button>
             )}
             {hasOverride && (
               <button id="ddp-action-revert" className="ddp-action-btn ddp-action-btn--revert" onClick={handleRevert}>
-                <RotateCcw size={14} /> חזור לכלל הקבוע
+                <RotateCcw size={14} /> {t('host/dashboard:day_panel.action_revert')}
               </button>
             )}
           </div>
@@ -412,8 +414,7 @@ export default function DayDetailPanel() {
         {status === 'notice_closed' && (
           <div className="ddp-notice-info">
             <p>
-              היום עבר את שעת ההתרעה הקבועה ({rules.noticeCutoffHour}:00).
-              באפשרותך לפתוח אותו ידנית אם ברצונך לקבל אורחים בכל זאת.
+              {t('host/dashboard:day_panel.notice_info', { hour: rules.noticeCutoffHour })}
             </p>
           </div>
         )}

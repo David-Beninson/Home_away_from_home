@@ -1,0 +1,42 @@
+{
+  "alert_message": "שים לב!\n\n{{message}}",
+  "aria_label": "התראות",
+  "title": "התראות",
+  "new_count": "{{count}} חדשות",
+  "mark_all_read": "סמן הכל כנקרא",
+  "filter_all": "הכל ({{count}})",
+  "filter_unread": "לא נקראו ({{count}})",
+  "empty_unread": "אין לך התראות שלא נקראו",
+  "empty_all": "אין לך התראות במערכת",
+  "tooltip_unread": "לא נקרא",
+  "now": "עכשיו",
+  "tooltip_mark_read": "סמן כנקרא",
+  "tooltip_delete": "מחק התראה",
+  "backend": {
+    "titles": {
+      "new_verification": "בקשת אימות חדשה להמתנה 🪪",
+      "new_admin_message": "הודעה חדשה מהנהלת המערכת 💬",
+      "admin_reply": "תשובה חדשה מהנהלת המערכת 💬",
+      "support_message_from": "הודעת תמיכה מ-{{name}} 💬",
+      "account_approved": "חשבונך אושר בהצלחה! 🎉",
+      "account_rejected": "בקשת האימות נדחתה ⚠️",
+      "new_guest_request": "בקשת אירוח חדשה  Shabbat",
+      "new_host_offer": "הצעת אירוח חדשה!",
+      "booking_cancelled": "ביטול אירוח",
+      "new_message_from": "הודעה חדשה מ{{name}}",
+      "booking_approved": "האירוח אושר",
+      "booking_rejected": "בקשת אירוח נדחתה"
+    },
+    "messages": {
+      "pending_admin_approval": "מחכה לאישור מנהל",
+      "sent_support_message": "{{name}} שלח/ה לך הודעה בתמיכה",
+      "account_approved_desc": "פרופיל המשתמש שלך אושר כראוי וכל חסמי הגישה הוסרו.",
+      "account_rejected_desc": "אנא פנה לתמיכה למידע נוסף",
+      "uploaded_docs": "המשתמש {{name}} העלה מסמכים לאימות (ציון AI: {{score}}%).",
+      "rejection_reason": "סיבת הדחייה: {{reason}}",
+      "received_hosting_request": "קיבלת בקשת אירוח מ{{name}}",
+      "host_offered": "המארח {{name}} הציע לארח אותך לשבת! לחץ לאישור או דחייה.",
+      "guest_cancelled": "שים לב: האורח {{name}} ביטל את בקשת האירוח. ניתן לעדכן את זמינותך בלוח הבקרה כדי לאפשר לאורחים אחרים לבקש להתארח."
+    }
+  }
+}

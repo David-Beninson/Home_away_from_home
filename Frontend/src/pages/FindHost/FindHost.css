@@ -2,7 +2,7 @@
   padding: 0;
   width: 100%;
   font-family: var(--sans);
-  direction: rtl;
+
 }
 
 /* Page Header & Intro */
@@ -87,7 +87,7 @@
   gap: 1rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
   margin-bottom: 2rem;
-  direction: rtl;
+
 }
 
 .search-input-relative-wrap {
@@ -97,7 +97,7 @@
 
 .search-input-icon-svg {
   position: absolute;
-  right: 1rem;
+  inset-inline-start: 1rem;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
@@ -352,7 +352,7 @@
 .toast-success-banner {
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  inset-inline-start: 24px;
   z-index: 100;
   background-color: #10b981;
   color: white;
@@ -377,7 +377,7 @@
 }
 
 .hosts-grid-retry-btn {
-  margin-right: 1rem;
+  margin-inline-start: 1rem;
   background: none;
   border: none;
   text-decoration: underline;

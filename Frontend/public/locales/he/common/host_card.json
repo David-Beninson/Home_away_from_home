@@ -1,0 +1,15 @@
+{
+  "default_name": "משפחת כהן",
+  "default_city": "לא צוין",
+  "available_spots_count": "{{count}} מקומות",
+  "no_spots": "אזלו המקומות",
+  "no_spots_upcoming": "אין עוד מקומות פנויים אצל מארח זה",
+  "upcoming_days": "📅 זמין השבוע ב: {{days}}",
+  "lodging": "לינה",
+  "kashrut": {
+    "mehadrin": "מהדרין",
+    "kosher": "כשר",
+    "basic": "כשר בסיסי",
+    "none": "ללא כשרות"
+  }
+}

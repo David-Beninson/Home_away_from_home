@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import { X, Calendar, Users, FileText, Gift, CheckCircle2, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './BookingRequestModal.css';
 
-const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-const HEBREW_MONTHS = [
-  'בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני',
-  'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'
-];
-
-function formatDateLabel(dInput) {
+function formatDateLabel(dInput, t) {
   let d;
   if (typeof dInput === 'string' && dInput.includes('-')) {
     const parts = dInput.split('T')[0].split('-').map(Number);
@@ -17,7 +12,15 @@ function formatDateLabel(dInput) {
     d = new Date(dInput);
   }
   if (isNaN(d.getTime())) return String(dInput);
-  return `יום ${HEBREW_DAYS[d.getDay()]}, ${d.getDate()} ${HEBREW_MONTHS[d.getMonth()]}`;
+  
+  const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  
+  return t('guest/host_details:booking_modal.date_format', {
+    day: t(`guest/host_details:booking_modal.days.${days[d.getDay()]}`),
+    date: d.getDate(),
+    month: t(`guest/host_details:booking_modal.months.${months[d.getMonth()]}`)
+  });
 }
 
 export default function BookingRequestModal({
@@ -27,6 +30,8 @@ export default function BookingRequestModal({
   onSubmit,
   isSubmitting
 }) {
+  const { t } = useTranslation(['guest/host_details']);
+
   if (!isOpen || !host) return null;
 
   // Extract available dates list from host profile
@@ -79,7 +84,7 @@ export default function BookingRequestModal({
     ? host.available_spots
     : (host.max_guests || host.total_spots || 4);
 
-  const hostName = host.full_name || host.host_name || host.user?.full_name || 'משפחה מארחת';
+  const hostName = host.full_name || host.host_name || host.user?.full_name || t('guest/host_details:page.default_host');
 
   return (
     <div className="brm-overlay" onClick={onClose}>
@@ -88,8 +93,8 @@ export default function BookingRequestModal({
         {/* Modal Header */}
         <div className="brm-header">
           <div>
-            <h2 className="brm-title">שליחת בקשת אירוח</h2>
-            <p className="brm-subtitle">מארח: {hostName}</p>
+            <h2 className="brm-title">{t('guest/host_details:booking_modal.title')}</h2>
+            <p className="brm-subtitle">{t('guest/host_details:booking_modal.subtitle', { name: hostName })}</p>
           </div>
           <button className="brm-close-btn" onClick={onClose} aria-label="סגור">
             <X size={20} />
@@ -103,7 +108,7 @@ export default function BookingRequestModal({
           <div className="brm-field-group">
             <label className="brm-label">
               <Calendar size={18} className="brm-icon" />
-              <span>בחר תאריכים / לילות אירוח (ניתן לסמן מספר תאריכים):</span>
+              <span>{t('guest/host_details:booking_modal.label_dates')}</span>
             </label>
             <div className="brm-date-options">
               {availableDatesList.map((dStr) => {
@@ -124,8 +129,8 @@ export default function BookingRequestModal({
                       className="brm-checkbox"
                     />
                     <div className="brm-date-info">
-                      <span className="brm-date-text">{formatDateLabel(dStr)}</span>
-                      <span className="brm-date-subtext">אירוח ולינה</span>
+                      <span className="brm-date-text">{formatDateLabel(dStr, t)}</span>
+                      <span className="brm-date-subtext">{t('guest/host_details:booking_modal.label_date_type')}</span>
                     </div>
                   </label>
                 );
@@ -138,10 +143,10 @@ export default function BookingRequestModal({
             <div className="brm-label-row">
               <label className="brm-label">
                 <Users size={18} className="brm-icon" />
-                <span>כמה חבר'ה מגיעים?</span>
+                <span>{t('guest/host_details:booking_modal.label_guests')}</span>
               </label>
               <span className="brm-slider-value">
-                {guestsCount} חבר'ה
+                {guestsCount === 1 ? t('guest/host_details:booking_modal.guests_1') : t('guest/host_details:booking_modal.guests_count', { count: guestsCount })}
               </span>
             </div>
             
@@ -158,8 +163,8 @@ export default function BookingRequestModal({
                 }}
               />
               <div className="brm-slider-labels">
-                <span>חבר'ה 1</span>
-                <span>עד {maxSpots} חבר'ה פנויים</span>
+                <span>{t('guest/host_details:booking_modal.guests_1')}</span>
+                <span>{t('guest/host_details:booking_modal.guests_max', { count: maxSpots })}</span>
               </div>
             </div>
           </div>
@@ -168,13 +173,13 @@ export default function BookingRequestModal({
           <div className="brm-field-group">
             <label className="brm-label">
               <Gift size={18} className="brm-icon" />
-              <span>אם אתם מביאים משהו או רוצים לתת – תכתבו פה (אופציונלי):</span>
+              <span>{t('guest/host_details:booking_modal.label_in_return')}</span>
             </label>
             <input
               type="text"
               value={inReturn}
               onChange={(e) => setInReturn(e.target.value)}
-              placeholder="למשל: נביא עוגה לשבת, יין, נעזור בהכנות..."
+              placeholder={t('guest/host_details:booking_modal.placeholder_in_return')}
               className="brm-select"
             />
           </div>
@@ -183,12 +188,12 @@ export default function BookingRequestModal({
           <div className="brm-field-group">
             <label className="brm-label">
               <FileText size={18} className="brm-icon" />
-              <span>הערות נוספות (אופציונלי):</span>
+              <span>{t('guest/host_details:booking_modal.label_notes')}</span>
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="למשל: נגיע ביום שישי בצהריים, שומרים כשרות למהדרין..."
+              placeholder={t('guest/host_details:booking_modal.placeholder_notes')}
               className="brm-textarea"
               rows={2}
             />
@@ -204,12 +209,12 @@ export default function BookingRequestModal({
               {isSubmitting ? (
                 <>
                   <Loader2 size={18} className="spin-icon" />
-                  <span>שולח בקשה...</span>
+                  <span>{t('guest/host_details:booking_modal.btn_submitting')}</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 size={18} />
-                  <span>אישור ושליחת בקשת אירוח</span>
+                  <span>{t('guest/host_details:booking_modal.btn_submit')}</span>
                 </>
               )}
             </button>
@@ -220,7 +225,7 @@ export default function BookingRequestModal({
               className="brm-cancel-btn"
               disabled={isSubmitting}
             >
-              ביטול
+              {t('guest/host_details:booking_modal.btn_cancel')}
             </button>
           </div>
 

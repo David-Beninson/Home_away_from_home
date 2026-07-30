@@ -1,8 +1,10 @@
 
 import { Sparkles, Star, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeGuestFeaturedHosts({ hosts, loading }) {
+  const { t } = useTranslation(['guest/home']);
   const navigate = useNavigate();
 
   const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&h=400&fit=crop&auto=format';
@@ -13,18 +15,18 @@ export default function HomeGuestFeaturedHosts({ hosts, loading }) {
   return (
     <section className="gh-featured-section">
       <div className="gh-section-header">
-        <h3>מארחים מובילים השבת</h3>
+        <h3>{t('guest/home:featured.title')}</h3>
         <span
           className="gh-link-all"
           onClick={() => navigate('/find-host')}
         >
-          כל המארחים
+          {t('guest/home:featured.view_all')}
         </span>
       </div>
 
       {loading && (!topHosts || topHosts.length === 0) ? (
         <div className="gh-hosts-loading">
-          טוען מארחים מומלצים...
+          {t('guest/home:featured.loading')}
         </div>
       ) : (
         <div className="gh-hosts-grid">
@@ -47,9 +49,9 @@ export default function HomeGuestFeaturedHosts({ hosts, loading }) {
                     onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
                   />
                   <div className="gh-card-badges">
-                    {host.has_lodging && <span className="gh-badge-night">🌙 לינה</span>}
+                    {host.has_lodging && <span className="gh-badge-night">🌙 {t('guest/home:badges.sleepover')}</span>}
                     <div className="gh-badge-right-group">
-                      {isKosher && <span className="gh-badge-kosher">🛡️ מהדרין</span>}
+                      {isKosher && <span className="gh-badge-kosher">🛡️ {t('guest/home:badges.mehadrin')}</span>}
                       <span className="gh-badge-match">
                         <Sparkles size={12} /> {matchScore}%
                       </span>
@@ -81,7 +83,7 @@ export default function HomeGuestFeaturedHosts({ hosts, loading }) {
                         </span>
                       ))}
                     </div>
-                    <div className="gh-spots-text">{host.available_spots || host.spots || 0} מקומות</div>
+                    <div className="gh-spots-text">{host.available_spots || host.spots || 0} {t('guest/home:featured.spots')}</div>
                   </div>
                 </div>
               </div>

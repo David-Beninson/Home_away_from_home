@@ -11,6 +11,7 @@ import HostDetailsSidebar from '../../components/HostDetails/HostDetailsSidebar'
 import BookingRequestModal from '../../components/HostDetails/BookingRequestModal';
 import ReviewsListModal from '../../components/Reviews/ReviewsListModal';
 import { getUpcomingFridayDateStr, formatHostOpenDates } from '../../utils/shabbat';
+import { useTranslation } from 'react-i18next';
 import './HostDetails.css';
 
 const DEFAULT_IMAGE =
@@ -23,6 +24,7 @@ export default function HostDetails() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation(['guest/host_details']);
 
   const [host, setHost] = useState(() => {
     if (location.state?.host) return location.state.host;
@@ -104,7 +106,7 @@ export default function HostDetails() {
             tags: found.vibe_tags?.length ? found.vibe_tags : [
               found.neighborhood,
               found.religious_orientation,
-              found.kashrut_level ? (found.kashrut_level === 'MEHADRIN' ? 'מהדרין' : 'כשר') : ''
+              found.kashrut_level ? (found.kashrut_level === 'MEHADRIN' ? t('guest/host_details:page.kashrut.mehadrin') : t('guest/host_details:page.kashrut.kosher')) : ''
             ].filter(Boolean),
             image_url: found.image_url || null,
             rating: found.rating || null,
@@ -173,11 +175,11 @@ export default function HostDetails() {
         // Refresh posts + incoming bookings so host sees this request even if calendar is closed
         dispatch(fetchAllRequests());
         setRequestStatus('success');
-        setToastMessage(`בקשת אירוח נשלחה בהצלחה אל ${hostName}!`);
+        setToastMessage(t('guest/host_details:page.toast_success', { name: hostName }));
       }
     } catch (err) {
       console.warn('Booking request notice:', err);
-      const errorMsg = err.response?.data?.detail || 'כבר שלחת בקשת אירוח למארח זה או שקיימת בקשה פעילה.';
+      const errorMsg = err.response?.data?.detail || t('guest/host_details:page.toast_error_duplicate');
       setRequestStatus('error');
       setToastMessage(errorMsg);
     } finally {
@@ -199,8 +201,8 @@ export default function HostDetails() {
   const getKashrutLabel = (level) => {
     if (!level) return '';
     const norm = String(level).toLowerCase();
-    if (norm.includes('mehadrin') || norm.includes('מהדרין') || norm.includes('glatt')) return 'מהדרין';
-    if (norm.includes('kosher') || norm.includes('כשר')) return 'כשר';
+    if (norm.includes('mehadrin') || norm.includes('מהדרין') || norm.includes('glatt')) return t('guest/host_details:page.kashrut.mehadrin');
+    if (norm.includes('kosher') || norm.includes('כשר')) return t('guest/host_details:page.kashrut.kosher');
     return level;
   };
   const kashrutText = getKashrutLabel(host?.kashrut_level);
@@ -215,7 +217,7 @@ export default function HostDetails() {
   const handleSendMessage = () => {
     if (!phone) return;
     const cleanPhone = phone.replace(/\D/g, '');
-    const text = encodeURIComponent(`שלום ${hostName}, שאלתי לגבי אירוח לשבת דרך אפליקציית שבת מארח.`);
+    const text = encodeURIComponent(t('guest/host_details:page.default_message_wa', { name: hostName }));
     window.open(`https://wa.me/972${cleanPhone.replace(/^0/, '')}?text=${text}`, '_blank');
   };
 
@@ -224,7 +226,7 @@ export default function HostDetails() {
   if (loading) {
     return (
       <main className="host-details-page loading-state">
-        <p className="loading-text">טוען פרטי משפחה מארחת...</p>
+        <p className="loading-text">{t('guest/host_details:page.loading')}</p>
       </main>
     );
   }
@@ -297,7 +299,7 @@ export default function HostDetails() {
         onClose={() => setIsReviewsModalOpen(false)}
         targetType="host"
         targetId={host?.user_id || host?.id}
-        title={`ביקורות על ${hostName}`}
+        title={t('common:reviews.title', { name: hostName })}
       />
     </main>
   );

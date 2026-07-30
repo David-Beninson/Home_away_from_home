@@ -1,0 +1,33 @@
+{
+  "empty_state": {
+    "title": "No open chat",
+    "subtitle": "Select a conversation from the list to start chatting."
+  },
+  "header": {
+    "anonymous_warning": "Personal details will be hidden until hosting is approved.",
+    "anonymous_guest": "Anonymous Guest",
+    "host": "Host",
+    "btn_hosting_details": "Hosting Details",
+    "btn_profile_details": "Profile Details",
+    "status_connected": "Connected (Approved)",
+    "wa_message_prefix": "Hello, regarding hosting on"
+  },
+  "input": {
+    "disabled_banner": "Chat will be enabled only after hosting is approved",
+    "ai_analyzing": "Our AI is analyzing the chat conversation",
+    "ai_suggestions_title": "Conversation Suggestions ",
+    "btn_refresh_ai": "Refresh AI suggestions",
+    "btn_suggestion_tooltip": "Click to select response suggestion",
+    "placeholder": "Type a message..."
+  },
+  "item": {
+    "no_messages": "No messages yet"
+  },
+  "sidebar": {
+    "title": "My Chats",
+    "loading": "Loading chats...",
+    "no_chats": "No conversations.",
+    "no_active_chats": "No active conversations.",
+    "history_title": "Chat History ({{count}})"
+  }
+}

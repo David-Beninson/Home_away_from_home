@@ -5,7 +5,7 @@
   border: 1px solid var(--border, #e2e8f0);
   border-radius: 1rem;
   overflow: hidden;
-  text-align: right;
+
   width: 100%;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -75,7 +75,7 @@
 .card-badges-right {
   position: absolute;
   top: 0.75rem;
-  right: 0.75rem;
+  inset-inline-start: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -126,7 +126,7 @@
 .card-badge-lodging {
   position: absolute;
   top: 0.75rem;
-  left: 0.75rem;
+  inset-inline-end: 0.75rem;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -232,7 +232,7 @@
   color: #16a34a;
   font-weight: 600;
   margin-top: 4px;
-  text-align: right;
+
 }
 
 .upcoming-no-spots {
@@ -240,7 +240,7 @@
   color: #94a3b8;
   font-weight: 500;
   margin-top: 4px;
-  text-align: right;
+
 }
 
 .card-vibe-pill {

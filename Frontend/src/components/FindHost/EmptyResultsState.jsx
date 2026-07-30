@@ -1,13 +1,15 @@
 
+import { useTranslation } from 'react-i18next';
 
 export default function EmptyResultsState({ onResetFilters }) {
+  const { t } = useTranslation(['guest/find_host']);
   return (
     <div className="empty-results-state">
-      <h3>לא נמצאו מארחים בבסיס הנתונים</h3>
-      <p>נסה לשנות את מילות החיפוש, להסיר סינונים או לבחור עיר אחרת.</p>
+      <h3>{t('guest/find_host:empty.title')}</h3>
+      <p>{t('guest/find_host:empty.subtitle')}</p>
       {onResetFilters && (
         <button className="reset-search-btn" onClick={onResetFilters}>
-          איפוס סינונים וחיפוש
+          {t('guest/find_host:empty.reset_btn')}
         </button>
       )}
     </div>

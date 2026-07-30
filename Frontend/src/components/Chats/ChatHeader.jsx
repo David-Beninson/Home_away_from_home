@@ -2,13 +2,21 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { WhatsAppIcon } from '../Common/Icons';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
-import { User } from 'lucide-react';
+import { User, AlertCircle, Info } from 'lucide-react';
+import { getChatDisplayName } from '../../utils/chatUtils';
+import { useTranslation } from 'react-i18next';
 
 export function ChatHeader({ activeChat, initialOpenDetailsModal = false }) {
+  const { t } = useTranslation(['chat/chats']);
   const [showDetailsModal, setShowDetailsModal] = useState(initialOpenDetailsModal);
   const currentUser = useSelector((state) => state.auth.user);
-  const isHost = currentUser?.user_type === 'host';
-  const buttonText = isHost ? 'פרטי אורח' : 'פרטי אירוח';
+  
+  const isHostView = currentUser?.user_type === 'host';
+  const isAnonymousGuest = isHostView && activeChat?.is_anonymous;
+
+  const otherPartyName = isAnonymousGuest 
+    ? t('chat/chats:header.anonymous_guest')
+    : getChatDisplayName(activeChat) || (isHostView ? t('chat/chats:header.anonymous_guest') : t('chat/chats:header.host'));
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -33,20 +41,28 @@ export function ChatHeader({ activeChat, initialOpenDetailsModal = false }) {
       <div className="chat-header">
         <div className="chat-header-user">
           <div className="chat-header-avatar">
-            {activeChat.other_party_name?.charAt(0) || 'א'}
+            {otherPartyName?.charAt(0) || 'א'}
           </div>
           <div>
             <h2 className="chat-header-title">
               {activeChat.hosting_date
-                ? `${formatShortDate(activeChat.hosting_date)} · ${activeChat.other_party_name}`
-                : activeChat.other_party_name}
+                ? `${formatShortDate(activeChat.hosting_date)} · ${otherPartyName}`
+                : otherPartyName}
             </h2>
             <p className="chat-header-status">
               <span className="chat-header-status-dot"></span>
-              מחובר (מאושר)
+              {t('chat/chats:header.status_connected')}
             </p>
           </div>
         </div>
+        
+        {isAnonymousGuest && (
+          <div className="chat-anonymous-warning" title={t('chat/chats:header.anonymous_warning')}>
+            <AlertCircle size={16} />
+            <span>{t('chat/chats:header.anonymous_warning')}</span>
+          </div>
+        )}
+
         <div className="chat-header-actions">
           {activeChat.hosting_date && (
             <div className="chat-header-date">
@@ -54,20 +70,17 @@ export function ChatHeader({ activeChat, initialOpenDetailsModal = false }) {
             </div>
           )}
 
-          {/* Dynamic Details Button */}
-          <button
+          <button 
             type="button"
             className="chat-header-details-btn"
             onClick={() => setShowDetailsModal(true)}
-            data-tooltip={buttonText}
           >
-            <User size={16} />
-            <span>{buttonText}</span>
+            <Info size={16} />
+            <span>{isHostView ? t('chat/chats:header.btn_hosting_details') : t('chat/chats:header.btn_profile_details')}</span>
           </button>
 
-          {/* WhatsApp Button */}
           <a
-            href={`https://wa.me/${activeChat.other_party_phone ? activeChat.other_party_phone.replace(/[^0-9]/g, '') : ''}?text=${encodeURIComponent(`שלום, בהקשר לאירוח בתאריך ${formatShortDate(activeChat.hosting_date) || formatDate(activeChat.hosting_date) || ''}`)}`}
+            href={`https://wa.me/${activeChat.other_party_phone ? activeChat.other_party_phone.replace(/[^0-9]/g, '') : ''}?text=${encodeURIComponent(`${t('chat/chats:header.wa_message_prefix')} ${formatShortDate(activeChat.hosting_date) || formatDate(activeChat.hosting_date) || ''}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="chat-header-wa-btn"

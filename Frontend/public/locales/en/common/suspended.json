@@ -1,0 +1,50 @@
+{
+  "header": {
+    "logout": "Logout 🚪"
+  },
+  "errors": {
+    "missing_files": "Please upload both a profile/selfie photo and an ID/military ID.",
+    "missing_secondary": "You must upload a lone soldier or new immigrant certificate.",
+    "upload_failed": "Document upload failed. Please try again."
+  },
+  "status_titles": {
+    "pending_submission": "Identity verification required to use the system",
+    "pending_ai": "Scanning documents (Artificial Intelligence)...",
+    "pending_admin": "Documents under review by system management",
+    "rejected": "Verification request denied",
+    "suspended": "Your account is suspended"
+  },
+  "status_subtitles": {
+    "pending_submission": "To ensure community safety, please upload appropriate verification documents.",
+    "pending_admin": "Your documents were successfully scanned and moved to final approval. You will receive an update soon.",
+    "default_rejection": "The image was unreadable. Please re-upload documents.",
+    "suspended_desc": "Unfortunately, your account has been suspended. Please contact the admins via the chat below.",
+    "suspension_reason": "Suspension reason: "
+  },
+  "form": {
+    "type_label": "Required verification type:",
+    "host_type": "Host Verification",
+    "guest_type": "Lone Soldier/National Service Verification",
+    "selfie_host": "Profile Photo / Selfie",
+    "selfie_guest": "Selfie Photo",
+    "id_host": "ID Card",
+    "id_guest": "ID or Military ID",
+    "secondary_doc": "Lone Soldier / Immigrant Certificate",
+    "submit": "Submit for review and admin approval 🚀"
+  },
+  "ai_progress": {
+    "uploading": "Uploading files to a secure server...",
+    "scanning": "Scanning face and ID (powered by AI)...",
+    "queueing": "Moving to final admin approval queue..."
+  },
+  "admin_stats": {
+    "ai_score": "Match and AI scan score: {{score}}%",
+    "queue_msg": "Your request is at the top of the admin queue. You will be notified once approved."
+  },
+  "chat": {
+    "title": "Support chat with system management",
+    "empty": "Hello! We are here to help you with any questions.",
+    "placeholder": "Write a message to admins...",
+    "send": "Send ✉️"
+  }
+}

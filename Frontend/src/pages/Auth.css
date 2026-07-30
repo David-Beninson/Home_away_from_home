@@ -6,7 +6,7 @@
   align-items: center;
   min-height: 85vh;
   padding: 40px 20px;
-  direction: rtl;
+
   font-family: 'Assistant', 'Rubik', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-secondary, #f8fafc);
 }
@@ -85,7 +85,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  text-align: right;
+
 }
 
 .form-group label {
@@ -105,7 +105,7 @@
   color: #1e293b !important;
   box-sizing: border-box;
   outline: none;
-  text-align: right;
+
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -128,12 +128,12 @@
 }
 
 .password-input-wrapper input {
-  padding-left: 40px !important;
+  padding-inline-end: 40px !important;
 }
 
 .password-toggle-btn {
   position: absolute;
-  left: 10px;
+  inset-inline-end: 10px;
   background: transparent;
   border: none;
   color: #64748b;

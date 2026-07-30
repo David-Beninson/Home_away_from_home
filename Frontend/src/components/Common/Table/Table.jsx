@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next';
+
 export default function Table({ headers, dataLength, fallbackText, children }) {
+  const { t } = useTranslation(['common/table']);
   const hasData = typeof dataLength === 'number' ? dataLength > 0 : true;
 
   return (
@@ -20,7 +23,7 @@ export default function Table({ headers, dataLength, fallbackText, children }) {
                 colSpan={headers.length} 
                 className="admin-table-fallback"
               >
-                {fallbackText || 'אין נתונים להצגה'}
+                {fallbackText || t('common/table:fallback_text')}
               </td>
             </tr>
           )}

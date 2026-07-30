@@ -1,0 +1,15 @@
+{
+  "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  "aria": {
+    "prev_month": "Previous month",
+    "next_month": "Next month"
+  },
+  "placeholders": {
+    "start_date": "Select check-in date",
+    "end_date": "Select check-out date"
+  },
+  "nights_one": "1 night",
+  "nights_other": "{{count}} nights",
+  "nights_zero": "0 nights"
+}

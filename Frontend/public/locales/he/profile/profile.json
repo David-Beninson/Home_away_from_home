@@ -1,0 +1,55 @@
+{
+  "title": "הפרופיל שלי",
+  "loading": "טוען פרופיל...",
+  "role_host": "משפחה מארחת",
+  "role_guest": "חייל/ת (אורח)",
+  "location_unspecified_guest": "טרם עודכן מיקום/יחידה",
+  "location_unspecified_host": "טרם עודכנה עיר מגורים",
+  "stats": {
+    "hostings": "אירוחים",
+    "hosts": "מארחים",
+    "nights": "לינות"
+  },
+  "fields": {
+    "email": "אימייל",
+    "phone": "טלפון",
+    "giving_to_host": "מביא/ה מתנה למארח",
+    "food_preferences": "העדפות מזון",
+    "kosher_food": "אוכל כשר",
+    "guest_address": "כתובת מגורים",
+    "unit_description": "יחידה צבאית",
+    "food_allergies": "אלרגיות / רגישויות",
+    "religious_level": "דת",
+    "gender": "מין",
+    "service_type": "סוג שירות",
+    "release_date": "תאריך שחרור",
+    "is_anonymous": "פרופיל אנונימי",
+    "residential_address": "כתובת מגורים",
+    "neighborhood_type": "סוג שכונה",
+    "pets_description": "חיות מחמד",
+    "housing_type": "סוג דיור",
+    "max_guests": "מקסימום אורחים",
+    "kashrut_level": "רמת כשרות",
+    "num_beds": "מספר מיטות",
+    "num_bedrooms": "מספר חדרי שינה",
+    "accessibility_level": "נגישות"
+  },
+  "buttons": {
+    "logout": "יציאה",
+    "edit_profile": "עריכת פרופיל",
+    "cancel": "ביטול",
+    "save": "שמור שינויים",
+    "saving": "שומר..."
+  },
+  "edit": {
+    "title": "עריכת פרופיל",
+    "subtitle": "עדכן את הפרטים האישיים והעדפות האירוח שלך",
+    "yes": "כן",
+    "no": "לא"
+  },
+  "messages": {
+    "success": "הפרופיל עודכן בהצלחה!",
+    "error_default": "שגיאה בעדכון הפרופיל. נסה שוב.",
+    "error_prefix": "שגיאה בעדכון הפרופיל: {{error}}"
+  }
+}

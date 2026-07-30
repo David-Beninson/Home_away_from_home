@@ -1,20 +1,23 @@
 
 import { Star, MapPin } from 'lucide-react';
 import HostCardMedia from './HostCardMedia';
+import { useTranslation } from 'react-i18next';
 import './HostCard.css';
 
 export default function HostCard({ host, onBookingRequest }) {
+  const { t } = useTranslation(['common/host_card']);
+
   if (!host) return null;
 
   const fullName = host.full_name || host.host_name ;
   const rating = host.rating !== undefined && host.rating !== null ? Number(host.rating).toFixed(1) : '4.9';
   const reviewsCount = host.reviews_count ?? host.review_count ?? 47;
-  const city = host.city || 'לא צוין';
+  const city = host.city || t('common/host_card:default_city');
   const hasOpenDays = host.upcoming_open_days && host.upcoming_open_days.length > 0;
   const availableSpots = hasOpenDays
     ? (host.available_spots !== undefined && host.available_spots !== null ? host.available_spots : 2)
     : 0;
-  const tags = host.tags && host.tags.length > 0 ? host.tags : ['ילדים', 'חם ומשפחתי'];
+  const tags = host.tags && host.tags.length > 0 ? host.tags : ['ילדים', 'חם ומשפחתי']; // These could also be translated if dynamic, leaving for now as tags are user-defined.
 
   const isDisabled = availableSpots <= 0;
 
@@ -56,18 +59,18 @@ export default function HostCard({ host, onBookingRequest }) {
         {/* Row 2.5: Upcoming Week Availability */}
         {host.upcoming_open_days && host.upcoming_open_days.length > 0 ? (
           <div className="upcoming-open-days">
-            📅 זמין השבוע ב: {host.upcoming_open_days.join(', ')}
+            {t('common/host_card:upcoming_days', { days: host.upcoming_open_days.join(', ') })}
           </div>
         ) : (
           <div className="upcoming-no-spots">
-            אין עוד מקומות פנויים אצל מארח זה
+            {t('common/host_card:no_spots_upcoming')}
           </div>
         )}
 
         {/* Row 3: Available Spots (Right) & Tags (Left) */}
         <div className="card-row-footer">
           <span className={`card-spots-text ${availableSpots > 0 ? 'text-amber' : 'text-red'}`}>
-            {availableSpots > 0 ? `${availableSpots} מקומות` : 'אזלו המקומות'}
+            {availableSpots > 0 ? t('common/host_card:available_spots_count', { count: availableSpots }) : t('common/host_card:no_spots')}
           </span>
 
           <div className="card-tags-group">

@@ -9,10 +9,13 @@ import {
 } from '../../../store/notificationsSlice';
 import { fetchCurrentUser } from '../../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Bell, CheckCircle2, MessageSquare, AlertCircle, Check, Trash2, Filter } from 'lucide-react';
+import { translateNotificationTitle, translateNotificationMessage } from '../../../utils/notificationTranslator';
 import './NotificationBell.css';
 
 export default function NotificationBell() {
+  const { t } = useTranslation(['common/notifications']);
   const [isOpen, setIsOpen] = useState(false);
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'unread'
   const dropdownRef = useRef(null);
@@ -95,7 +98,8 @@ export default function NotificationBell() {
 
           if (incomingData?.popup) {
             setTimeout(() => {
-              window.alert(`שים לב!\n\n${incomingData.message}`);
+              const translatedMsg = translateNotificationMessage(incomingData.message, t);
+              window.alert(t('common/notifications:alert_message', { message: translatedMsg }));
             }, 100);
           }
         } catch (err) {
@@ -256,7 +260,7 @@ export default function NotificationBell() {
       <button
         className={`nb-trigger-btn ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="התראות"
+        aria-label={t('common/notifications:aria_label')}
       >
         <div className="navbar-left">
           <div className="notification-bell">
@@ -270,10 +274,10 @@ export default function NotificationBell() {
         <div className="nb-dropdown">
           <div className="nb-header">
             <div className="nb-header-title-row">
-              <h3>התראות {unreadCount > 0 && <span className="nb-unread-count-pill">{unreadCount} חדשות</span>}</h3>
+              <h3>{t('common/notifications:title')} {unreadCount > 0 && <span className="nb-unread-count-pill">{t('common/notifications:new_count', { count: unreadCount })}</span>}</h3>
               {unreadCount > 0 && (
-                <button className="nb-mark-read-btn" onClick={handleMarkAllAsRead} title="סמן הכל כנקרא">
-                  <Check size={14} /> סמן הכל כנקרא
+                <button className="nb-mark-read-btn" onClick={handleMarkAllAsRead} title={t('common/notifications:mark_all_read')}>
+                  <Check size={14} /> {t('common/notifications:mark_all_read')}
                 </button>
               )}
             </div>
@@ -283,13 +287,13 @@ export default function NotificationBell() {
                 className={`nb-filter-btn ${filterMode === 'all' ? 'active' : ''}`}
                 onClick={() => setFilterMode('all')}
               >
-                הכל ({notifications.length})
+                {t('common/notifications:filter_all', { count: notifications.length })}
               </button>
               <button
                 className={`nb-filter-btn ${filterMode === 'unread' ? 'active' : ''}`}
                 onClick={() => setFilterMode('unread')}
               >
-                לא נקראו ({unreadCount})
+                {t('common/notifications:filter_unread', { count: unreadCount })}
               </button>
             </div>
           </div>
@@ -298,7 +302,7 @@ export default function NotificationBell() {
             {filteredNotifications.length === 0 ? (
               <div className="nb-empty">
                 <Bell size={32} strokeWidth={1} />
-                <p>{filterMode === 'unread' ? 'אין לך התראות שלא נקראו' : 'אין לך התראות במערכת'}</p>
+                <p>{filterMode === 'unread' ? t('common/notifications:empty_unread') : t('common/notifications:empty_all')}</p>
               </div>
             ) : (
               filteredNotifications.map((note) => {
@@ -317,11 +321,13 @@ export default function NotificationBell() {
                     <div className="nb-item-icon">{getIcon(note.type)}</div>
                     <div className="nb-item-content">
                       <div className="nb-item-header">
-                        <h4 className={isUnread ? 'nb-unread-title' : 'nb-read-title'}>{note.title}</h4>
-                        {isUnread && <span className="nb-unread-dot" title="לא נקרא" />}
+                        <h4 className={isUnread ? 'nb-unread-title' : 'nb-read-title'}>
+                          {translateNotificationTitle(note.title, t)}
+                        </h4>
+                        {isUnread && <span className="nb-unread-dot" title={t('common/notifications:tooltip_unread')} />}
                       </div>
-                      <p>{note.message}</p>
-                      <span className="nb-time">{note.time || note.created_at || 'עכשיו'}</span>
+                      <p>{translateNotificationMessage(note.message, t)}</p>
+                      <span className="nb-time">{note.time || note.created_at || t('common/notifications:now')}</span>
                     </div>
 
                     <div className="nb-actions">
@@ -329,7 +335,7 @@ export default function NotificationBell() {
                         <button
                           className="nb-action-btn nb-read-action"
                           onClick={(e) => handleSingleMarkAsRead(e, note.id)}
-                          title="סמן כנקרא"
+                          title={t('common/notifications:tooltip_mark_read')}
                         >
                           <Check size={14} />
                         </button>
@@ -337,7 +343,7 @@ export default function NotificationBell() {
                       <button
                         className="nb-action-btn nb-delete-action"
                         onClick={(e) => handleDeleteNotification(e, note.id)}
-                        title="מחק התראה"
+                        title={t('common/notifications:tooltip_delete')}
                       >
                         <Trash2 size={14} />
                       </button>

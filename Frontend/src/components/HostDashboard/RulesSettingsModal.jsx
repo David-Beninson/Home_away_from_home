@@ -2,13 +2,7 @@ import  { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { X, Calendar, Lock, Settings } from 'lucide-react';
 import { setRules, closeRulesModal } from '../../store/availabilitySlice';
-
-const WEEKEND_PATTERN_OPTIONS = [
-  { value: 'every',    label: 'כל סופ״ש',                desc: 'פתוח בכל שישי ושבת' },
-  { value: 'biweekly', label: 'כל שבוע שני (Bi-weekly)', desc: 'פתוח שבוע כן, שבוע לא' },
-  { value: 'monthly',  label: 'פעם בחודש',               desc: 'רק בסופ״ש מסוים בחודש' },
-  { value: 'never',    label: 'סגור קבוע',               desc: 'לא מקבל אורחים בסופ״ש' },
-];
+import { useTranslation } from 'react-i18next';
 
 const WEEKDAY_LABELS = [
   { dow: 0, label: 'ראשון' },
@@ -19,15 +13,10 @@ const WEEKDAY_LABELS = [
 ];
 
 const WEEKEND_DAYS_OPTIONS = [
-  { value: [4, 5, 6], label: 'חמישי–שישי–שבת' },
-  { value: [5, 6],    label: 'שישי–שבת (ברירת מחדל)' },
-  { value: [6],       label: 'שבת בלבד' },
+  { value: [4, 5, 6], labelKey: 'weekend_thu_fri_sat' },
+  { value: [5, 6],    labelKey: 'weekend_fri_sat' },
+  { value: [6],       labelKey: 'weekend_sat' },
 ];
-
-const MONTHLY_OPTIONS = [1, 2, 3, 4].map((n) => ({
-  value: n,
-  label: ['ראשון', 'שני', 'שלישי', 'רביעי'][n - 1] + ' בחודש',
-}));
 
 function arraysEqual(a, b) {
   return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
@@ -35,6 +24,7 @@ function arraysEqual(a, b) {
 
 export default function RulesSettingsModal() {
   const dispatch = useDispatch();
+  const { t } = useTranslation(['host/dashboard']);
   const { rules, rulesModalOpen } = useSelector((s) => s.availability);
 
   const [draft, setDraft] = useState(rules);
@@ -58,8 +48,20 @@ export default function RulesSettingsModal() {
     setDraft((p) => ({ ...p, weekdayOpenDays: next }));
   };
 
+  const WEEKEND_PATTERN_OPTIONS = [
+    { value: 'every',    label: t('host/dashboard:rules_modal.pattern_every'),                desc: t('host/dashboard:rules_modal.pattern_every_desc') },
+    { value: 'biweekly', label: t('host/dashboard:rules_modal.pattern_biweekly'), desc: t('host/dashboard:rules_modal.pattern_biweekly_desc') },
+    { value: 'monthly',  label: t('host/dashboard:rules_modal.pattern_monthly'),               desc: t('host/dashboard:rules_modal.pattern_monthly_desc') },
+    { value: 'never',    label: t('host/dashboard:rules_modal.pattern_never'),               desc: t('host/dashboard:rules_modal.pattern_never_desc') },
+  ];
+
+  const MONTHLY_OPTIONS = [1, 2, 3, 4].map((n) => ({
+    value: n,
+    label: t(`host/dashboard:rules_modal.sub_monthly_opts.${n}`)
+  }));
+
   return (
-    <div className="rsm-backdrop" role="dialog" aria-modal="true" aria-label="הגדרות כללי זמינות">
+    <div className="rsm-backdrop" role="dialog" aria-modal="true" aria-label={t('host/dashboard:rules_modal.title')}>
       <div className="rsm-modal">
 
         {/* Header */}
@@ -67,11 +69,11 @@ export default function RulesSettingsModal() {
           <div className="rsm-header-left">
             <div className="rsm-header-icon"><Settings size={20} /></div>
             <div>
-              <h2>הגדרות זמינות</h2>
-              <p>קבע את כללי האירוח הקבועים שלך</p>
+              <h2>{t('host/dashboard:rules_modal.title')}</h2>
+              <p>{t('host/dashboard:rules_modal.subtitle')}</p>
             </div>
           </div>
-          <button id="rsm-close" className="rsm-close-btn" onClick={handleClose} aria-label="סגור">
+          <button id="rsm-close" className="rsm-close-btn" onClick={handleClose} aria-label={t('host/dashboard:rules_modal.btn_cancel')}>
             <X size={20} />
           </button>
         </div>
@@ -80,7 +82,7 @@ export default function RulesSettingsModal() {
 
           {/* 1. Weekend Pattern */}
           <section className="rsm-section">
-            <h3 className="rsm-section-title"><Calendar size={16} /> תדירות אירוח סופ״ש</h3>
+            <h3 className="rsm-section-title"><Calendar size={16} /> {t('host/dashboard:rules_modal.section_pattern_title')}</h3>
             <div className="rsm-pattern-grid">
               {WEEKEND_PATTERN_OPTIONS.map((opt) => (
                 <button
@@ -97,7 +99,7 @@ export default function RulesSettingsModal() {
 
             {draft.weekendPattern === 'monthly' && (
               <div className="rsm-sub-option">
-                <label className="rsm-sub-label">איזה סופ״ש בחודש?</label>
+                <label className="rsm-sub-label">{t('host/dashboard:rules_modal.sub_monthly_label')}</label>
                 <div className="rsm-radio-row">
                   {MONTHLY_OPTIONS.map((opt) => (
                     <label key={opt.value} className="rsm-radio-label">
@@ -113,9 +115,9 @@ export default function RulesSettingsModal() {
 
             {draft.weekendPattern === 'biweekly' && (
               <div className="rsm-sub-option">
-                <label className="rsm-sub-label">איזה שבוע פתוח?</label>
+                <label className="rsm-sub-label">{t('host/dashboard:rules_modal.sub_biweekly_label')}</label>
                 <div className="rsm-radio-row">
-                  {[{ v: 0, l: 'שבוע זוגי' }, { v: 1, l: 'שבוע אי-זוגי' }].map(({ v, l }) => (
+                  {[{ v: 0, l: t('host/dashboard:rules_modal.sub_biweekly_even') }, { v: 1, l: t('host/dashboard:rules_modal.sub_biweekly_odd') }].map(({ v, l }) => (
                     <label key={v} className="rsm-radio-label">
                       <input type="radio" name="biweeklyParity"
                         checked={draft.biweeklyParity === v}
@@ -130,13 +132,13 @@ export default function RulesSettingsModal() {
 
           {/* 2. Weekend Definition */}
           <section className="rsm-section">
-            <h3 className="rsm-section-title">🕯️ הגדרת "סוף שבוע" אצלי</h3>
+            <h3 className="rsm-section-title">{t('host/dashboard:rules_modal.section_weekend_title')}</h3>
             <div className="rsm-weekend-days-grid">
               {WEEKEND_DAYS_OPTIONS.map((opt) => (
-                <button key={opt.label}
+                <button key={opt.labelKey}
                   className={`rsm-pattern-card ${arraysEqual(draft.weekendDays, opt.value) ? 'rsm-pattern-card--active' : ''}`}
                   onClick={() => setDraft((p) => ({ ...p, weekendDays: opt.value }))}>
-                  <span className="rsm-pattern-label">{opt.label}</span>
+                  <span className="rsm-pattern-label">{t(`host/dashboard:rules_modal.${opt.labelKey}`)}</span>
                 </button>
               ))}
             </div>
@@ -144,13 +146,13 @@ export default function RulesSettingsModal() {
 
           {/* 3. Weekday Open Days */}
           <section className="rsm-section">
-            <h3 className="rsm-section-title">📅 ימי אמצע שבוע פתוחים</h3>
-            <p className="rsm-section-hint">סמן ימים שבהם אתה מוכן לקבל אורחים בשגרה</p>
+            <h3 className="rsm-section-title">{t('host/dashboard:rules_modal.section_weekday_title')}</h3>
+            <p className="rsm-section-hint">{t('host/dashboard:rules_modal.section_weekday_hint')}</p>
             <div className="rsm-weekday-checks">
-              {WEEKDAY_LABELS.map(({ dow, label }) => (
+              {WEEKDAY_LABELS.map(({ dow }) => (
                 <label key={dow} className={`rsm-day-check ${draft.weekdayOpenDays.includes(dow) ? 'rsm-day-check--active' : ''}`}>
                   <input type="checkbox" checked={draft.weekdayOpenDays.includes(dow)} onChange={() => toggleWeekday(dow)} />
-                  {label}
+                  {t(`host/dashboard:rules_modal.weekday_names.${dow}`)}
                 </label>
               ))}
             </div>
@@ -158,14 +160,14 @@ export default function RulesSettingsModal() {
 
           {/* 4. Notice Period */}
           <section className="rsm-section">
-            <h3 className="rsm-section-title"><Lock size={16} /> זמן התרעה מראש</h3>
-            <p className="rsm-section-hint">באותו יום, מאיזו שעה המערכת תסגור אוטומטית ימים שלא הוזמנו?</p>
+            <h3 className="rsm-section-title"><Lock size={16} /> {t('host/dashboard:rules_modal.section_notice_title')}</h3>
+            <p className="rsm-section-hint">{t('host/dashboard:rules_modal.section_notice_hint')}</p>
             <div className="rsm-notice-row">
-              <label className="rsm-notice-label">חסום אוטומטית לאחר שעה:</label>
+              <label className="rsm-notice-label">{t('host/dashboard:rules_modal.notice_label')}</label>
               <select className="rsm-notice-select" value={draft.noticeCutoffHour}
                 onChange={(e) => setDraft((p) => ({ ...p, noticeCutoffHour: Number(e.target.value) }))}>
                 {[8, 10, 12, 14, 16, 18, 24].map((h) => (
-                  <option key={h} value={h}>{h === 24 ? 'לא חוסם (כל שעה)' : `${h}:00`}</option>
+                  <option key={h} value={h}>{h === 24 ? t('host/dashboard:rules_modal.notice_opt_none') : `${h}:00`}</option>
                 ))}
               </select>
             </div>
@@ -173,17 +175,17 @@ export default function RulesSettingsModal() {
 
           {/* 5. Calendar Sync Placeholder */}
           <section className="rsm-section">
-            <h3 className="rsm-section-title">📆 סנכרון יומן אישי</h3>
+            <h3 className="rsm-section-title">{t('host/dashboard:rules_modal.section_sync_title')}</h3>
             <div className="rsm-sync-card">
               <div className="rsm-sync-info">
-                <p className="rsm-sync-title">Google Calendar / Apple Calendar</p>
-                <p className="rsm-sync-desc">סנכרון דו-כיווני יזהה אוטומטית אירועים אישיים ויסגור תאריכים בהתאם</p>
+                <p className="rsm-sync-title">{t('host/dashboard:rules_modal.sync_subtitle')}</p>
+                <p className="rsm-sync-desc">{t('host/dashboard:rules_modal.sync_desc')}</p>
               </div>
               <div className="rsm-coming-soon-wrapper">
-                <button id="rsm-sync-btn" className="rsm-sync-btn" disabled title="פיצ'ר זה בפיתוח">
-                  🔗 חבר יומן
+                <button id="rsm-sync-btn" className="rsm-sync-btn" disabled>
+                  {t('host/dashboard:rules_modal.btn_sync')}
                 </button>
-                <span className="rsm-coming-soon-badge">בקרוב</span>
+                <span className="rsm-coming-soon-badge">{t('host/dashboard:rules_modal.badge_coming_soon')}</span>
               </div>
             </div>
           </section>
@@ -192,8 +194,8 @@ export default function RulesSettingsModal() {
 
         {/* Footer */}
         <div className="rsm-modal-footer">
-          <button id="rsm-cancel" className="rsm-btn-cancel" onClick={handleClose}>ביטול</button>
-          <button id="rsm-save" className="rsm-btn-save" onClick={handleSave}>שמור הגדרות</button>
+          <button id="rsm-cancel" className="rsm-btn-cancel" onClick={handleClose}>{t('host/dashboard:rules_modal.btn_cancel')}</button>
+          <button id="rsm-save" className="rsm-btn-save" onClick={handleSave}>{t('host/dashboard:rules_modal.btn_save')}</button>
         </div>
 
       </div>

@@ -1,8 +1,10 @@
 
 
 import { getChatDisplayName } from '../../utils/chatUtils';
+import { useTranslation } from 'react-i18next';
 
 export function ChatItem({ chat, isActive, onSelectChat }) {
+  const { t } = useTranslation(['chat/chats']);
   const displayName = getChatDisplayName(chat);
 
   const formatTime = (dateStr) => {
@@ -33,7 +35,7 @@ export function ChatItem({ chat, isActive, onSelectChat }) {
             )}
           </div>
           <div className="chat-item-bottom">
-            <p className="chat-item-preview">{chat.last_message || 'אין הודעות עדיין'}</p>
+            <p className="chat-item-preview">{chat.last_message || t('chat/chats:item.no_messages')}</p>
             {chat.unread_count > 0 && (
               <span className="chat-item-badge">
                 {chat.unread_count}

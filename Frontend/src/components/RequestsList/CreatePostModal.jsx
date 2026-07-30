@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { postsApi } from '../../api/api';
 import DateRangePicker from '../Common/DateRangePicker/DateRangePicker';
+import { useTranslation } from 'react-i18next';
 import './CreatePostModal.css';
 
 export default function CreatePostModal({ isOpen, onClose, onSuccess, initialData = null }) {
+  const { t } = useTranslation(['guest/requests']);
   const getDefaultDate = () => {
     const d = new Date();
     d.setDate(d.getDate() + ((5 + 7 - d.getDay()) % 7 || 7));
@@ -61,7 +63,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!description.trim()) {
-      setError('אנא הזן תיאור לבקשת האירוח');
+      setError(t('guest/requests:create_modal.error_desc'));
       return;
     }
 
@@ -95,18 +97,18 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
       onClose();
     } catch (err) {
       console.error('Failed to save post:', err);
-      setError(err.response?.data?.detail || 'שגיאה בשמירת הבקשה');
+      setError(err.response?.data?.detail || t('guest/requests:create_modal.error_save'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const formattedDateLabel = () => {
-    if (!dateRange.startDate) return 'בחירת תאריכים';
+    if (!dateRange.startDate) return t('guest/requests:inline_edit.date_picker_default');
     const startStr = dateRange.startDate.toLocaleDateString('he-IL');
-    if (!dateRange.endDate) return `הגעה: ${startStr}`;
+    if (!dateRange.endDate) return t('guest/requests:inline_edit.date_arrival', { date: startStr });
     const endStr = dateRange.endDate.toLocaleDateString('he-IL');
-    const nights = dateRange.nightsCount > 0 ? ` (${dateRange.nightsCount} לילות)` : '';
+    const nights = dateRange.nightsCount > 0 ? t('guest/requests:inline_edit.date_nights', { count: dateRange.nightsCount }) : '';
     return `${startStr} - ${endStr}${nights}`;
   };
 
@@ -117,7 +119,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
 
         <div className="cpm-inline-header">
           <h3 className="font-bold text-foreground text-right">
-            {isEdit ? 'עריכת בקשת אירוח' : 'פרסם בקשת אירוח חדשה'}
+            {isEdit ? t('guest/requests:create_modal.title_edit') : t('guest/requests:create_modal.title_create')}
           </h3>
           <button
             type="button"
@@ -129,7 +131,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
         </div>
 
         <textarea
-          placeholder="תאר את עצמך ומה אתה מחפש בשבת..."
+          placeholder={t('guest/requests:create_modal.placeholder_desc')}
           rows="3"
           dir="rtl"
           className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
@@ -140,7 +142,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
 
         {isAnonymous && (
           <div className="cpm-anonymous-tip">
-            💡 <strong>פרסום אנונימי:</strong> השם שלך לא יוצג למארחים. מומלץ לפרט בתיאור ככל הניתן (ללא פרטים מזהים) על מנת להעלות את הסיכוי שמארחים יאשרו את האירוח.
+            💡 <strong>{t('guest/requests:create_modal.anon_tip_title')}</strong> {t('guest/requests:create_modal.anon_tip_desc')}
           </div>
         )}
 
@@ -157,36 +159,36 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 cpm-fields-grid">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">אזור</label>
+            <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">{t('guest/requests:create_modal.label_region')}</label>
             <select
               dir="rtl"
               className="w-full bg-input-background border border-border rounded-xl px-3 py-2 text-sm focus:outline-none"
               value={region}
               onChange={(e) => setRegion(e.target.value)}
             >
-              <option value="מרכז">מרכז</option>
-              <option value="ירושלים">ירושלים</option>
-              <option value="צפון">צפון</option>
-              <option value="דרום">דרום</option>
+              <option value="מרכז">{t('guest/requests:inline_edit.regions.center')}</option>
+              <option value="ירושלים">{t('guest/requests:inline_edit.regions.jerusalem')}</option>
+              <option value="צפון">{t('guest/requests:inline_edit.regions.north')}</option>
+              <option value="דרום">{t('guest/requests:inline_edit.regions.south')}</option>
             </select>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">כשרות</label>
+            <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">{t('guest/requests:create_modal.label_kashrut')}</label>
             <select
               dir="rtl"
               className="w-full bg-input-background border border-border rounded-xl px-3 py-2 text-sm focus:outline-none"
               value={kashrut}
               onChange={(e) => setKashrut(e.target.value)}
             >
-              <option value="כשר">כשר</option>
-              <option value="מהדרין">מהדרין</option>
-              <option value="רגיל">רגיל</option>
+              <option value="כשר">{t('guest/requests:inline_edit.kashrut_options.kosher')}</option>
+              <option value="מהדרין">{t('guest/requests:inline_edit.kashrut_options.mehadrin')}</option>
+              <option value="רגיל">{t('guest/requests:inline_edit.kashrut_options.regular')}</option>
             </select>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">מספר אורחים</label>
+            <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">{t('guest/requests:create_modal.label_guests')}</label>
             <input
               type="number"
               min="1"
@@ -200,7 +202,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
 
           <div className="flex flex-col justify-end gap-2 cpm-checkboxes">
             <label className="flex items-center gap-2 cursor-pointer justify-end">
-              <span className="text-xs text-muted-foreground">לינה נדרשת</span>
+              <span className="text-xs text-muted-foreground">{t('guest/requests:create_modal.label_lodging')}</span>
               <input
                 type="checkbox"
                 className="w-4 h-4 accent-primary"
@@ -210,7 +212,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer justify-end">
-              <span className="text-xs text-muted-foreground">אנונימי</span>
+              <span className="text-xs text-muted-foreground">{t('guest/requests:create_modal.label_anonymous')}</span>
               <input
                 type="checkbox"
                 className="w-4 h-4 accent-primary"
@@ -230,14 +232,14 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
               onClose();
             }}
           >
-            ביטול
+            {t('guest/requests:create_modal.btn_cancel')}
           </button>
           <button
             type="submit"
             disabled={submitting}
             className="px-5 py-2 rounded-xl text-white font-semibold text-sm disabled:opacity-40 hover:opacity-90 cpm-btn-submit"
           >
-            {submitting ? (isEdit ? 'שומר...' : 'מפרסם...') : (isEdit ? 'עדכן בקשה' : 'פרסם')}
+            {submitting ? (isEdit ? t('guest/requests:create_modal.btn_submitting_edit') : t('guest/requests:create_modal.btn_submitting_create')) : (isEdit ? t('guest/requests:create_modal.btn_submit_edit') : t('guest/requests:create_modal.btn_submit_create'))}
           </button>
         </div>
       </form>

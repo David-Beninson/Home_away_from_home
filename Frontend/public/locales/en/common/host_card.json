@@ -1,0 +1,15 @@
+{
+  "default_name": "Family Cohen",
+  "default_city": "Not specified",
+  "available_spots_count": "{{count}} spots",
+  "no_spots": "No spots available",
+  "no_spots_upcoming": "No more available spots with this host",
+  "upcoming_days": "📅 Available this week on: {{days}}",
+  "lodging": "Lodging",
+  "kashrut": {
+    "mehadrin": "Mehadrin",
+    "kosher": "Kosher",
+    "basic": "Basic Kosher",
+    "none": "No Kashrut"
+  }
+}

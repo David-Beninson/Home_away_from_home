@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Navbar from '../Navbar/Navbar';
@@ -66,7 +67,9 @@ export default function Layout() {
 
       {/* Whichever child page is active gets rendered right here */}
       <main className="layout-content">
-        <Outlet />
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       {/* Global pending review modal */}

@@ -10,9 +10,11 @@ import { fetchPosts, fetchAllRequests } from '../../../store/requestsSlice';
 import AvailabilityCalendar from '../../../components/HostDashboard/AvailabilityCalendar';
 import DayDetailPanel from '../../../components/HostDashboard/DayDetailPanel';
 import RulesSettingsModal from '../../../components/HostDashboard/RulesSettingsModal';
+import { useTranslation } from 'react-i18next';
 import './HomeHost.css';
 
 export default function HomeHost() {
+  const { t } = useTranslation(['host/dashboard']);
   const dispatch = useDispatch();
   const user = useSelector((s) => s.auth.user);
   const { overrides, bookings, viewMode, loading, syncing, error } =
@@ -43,7 +45,7 @@ export default function HomeHost() {
 
   const totalOverrides = Object.keys(overrides).length;
   const totalBookings = Object.keys(bookings).length;
-  const firstName = user?.full_name?.split(' ')[0] || 'מארח';
+  const firstName = user?.full_name?.split(' ')[0] || t('host/dashboard:hero.title').replace('👋', '').trim(); // fallback if not parsed well
 
   return (
     <div className="hh-container">
@@ -51,17 +53,17 @@ export default function HomeHost() {
       {/* ── Hero ── */}
       <section className="hh-hero">
         <div className="hh-hero-content">
-          <span className="hh-hero-subtitle">לוח הבית שלך</span>
-          <h1 className="hh-hero-title">שלום, {firstName} 👋</h1>
-          <p className="hh-hero-info">נהל את זמינות האירוח שלך בקלות מהלוח המרכזי</p>
+          <span className="hh-hero-subtitle">{t('host/dashboard:hero.subtitle')}</span>
+          <h1 className="hh-hero-title">{t('host/dashboard:hero.title', { name: firstName })}</h1>
+          <p className="hh-hero-info">{t('host/dashboard:hero.info')}</p>
 
           {syncing && (
             <span className="hh-sync-badge">
-              <Loader2 size={12} className="hh-spin" /> שומר...
+              <Loader2 size={12} className="hh-spin" /> {t('host/dashboard:hero.syncing')}
             </span>
           )}
           {error && !syncing && (
-            <span className="hh-sync-badge hh-sync-badge--error">⚠️ שגיאת סנכרון</span>
+            <span className="hh-sync-badge hh-sync-badge--error">{t('host/dashboard:hero.error')}</span>
           )}
         </div>
 
@@ -72,7 +74,7 @@ export default function HomeHost() {
             onClick={() => dispatch(openRulesModal())}
           >
             <Settings size={16} />
-            הגדרות זמינות
+            {t('host/dashboard:hero.btn_settings')}
           </button>
         </div>
       </section>
@@ -81,39 +83,39 @@ export default function HomeHost() {
       <section className="hh-stats-row">
         <div className="hh-stat-card">
           <h2>{totalBookings}</h2>
-          <p>אירוחים פעילים</p>
+          <p>{t('host/dashboard:stats.active')}</p>
         </div>
         <div className="hh-stat-card hh-stat-purple">
           <h2>{badgeCount}</h2>
-          <p>בקשות ממתינות</p>
+          <p>{t('host/dashboard:stats.pending')}</p>
         </div>
         <div className="hh-stat-card hh-stat-yellow">
           <h2>0</h2>
-          <p>אירוחים החודש</p>
+          <p>{t('host/dashboard:stats.month')}</p>
         </div>
       </section>
 
       {/* ── Calendar ── */}
       <section className="hh-calendar-section">
         <div className="hh-calendar-header">
-          <h2 className="hh-section-title">לוח הזמינות</h2>
+          <h2 className="hh-section-title">{t('host/dashboard:calendar.title')}</h2>
 
           <div className="hh-view-toggle">
             <button
               id="hh-toggle-month"
               className={`hh-toggle-btn ${viewMode === 'month' ? 'hh-toggle-btn--active' : ''}`}
               onClick={() => dispatch(setViewMode('month'))}
-              aria-label="תצוגה חודשית"
+              aria-label={t('host/dashboard:calendar.btn_month')}
             >
-              <CalendarDays size={16} /> חודשי
+              <CalendarDays size={16} /> {t('host/dashboard:calendar.btn_month')}
             </button>
             <button
               id="hh-toggle-week"
               className={`hh-toggle-btn ${viewMode === 'week' ? 'hh-toggle-btn--active' : ''}`}
               onClick={() => dispatch(setViewMode('week'))}
-              aria-label="תצוגה שבועית"
+              aria-label={t('host/dashboard:calendar.btn_week')}
             >
-              <LayoutList size={16} /> שבועי
+              <LayoutList size={16} /> {t('host/dashboard:calendar.btn_week')}
             </button>
           </div>
         </div>

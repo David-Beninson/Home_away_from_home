@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   Menu,
   X,
@@ -18,6 +19,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { logout } from '../../../store/authSlice';
+import { handleLanguageChange } from '../../../store/languageSlice';
 import { fetchMyChats } from '../../../store/chatSlice';
 import { Logo, LogOutIcon } from '../Icons';
 import { getUserInitials } from '../../../utils/user';
@@ -26,6 +28,7 @@ import './Navbar.css';
 import { BRAND_TITLE, BRAND_SUBTITLE } from '../../../config/brand';
 
 export default function Navbar() {
+  const { t, i18n } = useTranslation(['common/navbar']);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -60,18 +63,18 @@ export default function Navbar() {
   }, [user, dispatch]);
 
   const linksConfig = [
-    { path: '/', label: 'בית', roles: ['guest', 'host'], icon: <House className="nav-icon" /> },
-    { path: '/find-host', label: 'מצא מארח', roles: ['guest'], icon: <Search className="nav-icon" /> },
-    { path: '/my-requests', label: 'הבקשות שלי', roles: ['guest'], hasBadge: true, icon: <FileText className="nav-icon" /> },
-    { path: '/requests-board', label: 'לוח בקשות', roles: ['host'], hasBadge: true, icon: <ClipboardList className="nav-icon" /> },
-    { path: '/chats', label: 'צ׳אטים', roles: ['guest', 'host'], hasChatBadge: true, icon: <MessageSquare className="nav-icon" /> },
-    { path: '/admin', end: true, label: 'לוח בקרה', roles: ['admin'], hasBadge: true, icon: <LayoutDashboard className="nav-icon" /> },
-    { path: '/admin/users', label: 'ניהול משתמשים', roles: ['admin'], icon: <Users className="nav-icon" /> },
-    { path: '/admin/verifications', label: 'אימותים וסינון', roles: ['admin'], icon: <ShieldCheck className="nav-icon" /> },
-    { path: '/admin/listings', label: 'דירות ומארחים', roles: ['admin'], icon: <Building className="nav-icon" /> },
-    { path: '/admin/bookings', label: 'בקשות', roles: ['admin'], icon: <Inbox className="nav-icon" /> },
-    { path: '/admin/alerts', label: 'התראות', roles: ['admin'], icon: <AlertTriangle className="nav-icon" /> },
-    { path: '/profile', label: 'פרופיל', roles: ['guest', 'host'], icon: <User className="nav-icon" /> }
+    { path: '/', label: t('common/navbar:links.home'), roles: ['guest', 'host'], icon: <House className="nav-icon" /> },
+    { path: '/find-host', label: t('common/navbar:links.find_host'), roles: ['guest'], icon: <Search className="nav-icon" /> },
+    { path: '/my-requests', label: t('common/navbar:links.my_requests'), roles: ['guest'], hasBadge: true, icon: <FileText className="nav-icon" /> },
+    { path: '/requests-board', label: t('common/navbar:links.requests_board'), roles: ['host'], hasBadge: true, icon: <ClipboardList className="nav-icon" /> },
+    { path: '/chats', label: t('common/navbar:links.chats'), roles: ['guest', 'host'], hasChatBadge: true, icon: <MessageSquare className="nav-icon" /> },
+    { path: '/admin', end: true, label: t('common/navbar:links.admin_dashboard'), roles: ['admin'], hasBadge: true, icon: <LayoutDashboard className="nav-icon" /> },
+    { path: '/admin/users', label: t('common/navbar:links.user_management'), roles: ['admin'], icon: <Users className="nav-icon" /> },
+    { path: '/admin/verifications', label: t('common/navbar:links.verifications'), roles: ['admin'], icon: <ShieldCheck className="nav-icon" /> },
+    { path: '/admin/listings', label: t('common/navbar:links.listings'), roles: ['admin'], icon: <Building className="nav-icon" /> },
+    { path: '/admin/bookings', label: t('common/navbar:links.bookings'), roles: ['admin'], icon: <Inbox className="nav-icon" /> },
+    { path: '/admin/alerts', label: t('common/navbar:links.alerts'), roles: ['admin'], icon: <AlertTriangle className="nav-icon" /> },
+    { path: '/profile', label: t('common/navbar:links.profile'), roles: ['guest', 'host'], icon: <User className="nav-icon" /> }
   ];
 
   const allowedLinks = linksConfig.filter(link => link.roles.includes(userRole));
@@ -131,7 +134,7 @@ export default function Navbar() {
           className="mobile-menu-btn" 
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-expanded={isMobileMenuOpen}
-          aria-label="תפריט ניווט"
+          aria-label={t('common/navbar:aria.nav_menu')}
         >
           <Menu size={24} />
         </button>
@@ -141,7 +144,7 @@ export default function Navbar() {
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/'); }}
           role="button"
           tabIndex={0}
-          aria-label="העבר לדף הבית"
+          aria-label={t('common/navbar:aria.go_home')}
         >
           <div className="logo-icon-container">
             <Logo size={32} className="logo-icon" />
@@ -182,19 +185,30 @@ export default function Navbar() {
             <div className="profile-dropdown-menu">
               <div className="dropdown-header">
                 <div className="dropdown-large-initial">{getInitials()}</div>
-                <span>שלום {firstName}!</span>
+                <span>{t('common/navbar:hello_user', { name: firstName })}</span>
               </div>
 
               <div className="dropdown-divider"></div>
 
               <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); navigate('/profile'); }}>
-                <User className="dropdown-icon" /> הפרופיל שלי
+                <User className="dropdown-icon" /> {t('common/navbar:dropdown.my_profile')}
               </button>
 
               <button className="dropdown-item" onClick={() => setIsDark(!isDark)}>
                 {isDark ? '☀️' : '🌙'}
                 <span className="dropdown-text-space">
-                  {isDark ? 'מצב בהיר' : 'מצב כהה'}
+                  {isDark ? t('common/navbar:dropdown.light_mode') : t('common/navbar:dropdown.dark_mode')}
+                </span>
+              </button>
+
+              <button className="dropdown-item" onClick={() => {
+                const nextLang = i18n.language === 'he' ? 'en' : 'he';
+                dispatch(handleLanguageChange(nextLang));
+                setIsDropdownOpen(false);
+              }}>
+                🌐
+                <span className="dropdown-text-space">
+                  {i18n.language === 'he' ? 'English' : 'עברית'}
                 </span>
               </button>
 
@@ -202,7 +216,7 @@ export default function Navbar() {
 
               <button className="dropdown-item logout-item" onClick={handleLogout}>
                 <LogOutIcon className="dropdown-icon" />
-                התנתקות
+                {t('common/navbar:dropdown.logout')}
               </button>
             </div>
           )}

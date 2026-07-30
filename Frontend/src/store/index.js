@@ -5,6 +5,7 @@ import availabilityReducer from './availabilitySlice';
 import chatReducer from './chatSlice';
 import statsReducer from './statsSlice';
 import notificationsReducer from './notificationsSlice';
+import languageReducer from './languageSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     chat: chatReducer,
     stats: statsReducer,
     notifications: notificationsReducer,
+    language: languageReducer,
   },
 });
 

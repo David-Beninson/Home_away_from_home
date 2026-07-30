@@ -4,7 +4,7 @@
   background-color: #F0F4FA;
   width: 100%;
   color: var(--foreground, #111827);
-  direction: rtl;
+
   font-family: Heebo, system-ui, -apple-system, sans-serif;
 }
 
@@ -22,8 +22,8 @@
 .host-details-container {
   width: 100%;
   max-width: 48rem;
-  margin-left: auto;
-  margin-right: auto;
+  margin-inline-end: auto;
+  margin-inline-start: auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -93,7 +93,7 @@
 .hero-details-bottom {
   position: absolute;
   bottom: 1.25rem;
-  right: 1.25rem;
+  inset-inline-start: 1.25rem;
 }
 
 .hero-title {
@@ -120,7 +120,7 @@
 .hero-match-badge-wrap {
   position: absolute;
   top: 1rem;
-  right: 1rem;
+  inset-inline-start: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -152,7 +152,7 @@
 .hero-lodging-badge-wrap {
   position: absolute;
   top: 1rem;
-  left: 1rem;
+  inset-inline-end: 1rem;
 }
 
 .hero-lodging-badge {

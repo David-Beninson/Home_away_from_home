@@ -1,4 +1,5 @@
 import { MapPin, Zap, Moon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function HostDetailsHero({
   imageUrl,
@@ -8,6 +9,7 @@ export default function HostDetailsHero({
   hasLodging,
   onImageError
 }) {
+  const { t } = useTranslation(['guest/host_details']);
   return (
     <div className="hero-banner-container">
       <img
@@ -38,7 +40,7 @@ export default function HostDetailsHero({
       <div className="hero-lodging-badge-wrap">
         <span className="hero-lodging-badge">
           <Moon className="badge-icon-md" />
-          {hasLodging ? 'לינה זמינה' : 'ארוחות בלבד'}
+          {hasLodging ? t('guest/host_details:hero.lodging_available') : t('guest/host_details:hero.meals_only')}
         </span>
       </div>
     </div>

@@ -1,0 +1,35 @@
+{
+  "title": "לוח בקרה וסטטיסטיקה",
+  "subtitle": "סקירה קלאסית ומפורטת של ביצועי ומדדי המערכת",
+  "error_loading": "שגיאה בטעינת נתוני לוח הבקרה. אנא ודא שהתחברת כראוי.",
+  "total": "סה״כ",
+  "metrics": {
+    "registered_hosts": "מארחים רשומים",
+    "registered_guests": "אורחים רשומים",
+    "soldiers": "חיילים ובנות שירות",
+    "active_matches": "שידוכים פעילים",
+    "match_rate": "אחוז שידוך מוצלח",
+    "open_posts": "בקשות פתוחות",
+    "suspended_users": "משתמשים מושהים",
+    "banned_users": "משתמשים חסומים"
+  },
+  "charts": {
+    "users_distribution": "התפלגות משתמשי המערכת",
+    "requests_status": "סטטוס בקשות אירוח",
+    "matches_status": "סטטוס שידוכים במערכת",
+    "top_cities": "ערים מובילות במערכת (מארחים)",
+    "kashrut_levels": "פילוח רמות כשרות",
+    "empty_cities": "טרם הוגדרו ערים על ידי המארחים במערכת",
+    "empty_kashrut": "אין עדיין נתוני כשרות במערכת"
+  },
+  "chart_labels": {
+    "hosts": "מארחים רשומים",
+    "guests": "אורחים רגילים",
+    "soldiers": "חיילים / בנות שירות",
+    "open_requests": "בקשות פתוחות",
+    "urgent_requests": "בקשות דחופות",
+    "matched_requests": "בקשות ששודכו",
+    "active_matches": "שידוכים פעילים",
+    "pending_matches": "שידוכים בהמתנה"
+  }
+}

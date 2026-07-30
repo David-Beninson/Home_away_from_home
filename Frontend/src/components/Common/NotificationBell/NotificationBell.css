@@ -31,7 +31,7 @@
 .nb-dropdown {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0; /* Aligns dropdown to the left edge of the bell */
+  inset-inline-end: 0; /* Aligns dropdown to the left edge of the bell */
   width: 360px;
   max-width: 90vw;
   background-color: var(--bg, #ffffff);
@@ -230,7 +230,7 @@
 .bell-badge {
   position: absolute;
   bottom: -4px;
-  right: -6px;
+  inset-inline-start: -6px;
   min-width: 18px;
   height: 18px;
   padding: 0 4px;

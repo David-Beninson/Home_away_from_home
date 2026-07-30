@@ -1,13 +1,7 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight, ChevronLeft, Calendar as CalendarIcon } from 'lucide-react';
 import './DateRangePicker.css';
-
-const HEBREW_MONTHS = [
-  'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-  'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
-];
-
-const WEEKDAYS = ['א\'', 'ב\'', 'ג\'', 'ד\'', 'ה\'', 'ו\'', 'ש\''];
 
 export default function DateRangePicker({
   startDate: propStartDate,
@@ -17,6 +11,7 @@ export default function DateRangePicker({
   minDate = new Date(),
   maxDate = null,
 }) {
+  const { t, i18n } = useTranslation(['common/date_picker']);
   // Start of today without timestamp
   const today = useMemo(() => {
     const d = new Date();
@@ -168,6 +163,9 @@ export default function DateRangePicker({
 
   // Generate grid for a given month
   const renderMonthGrid = (monthDate) => {
+    const months = t('common/date_picker:months', { returnObjects: true });
+    const weekdays = t('common/date_picker:weekdays', { returnObjects: true });
+    
     const year = monthDate.getFullYear();
     const month = monthDate.getMonth();
     const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sun, 6 = Sat
@@ -187,10 +185,10 @@ export default function DateRangePicker({
     return (
       <div className="drp-month">
         <div className="drp-month-title">
-          {HEBREW_MONTHS[month]} {year}
+          {months[month]} {year}
         </div>
         <div className="drp-weekdays-grid">
-          {WEEKDAYS.map((dayName, idx) => (
+          {weekdays.map((dayName, idx) => (
             <span key={idx} className="drp-weekday">
               {dayName}
             </span>
@@ -246,27 +244,27 @@ export default function DateRangePicker({
   };
 
   return (
-    <div className="drp-container" dir="rtl">
+    <div className="drp-container" dir={i18n.dir()}>
       {/* Header Info & Badge */}
       <div className="drp-header">
         <div className="drp-header-info">
           <CalendarIcon size={18} className="drp-icon" />
           <span>
-            {normStart ? normStart.toLocaleDateString('he-IL') : 'בחר תאריך הגעה'}
+            {normStart ? normStart.toLocaleDateString(i18n.language === 'he' ? 'he-IL' : 'en-US') : t('common/date_picker:placeholders.start_date')}
             {normStart ? ' - ' : ''}
             {normEnd
-              ? normEnd.toLocaleDateString('he-IL')
+              ? normEnd.toLocaleDateString(i18n.language === 'he' ? 'he-IL' : 'en-US')
               : normHover
-              ? normHover.toLocaleDateString('he-IL')
+              ? normHover.toLocaleDateString(i18n.language === 'he' ? 'he-IL' : 'en-US')
               : normStart
-              ? 'בחר תאריך עזיבה'
+              ? t('common/date_picker:placeholders.end_date')
               : ''}
           </span>
         </div>
 
         {activeNightsCount > 0 && (
           <div className="drp-duration-badge">
-            {activeNightsCount === 1 ? 'לילה אחד' : `${activeNightsCount} לילות`}
+            {t('common/date_picker:nights', { count: activeNightsCount })}
           </div>
         )}
       </div>
@@ -278,7 +276,7 @@ export default function DateRangePicker({
           className="drp-nav-btn prev"
           onClick={handlePrevMonth}
           disabled={!canGoPrev}
-          aria-label="חודש קודם"
+          aria-label={t('common/date_picker:aria.prev_month')}
         >
           <ChevronRight size={20} />
         </button>
@@ -292,7 +290,7 @@ export default function DateRangePicker({
           type="button"
           className="drp-nav-btn next"
           onClick={handleNextMonth}
-          aria-label="חודש הבא"
+          aria-label={t('common/date_picker:aria.next_month')}
         >
           <ChevronLeft size={20} />
         </button>

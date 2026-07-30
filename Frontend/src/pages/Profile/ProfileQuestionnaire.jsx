@@ -5,9 +5,11 @@ import { User, Shield, Utensils, Heart, MapPin } from 'lucide-react';
 import { fetchCurrentUser, setCurrentUser } from '../../store/authSlice';
 import { authApi } from '../../api/api';
 import Loading from '../../components/Common/Loading/Loading';
+import { useTranslation } from 'react-i18next';
 import './ProfileQuestionnaire.css';
 
 export default function ProfileQuestionnaire() {
+  const { t } = useTranslation(['profile/profile', 'profile/questionnaire']);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -62,7 +64,7 @@ export default function ProfileQuestionnaire() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isFormInvalid()) {
-      setError('אנא מלאו את כל שדות החובה (כתובת מגורים).');
+      setError(t('profile/questionnaire:required_error'));
       return
     };
 
@@ -102,7 +104,7 @@ export default function ProfileQuestionnaire() {
         ? detail
         : Array.isArray(detail)
           ? detail.map(d => d.msg || JSON.stringify(d)).join(', ')
-          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : 'שגיאה בשמירת הפרופיל. נסו שוב.');
+          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : t('profile/questionnaire:save_error'));
       setError(formatted);
     } finally {
       setLoading(false);
@@ -129,36 +131,36 @@ export default function ProfileQuestionnaire() {
   const renderHostForm = () => (
     <div className="pq-form-grid">
       <div className="pq-form-group full-width">
-        <label><MapPin size={16} /> כתובת מגורים</label>
+        <label><MapPin size={16} /> {t('profile/profile:fields.residential_address')}</label>
         <input
           type="text" name="residential_address" value={formData.residential_address}
           onChange={handleChange} required placeholder="הכנס כתובת מלאה"
         />
       </div>
 
-      <SelectGroup label="כמות אורחים (1-15)" name="max_guests" options={numberOptions} />
+      <SelectGroup label={`${t('profile/profile:fields.max_guests')} (1-15)`} name="max_guests" options={numberOptions} />
 
-      <SelectGroup label="סוג שכונה" name="neighborhood_type" options={[
-        { val: '', lbl: 'בחר סוג שכונה' }, { val: 'חילונית', lbl: 'חילונית' }, { val: 'דתית', lbl: 'דתית' }, { val: 'חרדית', lbl: 'חרדית' }
+      <SelectGroup label={t('profile/profile:fields.neighborhood_type')} name="neighborhood_type" options={[
+        { val: '', lbl: t('profile/questionnaire:select_neighborhood') }, { val: 'חילונית', lbl: t('profile/questionnaire:neighborhood_secular') }, { val: 'דתית', lbl: t('profile/questionnaire:neighborhood_religious') }, { val: 'חרדית', lbl: t('profile/questionnaire:neighborhood_haredi') }
       ]} />
 
-      <SelectGroup label="רמת כשרות" name="kashrut_level" icon={<Utensils size={16} />} options={['כלום', 'בסיסי', 'כשר', 'מהדרין']} />
-      <SelectGroup label="כמות מיטות (1-15)" name="num_beds" options={numberOptions} />
-      <SelectGroup label="כמות חדרי שינה (1-15)" name="num_bedrooms" options={numberOptions} />
+      <SelectGroup label={t('profile/profile:fields.kashrut_level')} name="kashrut_level" icon={<Utensils size={16} />} options={[t('profile/questionnaire:kashrut_none'), t('profile/questionnaire:kashrut_basic'), t('profile/questionnaire:kashrut_kosher'), t('profile/questionnaire:kashrut_mehadrin')]} />
+      <SelectGroup label={`${t('profile/profile:fields.num_beds')} (1-15)`} name="num_beds" options={numberOptions} />
+      <SelectGroup label={`${t('profile/profile:fields.num_bedrooms')} (1-15)`} name="num_bedrooms" options={numberOptions} />
 
-      <SelectGroup label="רמת נגישות" name="accessibility_level" options={[
-        { val: '', lbl: 'בחר נגישות' }, { val: 'מעלית', lbl: 'מעלית' }, { val: 'מדרגות', lbl: 'מדרגות' }
+      <SelectGroup label={t('profile/profile:fields.accessibility_level')} name="accessibility_level" options={[
+        { val: '', lbl: t('profile/questionnaire:select_accessibility') }, { val: 'מעלית', lbl: t('profile/questionnaire:accessibility_elevator') }, { val: 'מדרגות', lbl: t('profile/questionnaire:accessibility_stairs') }
       ]} />
 
-      <SelectGroup label="סוג מגורים" name="housing_type" options={[
-        { val: '', lbl: 'בחר סוג מגורים' }, { val: 'בניין', lbl: 'בניין' }, { val: 'בית פרטי', lbl: 'בית פרטי' }
+      <SelectGroup label={t('profile/profile:fields.housing_type')} name="housing_type" options={[
+        { val: '', lbl: t('profile/questionnaire:select_housing') }, { val: 'בניין', lbl: t('profile/questionnaire:housing_building') }, { val: 'בית פרטי', lbl: t('profile/questionnaire:housing_private') }
       ]} />
 
       <div className="pq-form-group full-width">
-        <label>חיות מחמד בבית</label>
+        <label>{t('profile/profile:fields.pets_description')}</label>
         <textarea
           name="pets_description" value={formData.pets_description} onChange={handleChange}
-          placeholder="פרט האם יש חיות מחמד, אילו סוגים וכו'..." rows="2"
+          placeholder={t('profile/questionnaire:pets_placeholder')} rows="2"
         />
       </div>
     </div>
@@ -169,51 +171,51 @@ export default function ProfileQuestionnaire() {
   // ----------------------------------------
   const renderGuestForm = () => (
     <div className="pq-form-grid">
-      <SelectGroup label="סוג שירות" name="service_type" icon={<Shield size={16} />} options={['סדיר', 'קבע', 'מילואים', 'שירות לאומי']} />
+      <SelectGroup label={t('profile/profile:fields.service_type')} name="service_type" icon={<Shield size={16} />} options={[t('profile/questionnaire:service_regular'), t('profile/questionnaire:service_career'), t('profile/questionnaire:service_reserve'), t('profile/questionnaire:service_national')]} />
 
-      <SelectGroup label="מין" name="gender" options={[
-        { val: '', lbl: 'בחר מין' }, { val: 'זכר', lbl: 'זכר' }, { val: 'נקבה', lbl: 'נקבה' }, { val: 'אחר', lbl: 'אחר' }
+      <SelectGroup label={t('profile/profile:fields.gender')} name="gender" options={[
+        { val: '', lbl: t('profile/questionnaire:gender_select') }, { val: 'זכר', lbl: t('profile/questionnaire:gender_male') }, { val: 'נקבה', lbl: t('profile/questionnaire:gender_female') }, { val: 'אחר', lbl: t('profile/questionnaire:gender_other') }
       ]} />
 
       <div className="pq-form-group">
-        <label>השתייכות דתית</label>
-        <input type="text" name="religious_level" value={formData.religious_level} onChange={handleChange} placeholder="דתי / חילוני..." />
+        <label>{t('profile/profile:fields.religious_level')}</label>
+        <input type="text" name="religious_level" value={formData.religious_level} onChange={handleChange} placeholder={t('profile/questionnaire:religion_placeholder')} />
       </div>
 
       <div className="pq-form-group">
-        <label>תאריך סיום שירות</label>
+        <label>{t('profile/profile:fields.release_date')}</label>
         <input type="date" name="release_date" value={formData.release_date} onChange={handleChange} />
       </div>
 
       <div className="pq-form-group full-width">
-        <label><MapPin size={16} /> כתובת מגורים</label>
+        <label><MapPin size={16} /> {t('profile/profile:fields.guest_address')}</label>
         <input
           type="text" name="guest_address" value={formData.guest_address}
-          onChange={handleChange} required placeholder="הכנס את כתובת המגורים שלך"
+          onChange={handleChange} required placeholder={t('profile/profile:fields.guest_address')}
         />
       </div>
 
       <div className="pq-form-group full-width">
-        <label>תיאור יחידה / תיאור שירות לאומי</label>
-        <textarea name="unit_description" value={formData.unit_description} onChange={handleChange} placeholder="ספר בקצרה על היחידה או מסגרת השירות שלך..." rows="2" />
+        <label>{t('profile/profile:fields.unit_description')}</label>
+        <textarea name="unit_description" value={formData.unit_description} onChange={handleChange} placeholder={t('profile/questionnaire:unit_placeholder')} rows="2" />
       </div>
 
       <div className="pq-form-group full-width">
-        <label><Heart size={16} /> אלרגיות לאוכל</label>
-        <textarea name="food_allergies" value={formData.food_allergies} onChange={handleChange} placeholder="רגישויות, אלרגיות מיוחדות..." rows="2" />
+        <label><Heart size={16} /> {t('profile/profile:fields.food_allergies')}</label>
+        <textarea name="food_allergies" value={formData.food_allergies} onChange={handleChange} placeholder={t('profile/questionnaire:allergies_placeholder')} rows="2" />
       </div>
 
       <div className="pq-form-group full-width">
-        <label>העדפות לאוכל</label>
-        <textarea name="food_preferences" value={formData.food_preferences} onChange={handleChange} placeholder="צמחוני, טבעוני, העדפות מיוחדות..." rows="2" />
+        <label>{t('profile/profile:fields.food_preferences')}</label>
+        <textarea name="food_preferences" value={formData.food_preferences} onChange={handleChange} placeholder={t('profile/questionnaire:preferences_placeholder')} rows="2" />
       </div>
-      <SelectGroup label="רמת כשרות" name="kashrut_level" icon={<Utensils size={16} />} options={['כלום', 'בסיסי', 'כשר', 'מהדרין']} />
+      <SelectGroup label={t('profile/profile:fields.kashrut_level')} name="kashrut_level" icon={<Utensils size={16} />} options={[t('profile/questionnaire:kashrut_none'), t('profile/questionnaire:kashrut_basic'), t('profile/questionnaire:kashrut_kosher'), t('profile/questionnaire:kashrut_mehadrin')]} />
       <div className="pq-checkbox-group full-width">
         <label className="checkbox-label">
-          <input type="checkbox" name="is_anonymous" checked={formData.is_anonymous} onChange={handleChange} /> <User size={16} /> תמיד אנונימי (הסתרת פרטים אישיים עד לאישור)
+          <input type="checkbox" name="is_anonymous" checked={formData.is_anonymous} onChange={handleChange} /> <User size={16} /> {t('profile/questionnaire:anonymous_label')}
         </label>
         <label className="checkbox-label">
-          <input type="checkbox" name="giving_to_host" checked={formData.giving_to_host} onChange={handleChange} /> נתינה למארח (התנדבות / השתתפות)
+          <input type="checkbox" name="giving_to_host" checked={formData.giving_to_host} onChange={handleChange} /> {t('profile/questionnaire:giving_label')}
         </label>
       </div>
     </div>
@@ -227,8 +229,8 @@ export default function ProfileQuestionnaire() {
     <div className="pq-overlay">
       <div className="pq-container" dir="rtl">
         <div className="pq-header">
-          <h2>השלמת פרופיל {userType === 'host' ? 'מארח' : 'מתארח'}</h2>
-          <p>אנא מלאו את הפרטים הבאים כדי להשלים את ההרשמה למערכת.</p>
+          <h2>{userType === 'host' ? t('profile/questionnaire:title_host') : t('profile/questionnaire:title_guest')}</h2>
+          <p>{t('profile/questionnaire:subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="pq-form">
@@ -238,7 +240,7 @@ export default function ProfileQuestionnaire() {
 
           <div className="pq-actions">
             <button type="submit" className="pq-submit-btn" disabled={loading}>
-              {loading ? 'שומר נתונים...' : 'שמור פרופיל והמשך'}
+              {loading ? t('profile/questionnaire:saving') : t('profile/questionnaire:save_btn')}
             </button>
           </div>
         </form>

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '../../api/api';
 import { HomeIcon, UsersIcon, CheckCircleIcon, MyRequestsIcon } from '../Common/Icons';
 import PageContainer from '../Common/PageContainer/PageContainer';
+import { useTranslation } from 'react-i18next';
 import '../../pages/Admin/Admin.css';
 
-function DonutChart({ data, title }) {
+function DonutChart({ data, title, t }) {
   const total = data.reduce((sum, item) => sum + (item.value || 0), 0);
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
@@ -53,7 +54,7 @@ function DonutChart({ data, title }) {
               {total}
             </text>
             <text x="50" y="62" textAnchor="middle" className="donut-center-label">
-              סה״כ
+              {t('admin/dashboard:total')}
             </text>
           </svg>
         </div>
@@ -146,6 +147,7 @@ function ColumnChart({ data, title, barColor = '#2563eb', emptyText }) {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation(['admin/dashboard']);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -159,7 +161,7 @@ export default function AdminDashboard() {
         setStats(response.data);
       } catch (err) {
         console.error('Failed to load admin stats:', err);
-        setError('שגיאה בטעינת נתוני לוח הבקרה. אנא ודא שהתחברת כראוי.');
+        setError(t('admin/dashboard:error_loading'));
       } finally {
         setLoading(false);
       }
@@ -169,20 +171,20 @@ export default function AdminDashboard() {
 
   // Prepare Donut Chart Datasets
   const userData = [
-    { label: 'מארחים רשומים', value: stats?.total_hosts || 0, color: '#2563eb' },
-    { label: 'אורחים רגילים', value: Math.max(0, (stats?.total_guests || 0) - (stats?.total_soldiers || 0)), color: '#059669' },
-    { label: 'חיילים / בנות שירות', value: stats?.total_soldiers || 0, color: '#d97706' },
+    { label: t('admin/dashboard:chart_labels.hosts'), value: stats?.total_hosts || 0, color: '#2563eb' },
+    { label: t('admin/dashboard:chart_labels.guests'), value: Math.max(0, (stats?.total_guests || 0) - (stats?.total_soldiers || 0)), color: '#059669' },
+    { label: t('admin/dashboard:chart_labels.soldiers'), value: stats?.total_soldiers || 0, color: '#d97706' },
   ];
 
   const postData = [
-    { label: 'בקשות פתוחות', value: stats?.open_posts || 0, color: '#3b82f6' },
-    { label: 'בקשות דחופות', value: stats?.urgent_posts || 0, color: '#dc2626' },
-    { label: 'בקשות ששודכו', value: Math.max(0, (stats?.total_posts || 0) - (stats?.open_posts || 0)), color: '#10b981' },
+    { label: t('admin/dashboard:chart_labels.open_requests'), value: stats?.open_posts || 0, color: '#3b82f6' },
+    { label: t('admin/dashboard:chart_labels.urgent_requests'), value: stats?.urgent_posts || 0, color: '#dc2626' },
+    { label: t('admin/dashboard:chart_labels.matched_requests'), value: Math.max(0, (stats?.total_posts || 0) - (stats?.open_posts || 0)), color: '#10b981' },
   ];
 
   const matchData = [
-    { label: 'שידוכים פעילים', value: stats?.active_matches || 0, color: '#059669' },
-    { label: 'שידוכים בהמתנה', value: stats?.pending_matches || 0, color: '#f59e0b' },
+    { label: t('admin/dashboard:chart_labels.active_matches'), value: stats?.active_matches || 0, color: '#059669' },
+    { label: t('admin/dashboard:chart_labels.pending_matches'), value: stats?.pending_matches || 0, color: '#f59e0b' },
   ];
 
   const hostGuestRatio = stats?.total_hosts && stats?.total_hosts > 0 
@@ -192,15 +194,15 @@ export default function AdminDashboard() {
   return (
     <PageContainer loading={loading} error={error}>
       <div className="admin-page-header">
-        <h2 className="admin-page-title">לוח בקרה וסטטיסטיקה</h2>
-        <p className="admin-page-subtitle">סקירה קלאסית ומפורטת של ביצועי ומדדי המערכת</p>
+        <h2 className="admin-page-title">{t('admin/dashboard:title')}</h2>
+        <p className="admin-page-subtitle">{t('admin/dashboard:subtitle')}</p>
       </div>
 
       {/* Top Metric Cards */}
       <div className="admin-metrics-grid">
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>מארחים רשומים</h4>
+            <h4>{t('admin/dashboard:metrics.registered_hosts')}</h4>
             <p>{stats?.total_hosts || 0}</p>
           </div>
           <div className="admin-metric-icon-wrapper blue">
@@ -210,7 +212,7 @@ export default function AdminDashboard() {
 
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>אורחים רשומים</h4>
+            <h4>{t('admin/dashboard:metrics.registered_guests')}</h4>
             <p>{stats?.total_guests || 0}</p>
           </div>
           <div className="admin-metric-icon-wrapper purple">
@@ -220,7 +222,7 @@ export default function AdminDashboard() {
 
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>חיילים ובנות שירות</h4>
+            <h4>{t('admin/dashboard:metrics.soldiers')}</h4>
             <p>{stats?.total_soldiers || 0}</p>
           </div>
           <div className="admin-metric-icon-wrapper amber">
@@ -230,7 +232,7 @@ export default function AdminDashboard() {
 
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>שידוכים פעילים</h4>
+            <h4>{t('admin/dashboard:metrics.active_matches')}</h4>
             <p>{stats?.active_matches || 0}</p>
           </div>
           <div className="admin-metric-icon-wrapper green">
@@ -240,7 +242,7 @@ export default function AdminDashboard() {
 
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>אחוז שידוך מוצלח</h4>
+            <h4>{t('admin/dashboard:metrics.match_rate')}</h4>
             <p>{stats?.match_rate_percentage || 0}%</p>
           </div>
           <div className="admin-metric-icon-wrapper teal">
@@ -250,7 +252,7 @@ export default function AdminDashboard() {
 
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>בקשות פתוחות</h4>
+            <h4>{t('admin/dashboard:metrics.open_posts')}</h4>
             <p>{stats?.open_posts || 0}</p>
           </div>
           <div className="admin-metric-icon-wrapper orange">
@@ -260,7 +262,7 @@ export default function AdminDashboard() {
 
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>משתמשים מושהים</h4>
+            <h4>{t('admin/dashboard:metrics.suspended_users')}</h4>
             <p>{stats?.total_suspended || 0}</p>
           </div>
           <div className="admin-metric-icon-wrapper amber">
@@ -270,7 +272,7 @@ export default function AdminDashboard() {
 
         <div className="admin-metric-card">
           <div className="admin-metric-card-info">
-            <h4>משתמשים חסומים</h4>
+            <h4>{t('admin/dashboard:metrics.banned_users')}</h4>
             <p>{stats?.total_banned || 0}</p>
           </div>
           <div className="admin-metric-icon-wrapper red" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
@@ -281,27 +283,27 @@ export default function AdminDashboard() {
 
       {/* Visual Donut Charts Grid */}
       <div className="classic-charts-grid">
-        <DonutChart title="התפלגות משתמשי המערכת" data={userData} />
-        <DonutChart title="סטטוס בקשות אירוח" data={postData} />
-        <DonutChart title="סטטוס שידוכים במערכת" data={matchData} />
+        <DonutChart title={t('admin/dashboard:charts.users_distribution')} data={userData} t={t} />
+        <DonutChart title={t('admin/dashboard:charts.requests_status')} data={postData} t={t} />
+        <DonutChart title={t('admin/dashboard:charts.matches_status')} data={matchData} t={t} />
       </div>
 
       {/* Analytics & Detailed Breakdown Rows */}
       <div className="admin-dashboard-analytics-grid">
         {/* City Breakdown Widget */}
         <ColumnChart
-          title="ערים מובילות במערכת (מארחים)"
+          title={t('admin/dashboard:charts.top_cities')}
           data={stats?.cities_breakdown}
           barColor="#2563eb"
-          emptyText="טרם הוגדרו ערים על ידי המארחים במערכת"
+          emptyText={t('admin/dashboard:charts.empty_cities')}
         />
 
         {/* Kashrut Breakdown Widget */}
         <ColumnChart
-          title="פילוח רמות כשרות"
+          title={t('admin/dashboard:charts.kashrut_levels')}
           data={stats?.kashrut_breakdown}
           barColor="#059669"
-          emptyText="אין עדיין נתוני כשרות במערכת"
+          emptyText={t('admin/dashboard:charts.empty_kashrut')}
         />
       </div>
     </PageContainer>

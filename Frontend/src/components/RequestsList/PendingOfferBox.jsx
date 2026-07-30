@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Heart, Check, X, Loader2 } from 'lucide-react';
 import { bookingsApi } from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 export default function PendingOfferBox({ post, onUpdateSuccess }) {
+  const { t } = useTranslation(['guest/requests']);
   const [respondingAction, setRespondingAction] = useState(null); // null | 'matched' | 'rejected'
 
   const handleGuestRespond = async (statusChoice) => {
@@ -16,7 +18,8 @@ export default function PendingOfferBox({ post, onUpdateSuccess }) {
       if (onUpdateSuccess) onUpdateSuccess();
     } catch (err) {
       console.error('Failed to respond to booking:', err);
-      alert('שגיאה בתגובה לבקשה: ' + (err.response?.data?.detail || err.message));
+      const detailMsg = err.response?.data?.detail || err.message;
+      alert(t('guest/requests:pending_offer.error_respond', { error: detailMsg }));
     } finally {
       setRespondingAction(null);
     }
@@ -28,11 +31,11 @@ export default function PendingOfferBox({ post, onUpdateSuccess }) {
     <div className="pending-offer-box">
       <div className="pending-offer-title">
         <Heart size={18} color="#ef4444" fill="#ef4444" />
-        <span>מארח הציע לארח אותך!</span>
+        <span>{t('guest/requests:pending_offer.title')}</span>
       </div>
       <p className="pending-offer-desc">
-        {post.claimed_by_host_name ? `מארח: ${post.claimed_by_host_name}` : 'מארח מקהילת האפליקציה'}
-        {post.claimed_by_host_city ? ` מתגורר ב${post.claimed_by_host_city}` : ''}
+        {post.claimed_by_host_name ? t('guest/requests:pending_offer.host_name', { name: post.claimed_by_host_name }) : t('guest/requests:pending_offer.host_default')}
+        {post.claimed_by_host_city ? t('guest/requests:pending_offer.host_city', { city: post.claimed_by_host_city }) : ''}
       </p>
       <div className="pending-offer-actions">
         <button
@@ -42,7 +45,7 @@ export default function PendingOfferBox({ post, onUpdateSuccess }) {
           style={{ opacity: isSubmitting && respondingAction !== 'matched' ? 0.6 : 1 }}
         >
           {respondingAction === 'matched' ? <Loader2 size={16} className="spin-icon" /> : <Check size={16} />}
-          <span>סבבה מעולה</span>
+          <span>{t('guest/requests:pending_offer.btn_accept')}</span>
         </button>
         <button
           onClick={() => handleGuestRespond('rejected')}
@@ -51,7 +54,7 @@ export default function PendingOfferBox({ post, onUpdateSuccess }) {
           style={{ opacity: isSubmitting && respondingAction !== 'rejected' ? 0.6 : 1 }}
         >
           {respondingAction === 'rejected' ? <Loader2 size={16} className="spin-icon" /> : <X size={16} />}
-          <span>לא מתאים לי</span>
+          <span>{t('guest/requests:pending_offer.btn_decline')}</span>
         </button>
       </div>
     </div>

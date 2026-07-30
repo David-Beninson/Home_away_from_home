@@ -49,7 +49,7 @@
   max-width: 460px;
   box-shadow: 0 10px 25px -5px var(--shadow-card), 0 8px 10px -6px var(--shadow-card);
   box-sizing: border-box;
-  direction: rtl;
+
   position: relative; /* Essential for absolute positioning the theme toggle button */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -58,7 +58,7 @@
 .theme-toggle-btn {
   position: absolute;
   top: 18px;
-  left: 18px;
+  inset-inline-end: 18px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -191,7 +191,7 @@
   color: var(--text-main);
   font-size: 14px;
   font-weight: 500;
-  text-align: right;
+
 }
 
 .form-group input,
@@ -224,7 +224,7 @@
 
 .password-toggle-btn {
   position: absolute;
-  left: 12px;
+  inset-inline-end: 12px;
   background: none;
   border: none;
   color: var(--text-muted);
@@ -279,7 +279,7 @@
 .signup-link {
   color: #2563eb;
   cursor: pointer;
-  margin-right: 6px;
+  margin-inline-start: 6px;
   font-weight: 600;
 }
 

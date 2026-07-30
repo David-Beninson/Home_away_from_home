@@ -1,0 +1,33 @@
+{
+  "empty_state": {
+    "title": "אין צ'אט פתוח",
+    "subtitle": "בחר שיחה מהרשימה כדי להתחיל לדבר."
+  },
+  "header": {
+    "anonymous_warning": "פרטים אישיים יוסתרו עד לאישור האירוח.",
+    "anonymous_guest": "אורח אנונימי",
+    "host": "מארח",
+    "btn_hosting_details": "פרטי אירוח",
+    "btn_profile_details": "פרטי פרופיל",
+    "status_connected": "מחובר (מאושר)",
+    "wa_message_prefix": "שלום, בהקשר לאירוח בתאריך"
+  },
+  "input": {
+    "disabled_banner": "הצ'אט יתאפשר רק לאחר אישור האירוח",
+    "ai_analyzing": "הAI שלנו מנתח את שיחת הצ'אט",
+    "ai_suggestions_title": "הצעות לשיחה ",
+    "btn_refresh_ai": "רענן הצעות AI",
+    "btn_suggestion_tooltip": "לחץ לבחירת הצעת התשובה",
+    "placeholder": "הקלד הודעה..."
+  },
+  "item": {
+    "no_messages": "אין הודעות עדיין"
+  },
+  "sidebar": {
+    "title": "הצ׳אטים שלי",
+    "loading": "טוען צ׳אטים...",
+    "no_chats": "אין שיחות.",
+    "no_active_chats": "אין שיחות פעילות.",
+    "history_title": "היסטוריית צ'אטים ({{count}})"
+  }
+}

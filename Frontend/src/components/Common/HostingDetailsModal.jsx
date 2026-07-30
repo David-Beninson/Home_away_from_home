@@ -2,8 +2,10 @@ import { useSelector } from 'react-redux';
 import { WhatsAppIcon } from './Icons';
 import { X, Calendar, User, Phone, MapPin, Shield, Users, Home, Info, Gift, Utensils, Moon } from 'lucide-react';
 import { formatPhoneNumber } from '../../utils/phone';
+import { useTranslation } from 'react-i18next';
 
 export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, userRole }) {
+  const { t } = useTranslation(['common/hosting_details_modal']);
   const currentUser = useSelector((state) => state.auth.user);
   
   if (!isOpen || !data) return null;
@@ -12,7 +14,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
     ? isHostOverride 
     : (userRole ? userRole === 'host' : currentUser?.user_type === 'host');
 
-  const modalTitle = isHost ? 'פרטי האורח' : 'פרטי האירוח לשבת';
+  const modalTitle = isHost ? t('common/hosting_details_modal:title_guest') : t('common/hosting_details_modal:title_hosting');
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -38,8 +40,8 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
   const isAnonymousGuest = isHost && Boolean(data.is_anonymous || data.isAnonymous);
 
   const otherPartyName = isAnonymousGuest 
-    ? 'אורח אנונימי' 
-    : (data.other_party_name || data.guest_name || data.guest_profile?.user?.full_name || data.host_name || data.claimed_by_host_name || data.user?.full_name || data.full_name || (isHost ? 'אורח' : 'מארח'));
+    ? t('common/hosting_details_modal:default_anonymous') 
+    : (data.other_party_name || data.guest_name || data.guest_profile?.user?.full_name || data.host_name || data.claimed_by_host_name || data.user?.full_name || data.full_name || (isHost ? t('common/hosting_details_modal:default_guest_name') : t('common/hosting_details_modal:default_host_name')));
 
   const phone = isAnonymousGuest
     ? null
@@ -57,10 +59,10 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
   // Kashrut & Lodging Details
   const kashrutLevel = data.kashrut || data.kashrut_level;
   const getKashrutLabel = (level) => {
-    if (!level) return 'כשר';
+    if (!level) return t('common/hosting_details_modal:kashrut_kosher');
     const norm = String(level).toLowerCase();
-    if (norm.includes('mehadrin') || norm.includes('מהדרין') || norm.includes('glatt')) return 'מהדרין';
-    return 'כשר';
+    if (norm.includes('mehadrin') || norm.includes('מהדרין') || norm.includes('glatt')) return t('common/hosting_details_modal:kashrut_mehadrin');
+    return t('common/hosting_details_modal:kashrut_kosher');
   };
 
   const hasLodging = data.has_lodging !== undefined 
@@ -79,7 +81,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
             type="button" 
             className="chat-modal-close" 
             onClick={onClose}
-            aria-label="סגור"
+            aria-label={t('common/hosting_details_modal:btn_close')}
           >
             <X size={18} />
           </button>
@@ -90,7 +92,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
           <div className="chat-modal-row">
             <User size={18} className="chat-modal-row-icon" />
             <div>
-              <span className="chat-modal-label">{isHost ? 'שם האורח' : 'שם המארח'}</span>
+              <span className="chat-modal-label">{isHost ? t('common/hosting_details_modal:label_guest_name') : t('common/hosting_details_modal:label_host_name')}</span>
               <p className="chat-modal-value">{otherPartyName}</p>
             </div>
           </div>
@@ -99,9 +101,9 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
           <div className="chat-modal-row">
             <Phone size={18} className="chat-modal-row-icon" />
             <div>
-              <span className="chat-modal-label">מספר טלפון</span>
+              <span className="chat-modal-label">{t('common/hosting_details_modal:label_phone')}</span>
               <p className="chat-modal-value chat-modal-value-phone" dir="ltr">
-                {isAnonymousGuest ? 'מוסתר (בקשה אנונימית)' : (phone ? formatPhoneNumber(phone) : 'מספר טלפון לא עודכן במערכת')}
+                {isAnonymousGuest ? t('common/hosting_details_modal:hidden_phone') : (phone ? formatPhoneNumber(phone) : t('common/hosting_details_modal:no_phone'))}
               </p>
             </div>
           </div>
@@ -110,9 +112,9 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
           <div className="chat-modal-row">
             <Calendar size={18} className="chat-modal-row-icon" />
             <div>
-              <span className="chat-modal-label">תאריך אירוח</span>
+              <span className="chat-modal-label">{t('common/hosting_details_modal:label_date')}</span>
               <p className="chat-modal-value">
-                {hostingDate ? formatDate(hostingDate) : 'תאריך קרוב לשבת'}
+                {hostingDate ? formatDate(hostingDate) : t('common/hosting_details_modal:default_date')}
               </p>
             </div>
           </div>
@@ -124,9 +126,9 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Shield size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">סוג שירות / סטטוס</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_service')}</span>
                     <p className="chat-modal-value">
-                      {data.service_type || (data.is_soldier_or_national_service ? 'חייל / שירות לאומי' : 'אזרח')}
+                      {data.service_type || (data.is_soldier_or_national_service ? t('common/hosting_details_modal:service_soldier') : t('common/hosting_details_modal:service_civilian'))}
                     </p>
                   </div>
                 </div>
@@ -137,7 +139,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Shield size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">יחידה / תפקיד</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_unit')}</span>
                     <p className="chat-modal-value">{data.unit_name || data.guest_unit}</p>
                   </div>
                 </div>
@@ -148,8 +150,8 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Users size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">כמות אורחים</span>
-                    <p className="chat-modal-value">{data.guests_count || data.guestsCount} חבר'ה</p>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_guests')}</span>
+                    <p className="chat-modal-value">{t('common/hosting_details_modal:guests_count', { count: data.guests_count || data.guestsCount })}</p>
                   </div>
                 </div>
               )}
@@ -159,7 +161,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Home size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">עיר מגורים</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_city')}</span>
                     <p className="chat-modal-value">{data.origin_city || data.guest_city}</p>
                   </div>
                 </div>
@@ -170,7 +172,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Gift size={18} className="chat-modal-row-icon text-amber" />
                   <div>
-                    <span className="chat-modal-label">מביאים לאירוח</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_return')}</span>
                     <p className="chat-modal-value font-bold">{inReturnVal}</p>
                   </div>
                 </div>
@@ -181,7 +183,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Info size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">העדפות מזון / אלרגיות</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_food')}</span>
                     <p className="chat-modal-value">{data.food_preferences_allergies || data.food_preferences}</p>
                   </div>
                 </div>
@@ -192,7 +194,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Info size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">כישורים / הערות האורח</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_guest_notes')}</span>
                     <p className="chat-modal-value">{cleanDescription || data.skills_give_take}</p>
                   </div>
                 </div>
@@ -204,9 +206,9 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
               <div className="chat-modal-row">
                 <MapPin size={18} className="chat-modal-row-icon" />
                 <div>
-                  <span className="chat-modal-label">מיקום אירוח</span>
+                  <span className="chat-modal-label">{t('common/hosting_details_modal:label_location')}</span>
                   <p className="chat-modal-value">
-                    {location || 'ישראל'}
+                    {location || t('common/hosting_details_modal:default_location')}
                   </p>
                 </div>
               </div>
@@ -216,7 +218,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Utensils size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">רמת כשרות</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_kashrut')}</span>
                     <p className="chat-modal-value">{getKashrutLabel(kashrutLevel)}</p>
                   </div>
                 </div>
@@ -226,9 +228,9 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
               <div className="chat-modal-row">
                 <Moon size={18} className="chat-modal-row-icon" />
                 <div>
-                  <span className="chat-modal-label">סוג אירוח</span>
+                  <span className="chat-modal-label">{t('common/hosting_details_modal:label_lodging')}</span>
                   <p className="chat-modal-value">
-                    {hasLodging ? 'כולל לינה וארוחות שבת' : 'ארוחות שבת בלבד'}
+                    {hasLodging ? t('common/hosting_details_modal:lodging_yes') : t('common/hosting_details_modal:lodging_no')}
                   </p>
                 </div>
               </div>
@@ -238,9 +240,9 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Users size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">מקומות אירוח פנויים</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_spots')}</span>
                     <p className="chat-modal-value">
-                      {data.available_spots !== undefined ? `${data.available_spots} מקומות פנויים` : `${data.max_guests} מקומות`}
+                      {data.available_spots !== undefined ? t('common/hosting_details_modal:spots_available', { count: data.available_spots }) : t('common/hosting_details_modal:spots_max', { count: data.max_guests })}
                     </p>
                   </div>
                 </div>
@@ -251,7 +253,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
                 <div className="chat-modal-row">
                   <Info size={18} className="chat-modal-row-icon" />
                   <div>
-                    <span className="chat-modal-label">הערות / פרטים נוספים מהמארח</span>
+                    <span className="chat-modal-label">{t('common/hosting_details_modal:label_host_notes')}</span>
                     <p className="chat-modal-value">{cleanDescription || data.free_text_notes || data.biography}</p>
                   </div>
                 </div>
@@ -266,17 +268,17 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
             className="chat-modal-btn-close"
             onClick={onClose}
           >
-            סגור
+            {t('common/hosting_details_modal:btn_close')}
           </button>
           {phone && (
             <a
-              href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`שלום, בהקשר לאירוח בתאריך ${formatShortDate(hostingDate) || formatDate(hostingDate) || ''}`)}`}
+              href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t('common/hosting_details_modal:whatsapp_message', { date: formatShortDate(hostingDate) || formatDate(hostingDate) || '' }))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="chat-modal-btn-wa"
             >
               <WhatsAppIcon size={16} />
-              פתח בוואצאפ
+              {t('common/hosting_details_modal:btn_whatsapp')}
             </a>
           )}
         </div>

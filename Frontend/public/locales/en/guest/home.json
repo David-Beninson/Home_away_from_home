@@ -1,0 +1,50 @@
+{
+  "hero": {
+    "subtitle": "Upcoming Shabbat",
+    "candle_lighting": "Candle lighting ({{city}}) at {{time}}",
+    "default_city": "Jerusalem",
+    "waiting_families": "families are waiting for you"
+  },
+  "stats": {
+    "available_hosts": "Available Hosts",
+    "available_spots": "Available Spots",
+    "my_requests": "My Requests",
+    "hosts_with_sleepover": "Hosts with Sleepover"
+  },
+  "featured": {
+    "title": "Top Hosts This Shabbat",
+    "view_all": "All Hosts",
+    "loading": "Loading recommended hosts...",
+    "spots": "Spots"
+  },
+  "badges": {
+    "sleepover": "Sleepover",
+    "mehadrin": "Mehadrin"
+  },
+  "agent": {
+    "welcome_msg": "Hello! I am the smart assistant of {{brand}} 👋\nI can help you find a host, explain match scores, and answer any questions. How can I help?",
+    "error_no_reply": "Sorry, no response was received. Please try again.",
+    "error_connection": "Sorry, I encountered a problem connecting to the AI server. Please make sure the connection is active and try again.",
+    "suggestions": {
+      "kosher": "What is the difference between Kosher and Mehadrin?",
+      "tel_aviv": "Are there hosts in Tel Aviv with sleepover?",
+      "request": "How do I send a hosting request?",
+      "arrive": "When should I arrive for Shabbat?"
+    },
+    "title": "Ask the Smart Agent",
+    "new_badge": "AI · New",
+    "header_title": "Smart Assistant - {{brand}}",
+    "header_subtitle": "Instant answers to any question",
+    "status_online": "Online",
+    "loading_text": "Looking for the answer",
+    "input_placeholder": "Ask me any question about Shabbat hosting...",
+    "features_title": "What can the agent do?",
+    "features": {
+      "match": "Help you choose a host based on match score",
+      "kosher": "Answer Kosher and sleepover questions",
+      "board": "Explain how the request board works",
+      "areas": "Provide info on different areas in the country",
+      "general": "Answer general questions about Shabbat"
+    }
+  }
+}
