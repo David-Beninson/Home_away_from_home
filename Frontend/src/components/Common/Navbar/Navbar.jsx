@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
+  Menu,
+  X,
   House,
   Search,
   FileText,
@@ -29,8 +31,20 @@ export default function Navbar() {
 
   // States & Selectors
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
 
   const user = useSelector((state) => state.auth.user);
   const userRole = user?.user_type || null;
@@ -68,6 +82,7 @@ export default function Navbar() {
         <NavLink
           to={link.path}
           end={link.end}
+          onClick={() => setIsMobileMenuOpen(false)}
           className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           {link.icon}
@@ -112,25 +127,46 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-right">
-        <div
-          className="logo-icon-container"
+        <button 
+          className="mobile-menu-btn" 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-expanded={isMobileMenuOpen}
+          aria-label="תפריט ניווט"
+        >
+          <Menu size={24} />
+        </button>
+        <div 
+          className="brand-container"
           onClick={() => navigate('/')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/'); }}
           role="button"
           tabIndex={0}
           aria-label="העבר לדף הבית"
         >
-          <Logo size={32} className="logo-icon" />
-        </div>
-        <div className="logo-text">
-          <span className="logo-title">{BRAND_TITLE}</span>
-          <span className="logo-subtitle">{BRAND_SUBTITLE}</span>
+          <div className="logo-icon-container">
+            <Logo size={32} className="logo-icon" />
+          </div>
+          <div className="logo-text">
+            <span className="logo-title">{BRAND_TITLE}</span>
+            <span className="logo-subtitle">{BRAND_SUBTITLE}</span>
+          </div>
         </div>
       </div>
 
-      <ul className="navbar-links">
-        {roots()}
-      </ul>
+      <div className={`navbar-menu-overlay ${isMobileMenuOpen ? 'open' : ''}`} onClick={() => setIsMobileMenuOpen(false)}></div>
+      <div className={`navbar-links-container ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className="mobile-menu-header">
+          <div className="logo-text">
+            <span className="logo-title">{BRAND_TITLE}</span>
+          </div>
+          <button className="mobile-close-btn" onClick={() => setIsMobileMenuOpen(false)}>
+            <X size={24} />
+          </button>
+        </div>
+        <ul className="navbar-links">
+          {roots()}
+        </ul>
+      </div>
 
       <div className="navbar-left">
         <NotificationBell />

@@ -31,6 +31,14 @@
   gap: 12px;
 }
 
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
 .logo-icon-container {
   background-color: #2563eb;
   border-radius: 8px;
@@ -312,4 +320,180 @@
 
 .logout-item:hover {
   background-color: rgba(239, 68, 68, 0.05) !important;
+}
+
+/* =========================================
+   5. MOBILE MENU & RESPONSIVENESS
+========================================= */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main, #0f172a);
+  cursor: pointer;
+  padding: 8px;
+  margin-left: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark-theme .mobile-menu-btn {
+  color: #f8fafc;
+}
+
+.mobile-menu-btn:hover {
+  background-color: rgba(241, 245, 249, 0.8);
+}
+
+.dark-theme .mobile-menu-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-header {
+  display: none;
+}
+
+.navbar-menu-overlay {
+  display: none;
+}
+
+/* By default, container is just a wrapper for flex items on desktop */
+.navbar-links-container {
+  display: contents;
+}
+
+/* Mobile Media Query */
+@media (max-width: 900px) {
+  .navbar {
+    padding: 10px 16px;
+  }
+
+  .brand-container {
+    flex-direction: column;
+    gap: 4px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .logo-icon-container {
+    padding: 4px;
+    border-radius: 6px;
+  }
+
+  .logo-icon-container svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .logo-title {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .logo-subtitle {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* hide regular links if we need them hidden in desktop view (wait, we wrapped them in navbar-links-container) */
+  /* on mobile, navbar-links-container becomes the drawer */
+  .navbar-links-container {
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: -280px; /* Hide off-screen to the right (RTL) */
+    width: 280px;
+    height: 100vh;
+    height: 100dvh;
+    background-color: #ffffff;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-direction: column;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .dark-theme .navbar-links-container {
+    background-color: rgba(30, 41, 59, 0.98);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .navbar-links-container.open {
+    right: 0;
+  }
+
+  .mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-input, #cbd5e1);
+  }
+  
+  .dark-theme .mobile-menu-header {
+    border-bottom-color: #334155;
+  }
+
+  .mobile-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #64748b);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .mobile-close-btn:hover {
+    background-color: rgba(241, 245, 249, 0.8);
+    color: var(--text-main, #0f172a);
+  }
+
+  .dark-theme .mobile-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+  }
+
+  .navbar-links {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .nav-item {
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  /* Backdrop Overlay */
+  .navbar-menu-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .navbar-menu-overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
 }
