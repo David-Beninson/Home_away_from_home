@@ -1040,6 +1040,21 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px; /* space for scrollbar */
+}
+
+/* Custom horizontal scrollbar for chart area */
+.chart-main-area::-webkit-scrollbar {
+  height: 6px;
+}
+.chart-main-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chart-main-area::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 10px;
 }
 
 .chart-grid-lines {
@@ -1047,11 +1062,12 @@
   top: 0;
   inset-inline-end: 0;
   inset-inline-start: 0;
-  bottom: 24px;
+  bottom: 34px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   pointer-events: none;
+  min-width: 100%;
 }
 
 .grid-line {
@@ -1068,22 +1084,22 @@
 }
 
 .chart-columns-flex {
-  position: absolute;
-  top: 0;
-  inset-inline-end: 0;
-  inset-inline-start: 0;
-  bottom: 0;
   display: flex;
   align-items: flex-end;
-  justify-content: space-around;
-  gap: 8px;
+  justify-content: space-around; /* distribute columns evenly */
+  gap: 20px; /* minimum spacing between columns */
+  height: 100%;
+  min-width: max-content; /* allows expanding beyond container if too many cities */
+  padding: 0 16px;
+  position: relative;
+  z-index: 1; /* keep above grid lines */
 }
 
 .chart-column-group {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
+  min-width: 50px; /* gives enough room for most labels */
   height: 100%;
   justify-content: flex-end;
 }
@@ -1097,7 +1113,21 @@
   justify-content: flex-end;
   align-items: center;
   position: relative;
-  padding-bottom: 24px;
+}
+
+.chart-x-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  height: 34px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  white-space: normal;
+  line-height: 1.1;
+  max-width: 64px;
+  word-break: break-word;
 }
 
 .chart-bar-tooltip {
