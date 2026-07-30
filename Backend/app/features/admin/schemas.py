@@ -14,6 +14,8 @@ class AdminUserResponse(ORMResponse):
     phone_number: str
     user_type: UserType
     is_active: bool
+    account_status: str
+    status_reason: Optional[str] = None
     created_at: Optional[datetime] = None
     biography: Optional[str] = None
 
@@ -37,6 +39,8 @@ class AdminStatsResponse(BaseModel):
     total_hosts: int
     total_guests: int
     total_soldiers: int = 0
+    total_suspended: int = 0
+    total_banned: int = 0
     active_matches: int
     pending_matches: int = 0
     open_posts: int
@@ -47,7 +51,8 @@ class AdminStatsResponse(BaseModel):
     kashrut_breakdown: List[KashrutStat] = []
 
 class UserStatusUpdateRequest(BaseModel):
-    is_active: bool
+    account_status: str
+    reason: Optional[str] = None
 
 class GuestVerifyUpdateRequest(BaseModel):
     is_soldier_or_national_service: bool

@@ -27,6 +27,12 @@ api.interceptors.response.use(
         // Dispatch custom event or redirect window if needed
         window.dispatchEvent(new Event('auth-logout'));
       }
+    } else if (error.response && error.response.status === 403) {
+      // User is likely suspended. Trigger a silent refetch of user data
+      window.dispatchEvent(new Event('auth-forbidden'));
+      
+      // We can also return a rejected promise but add a flag so callers know to ignore
+      error.isForbidden = true;
     }
     return Promise.reject(error);
   }
@@ -87,7 +93,7 @@ export const bookingsApi = {
 export const adminApi = {
   getStats: () => api.get('/admin/stats'),
   getUsers: () => api.get('/admin/users'),
-  updateUserStatus: (userId, isActive) => api.patch(`/admin/users/${userId}/status`, { is_active: isActive }),
+  updateUserStatus: (userId, accountStatus, reason = null) => api.patch(`/admin/users/${userId}/status`, { account_status: accountStatus, reason }),
   verifyGuest: (userId, isVerified) => api.patch(`/admin/users/${userId}/verify-guest`, { is_soldier_or_national_service: isVerified }),
   getBookings: () => api.get('/admin/bookings'),
   deletePost: (postId) => api.delete(`/admin/posts/${postId}`),

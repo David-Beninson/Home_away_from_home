@@ -7,7 +7,7 @@ from app.database.session import get_db
 from app.database.models.user import User, UserType
 from app.database.models.match import Match
 from app.database.models.message import Message
-from app.features.auth.services import get_current_user
+from app.features.auth.services import get_active_user
 from app.features.chat.router import _verify_match_access
 from app.agent.services import AgentService
 from app.agent.prompts import get_default_icebreakers
@@ -38,7 +38,7 @@ def agent_chat(payload: ChatRequest):
 @router.post("/suggest-reply", response_model=SuggestReplyResponse)
 def suggest_reply(
     payload: SuggestReplyRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     match_id = payload.match_id or payload.chat_id

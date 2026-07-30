@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.database.session import get_db, SessionLocal
 from app.database.models.notification import Notification
 from app.database.models.user import User
-from app.features.auth.router import get_current_user
+from app.features.auth.services import get_active_user
 
 router = APIRouter(tags=["notifications"])
 
@@ -117,7 +117,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 
 @router.get("/notifications")
 def get_notifications(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     """Fetch all notifications for the authenticated user, sorted by recency."""
@@ -148,7 +148,7 @@ def get_notifications(
 
 @router.patch("/notifications/read-all")
 def mark_all_notifications_as_read(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     """Mark all notifications as read for current user."""
@@ -163,7 +163,7 @@ def mark_all_notifications_as_read(
 @router.patch("/notifications/{notification_id}/read")
 def mark_notification_as_read(
     notification_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     """Mark a specific notification as read."""
@@ -189,7 +189,7 @@ def mark_notification_as_read(
 @router.delete("/notifications/{notification_id}")
 def delete_notification(
     notification_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     """Permanently delete a specific notification upon user request."""

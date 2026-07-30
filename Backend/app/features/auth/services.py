@@ -132,6 +132,22 @@ def get_current_user(
         raise exc
     return user
 
+from app.database.models.user import AccountStatus
+
+def get_active_user(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency for general endpoints that blocks banned or suspended users."""
+    if current_user.account_status == AccountStatus.BANNED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is permanently banned."
+        )
+    if current_user.account_status == AccountStatus.SUSPENDED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is suspended. Please contact support."
+        )
+    return current_user
+
 
 def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Optional[User]:
     """Optional authentication dependency that returns User if valid token is present, else None."""

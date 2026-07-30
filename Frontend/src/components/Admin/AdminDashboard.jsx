@@ -257,6 +257,26 @@ export default function AdminDashboard() {
             <MyRequestsIcon />
           </div>
         </div>
+
+        <div className="admin-metric-card">
+          <div className="admin-metric-card-info">
+            <h4>משתמשים מושהים</h4>
+            <p>{stats?.total_suspended || 0}</p>
+          </div>
+          <div className="admin-metric-icon-wrapper amber">
+            <UsersIcon />
+          </div>
+        </div>
+
+        <div className="admin-metric-card">
+          <div className="admin-metric-card-info">
+            <h4>משתמשים חסומים</h4>
+            <p>{stats?.total_banned || 0}</p>
+          </div>
+          <div className="admin-metric-icon-wrapper red" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
+            <UsersIcon />
+          </div>
+        </div>
       </div>
 
       {/* Visual Donut Charts Grid */}

@@ -6,7 +6,7 @@ from app.database.session import get_db
 from app.database.models.user import User, UserType
 from app.database.models.listing import HostListing
 from app.database.models.profile import HostProfile, KashrutLevel
-from app.features.auth.services import get_current_user, get_current_user_optional
+from app.features.auth.services import get_active_user, get_current_user_optional
 from app.features.listings.schemas import (
     HostListingCreate, HostListingResponse, KashrutOptionResponse, HostSearchResponse
 )
@@ -20,7 +20,7 @@ KASHRUT_LABELS = {
     KashrutLevel.GLATT_MEHADRIN: "מהדרין / חלק",
 }
 
-def require_host_profile(current_user: User = Depends(get_current_user)) -> uuid.UUID:
+def require_host_profile(current_user: User = Depends(get_active_user)) -> uuid.UUID:
     if current_user.user_type != UserType.HOST or not current_user.host_profile:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -30,7 +30,7 @@ def require_host_profile(current_user: User = Depends(get_current_user)) -> uuid
 
 
 @router.get("/kashrut-options", response_model=List[KashrutOptionResponse])
-def get_kashrut_options(current_user: User = Depends(get_current_user)):
+def get_kashrut_options(current_user: User = Depends(get_active_user)):
     """Retrieve available kashrut levels and their Hebrew translations."""
     return [{"value": lvl.value, "label": KASHRUT_LABELS.get(lvl, lvl.value)} for lvl in KashrutLevel]
 

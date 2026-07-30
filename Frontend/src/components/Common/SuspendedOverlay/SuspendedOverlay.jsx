@@ -27,7 +27,10 @@ export default function SuspendedOverlay() {
     currentUserId,
   } = useSupportChat();
 
-  const status = user?.verification_status || 'pending_submission';
+  const accountStatus = user?.account_status;
+  const statusReason = user?.status_reason;
+  const isSuspended = accountStatus && String(accountStatus).toLowerCase() === 'suspended';
+  const status = isSuspended ? 'suspended' : (user?.verification_status || 'pending_submission');
 
   useEffect(() => {
     if (user?.user_type === 'host') {
@@ -146,12 +149,21 @@ export default function SuspendedOverlay() {
                 {status === 'rejected' && 'בקשת האימות נדחתה'}
                 {status === 'suspended' && 'חשבונך מושהה מהמערכת'}
               </h2>
-              <p className="status-subtitle">
+              <div className="status-subtitle">
                 {status === 'pending_submission' && 'כדי להבטיח את ביטחון הקהילה, אנא העלה מסמכי אימות מתאימים.'}
                 {status === 'pending_admin' && 'המסמכים שלך נסרקו בהצלחה והועברו לאישור סופי. תקבל עדכון מנהל בהקדם.'}
                 {status === 'rejected' && (verificationDetails?.rejection_reason || 'התמונה לא הייתה קריאה. אנא העלה מסמכים מחדש.')}
-                {status === 'suspended' && 'לצערנו חשבונך מושהה מהמערכת. אנא פנו למנהלים דרך הצ\'אט למטה.'}
-              </p>
+                {status === 'suspended' && (
+                  <>
+                    לצערנו חשבונך מושהה מהמערכת. אנא פנו למנהלים דרך הצ'אט למטה.
+                    {statusReason && (
+                      <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold' }}>
+                        סיבת השעיה: {statusReason}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

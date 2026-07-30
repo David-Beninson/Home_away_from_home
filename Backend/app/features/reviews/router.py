@@ -9,7 +9,7 @@ from app.database.session import get_db
 from app.database.models import User, Match, GuestPost, MatchStatus, PostStatus
 from app.database.models.review import Review, ReviewStatus
 from app.database.models.admin_alert import AdminAlert
-from app.features.auth.services import get_current_user
+from app.features.auth.services import get_active_user
 from app.features.notifications.router import manager
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
@@ -42,7 +42,7 @@ async def send_admin_alert(alert: AdminAlert, db: Session):
 
 
 @router.get("/pending")
-def get_pending_reviews(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_pending_reviews(db: Session = Depends(get_db), current_user: User = Depends(get_active_user)):
     """Find matches where the stay has ended and the user hasn't reviewed yet."""
     # Find all MATCHED matches for this user
     matches = db.query(Match).join(GuestPost, Match.guest_post_id == GuestPost.id).filter(
@@ -90,7 +90,7 @@ def get_pending_reviews(db: Session = Depends(get_db), current_user: User = Depe
     return pending
 
 @router.post("")
-async def create_review(data: ReviewCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def create_review(data: ReviewCreate, db: Session = Depends(get_db), current_user: User = Depends(get_active_user)):
     # Verify match exists and user is part of it
     match = db.query(Match).filter(Match.id == data.match_id).first()
     if not match:
@@ -194,7 +194,7 @@ def get_match_reviews(match_id: str, db: Session = Depends(get_db)):
     } for r in reviews]
 
 @router.get("/alerts")
-def get_admin_alerts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_admin_alerts(db: Session = Depends(get_db), current_user: User = Depends(get_active_user)):
     if current_user.user_type != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     alerts = db.query(AdminAlert).order_by(AdminAlert.created_at.desc()).all()
@@ -208,7 +208,7 @@ def get_admin_alerts(db: Session = Depends(get_db), current_user: User = Depends
     } for a in alerts]
 
 @router.patch("/{review_id}/status")
-def update_review_status(review_id: str, data: ReviewStatusUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_review_status(review_id: str, data: ReviewStatusUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_active_user)):
     if current_user.user_type != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     review = db.query(Review).filter(Review.id == review_id).first()

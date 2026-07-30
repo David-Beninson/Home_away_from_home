@@ -19,7 +19,7 @@ from app.database.models.availability import (
     HostAvailabilityOverride,
     OverrideStatus,
 )
-from app.features.auth.services import get_current_user
+from app.features.auth.services import get_active_user
 from app.features.availability.schemas import (
     AvailabilityRuleUpdate,
     AvailabilityRuleResponse,
@@ -47,7 +47,7 @@ def _require_host(current_user: User) -> None:
 
 @router.get("", response_model=AvailabilityDashboardResponse)
 def get_availability(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db),
 ):
     """Return the full availability state for the logged-in host."""
@@ -91,7 +91,7 @@ async def _notify_availability_change(host_profile_id: uuid.UUID, db: Session):
 @router.put("/rules", response_model=AvailabilityRuleResponse)
 async def upsert_rules(
     payload: AvailabilityRuleUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db),
 ):
     """Create or update the host's recurring availability rule."""
@@ -121,7 +121,7 @@ async def upsert_rules(
 @router.put("/overrides", response_model=list[OverrideResponse])
 async def bulk_upsert_overrides(
     payload: BulkOverrideUpsert,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -163,7 +163,7 @@ async def bulk_upsert_overrides(
 @router.post("/overrides", response_model=OverrideResponse, status_code=status.HTTP_201_CREATED)
 async def upsert_single_override(
     payload: OverrideUpsert,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db),
 ):
     """Create or update a single date override (open/closed)."""
@@ -201,7 +201,7 @@ async def upsert_single_override(
 @router.delete("/overrides/{override_date}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_override(
     override_date: DateType,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db),
 ):
     """Remove a single date override, reverting to the recurring rule."""

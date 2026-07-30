@@ -25,16 +25,20 @@ export default function NotificationBell() {
   // 2. Notification state from Redux store
   const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
 
+  const accountStatus = user?.account_status?.toLowerCase();
+
   // Fetch initial notifications on mount / login
   useEffect(() => {
-    if (userId) {
-      dispatch(fetchNotifications());
+    if (userId && accountStatus !== 'suspended' && accountStatus !== 'banned') {
+      dispatch(fetchNotifications()).catch((err) => {
+        if (!err?.isForbidden) console.error("Failed to fetch notifications", err);
+      });
     }
-  }, [userId, dispatch]);
+  }, [userId, accountStatus, dispatch]);
 
   // 3. WebSocket Connection Hook with Auto-Reconnect and Heartbeat
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || accountStatus === 'suspended' || accountStatus === 'banned') return;
 
     let socket = null;
     let pingInterval = null;

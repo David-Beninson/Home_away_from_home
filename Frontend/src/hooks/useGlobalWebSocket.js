@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setPosts, setLoading, fetchPosts, fetchAllRequests } from '../store/requestsSlice';
 
 const MAX_RECONNECT_DELAY_MS = 30000;
@@ -123,6 +123,8 @@ export function useGlobalWebSocket(userRole) {
   const dispatch = useDispatch();
   const dispatchRef = useRef(dispatch);
   dispatchRef.current = dispatch;
+  const user = useSelector((state) => state.auth.user);
+  const accountStatus = user?.account_status?.toLowerCase();
 
   useEffect(() => {
     latestDispatch = dispatchRef.current;
@@ -130,6 +132,14 @@ export function useGlobalWebSocket(userRole) {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    
+    // Do not connect, and disconnect if already connected for suspended/banned users
+    if (accountStatus === 'suspended' || accountStatus === 'banned') {
+      intentionalClose = true;
+      closeSharedSocket();
+      return;
+    }
+
     if (!token) {
       dispatch(setLoading(false));
       return;

@@ -30,6 +30,13 @@ export default function Layout() {
   }
 
   const isApproved = userRole === 'admin' || user?.verification_status === 'approved';
+  const isAccountSuspended = user?.account_status && String(user.account_status).toLowerCase() === 'suspended';
+
+  // Strict UI Lockout
+  if (!isApproved || isAccountSuspended) {
+    return <SuspendedOverlay />;
+  }
+
   // Do not show the questionnaire to admins
   // Also respect a per-user localStorage fallback when backend hasn't persisted the flag yet
   const userId = user?.id || user?.user_id;
@@ -52,9 +59,6 @@ export default function Layout() {
 
   return (
     <div className="layout-container">
-      {/* If not approved, show the locked suspended/verification overlay */}
-      {!isApproved && <SuspendedOverlay />}
-
       {/* The Navbar stays fixed at the top */}
       <header>
         <Navbar />

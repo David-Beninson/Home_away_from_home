@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, cast, Integer
 
-from app.database.models.user import User, UserType
+from app.database.models.user import User, UserType, AccountStatus
 from app.database.models.post import GuestPost, PostStatus
 from app.database.models.match import Match, MatchStatus
 from app.database.models.profile import HostProfile, GuestProfile
@@ -38,6 +38,9 @@ def get_admin_stats(admin_user: User = Depends(require_admin), db: Session = Dep
     total_hosts = db.query(User).filter(User.user_type == UserType.HOST).count()
     total_guests = db.query(User).filter(User.user_type == UserType.GUEST).count()
     total_soldiers = db.query(GuestProfile).filter(GuestProfile.is_soldier_or_national_service == True).count()
+    
+    total_suspended = db.query(User).filter(User.account_status == AccountStatus.SUSPENDED).count()
+    total_banned = db.query(User).filter(User.account_status == AccountStatus.BANNED).count()
     
     active_matches = db.query(Match).filter(Match.status == MatchStatus.MATCHED).count()
     pending_matches = db.query(Match).filter(Match.status == MatchStatus.PENDING).count()
@@ -91,6 +94,8 @@ def get_admin_stats(admin_user: User = Depends(require_admin), db: Session = Dep
         "total_hosts": total_hosts, 
         "total_guests": total_guests,
         "total_soldiers": total_soldiers,
+        "total_suspended": total_suspended,
+        "total_banned": total_banned,
         "active_matches": active_matches,
         "pending_matches": pending_matches,
         "open_posts": open_posts_count, 
@@ -105,7 +110,14 @@ def get_admin_stats(admin_user: User = Depends(require_admin), db: Session = Dep
 @router.patch("/users/{user_id}/status", response_model=AdminUserResponse)
 def update_user_status(user_id: str, payload: UserStatusUpdateRequest, admin_user: User = Depends(require_admin), db: Session = Depends(get_db)):
     user = get_user_or_404(user_id, db)
-    user.is_active = payload.is_active
+    # Map the account_status enum from the frontend
+    from app.database.models.user import AccountStatus
+    try:
+        user.account_status = AccountStatus(payload.account_status)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid account status")
+    
+    user.status_reason = payload.reason
     db.commit()
     db.refresh(user)
     return user

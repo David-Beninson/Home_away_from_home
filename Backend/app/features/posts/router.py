@@ -11,7 +11,7 @@ from app.database.session import get_db, SessionLocal
 from app.database.models.user import User, UserType
 from app.database.models.post import GuestPost, PostStatus
 from app.database.models.match import Match, MatchStatus
-from app.features.auth.services import get_current_user
+from app.features.auth.services import get_active_user
 from app.features.posts.schemas import GuestPostCreate, GuestPostUpdate, GuestPostResponse
 from app.features.notifications.router import manager as notification_manager
 
@@ -113,7 +113,7 @@ post_manager = PostConnectionManager()
 @router.post("", response_model=GuestPostResponse, status_code=status.HTTP_201_CREATED)
 async def create_post(
     post_in: GuestPostCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.GUEST or not current_user.guest_profile:
@@ -145,7 +145,7 @@ async def create_post(
 
 @router.get("", response_model=List[GuestPostResponse])
 def get_posts(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type == UserType.HOST:
@@ -195,7 +195,7 @@ def get_posts(
 async def update_post(
     post_id: uuid.UUID,
     post_in: GuestPostUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.GUEST or not current_user.guest_profile:
@@ -234,7 +234,7 @@ async def update_post(
 @router.post("/{post_id}/claim")
 async def claim_post(
     post_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.HOST or not current_user.host_profile:
@@ -296,7 +296,7 @@ async def claim_post(
 @router.post("/{post_id}/cancel")
 async def cancel_post(
     post_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.GUEST or not current_user.guest_profile:

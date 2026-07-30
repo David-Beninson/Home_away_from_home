@@ -13,6 +13,7 @@ import ProfilePage from '../pages/Profile/Profile'
 import ChatsPage from '../pages/Chats/Chats'
 import NotFound from '../pages/NotFound/NotFound'
 import ProfileQuestionnaire from "../pages/Profile/ProfileQuestionnaire";
+import Banned from '../pages/Banned/Banned'
 
 // Auth Views
 import Login from '../pages/Login/Login'
@@ -35,6 +36,7 @@ export function useAppLogic() {
   const user = useSelector((state) => state.auth.user);
   const loadingAuth = useSelector((state) => state.auth.loading);
   const userRole = user?.user_type || null;
+  const isBanned = user?.account_status === 'Banned';
 
   // Determine whether the current user still needs to complete a core profile field
   // Requirement: only hosts must fill residential_address before using the app
@@ -53,9 +55,14 @@ export function useAppLogic() {
     const handleLogout = () => {
       dispatch(logout());
     };
+    const handleForbidden = () => {
+      dispatch(fetchCurrentUser());
+    };
     window.addEventListener('auth-logout', handleLogout);
+    window.addEventListener('auth-forbidden', handleForbidden);
     return () => {
       window.removeEventListener('auth-logout', handleLogout);
+      window.removeEventListener('auth-forbidden', handleForbidden);
     };
   }, [dispatch]);
 
@@ -63,8 +70,12 @@ export function useAppLogic() {
   const router = useMemo(() => {
     return createBrowserRouter([
       {
+        path: '/banned',
+        element: isBanned ? <Banned /> : <Navigate to="/" replace />
+      },
+      {
         path: '/',
-        element: <Layout />,
+        element: isBanned ? <Navigate to="/banned" replace /> : <Layout />,
         errorElement: <NotFound />,
         children: [
           {
@@ -195,7 +206,7 @@ export function useAppLogic() {
         element: <NotFound />
       }
     ]);
-  }, [userRole, loadingAuth, hasProfile]);
+  }, [userRole, loadingAuth, hasProfile, isBanned]);
 
   return { router };
 }

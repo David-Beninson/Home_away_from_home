@@ -8,7 +8,7 @@ from app.database.session import get_db
 from app.database.models.user import User, UserType
 from app.database.models.match import Match, MatchStatus
 from app.database.models.post import GuestPost, PostStatus
-from app.features.auth.services import get_current_user
+from app.features.auth.services import get_active_user
 from app.features.bookings.schemas import BookingRequestCreate, BookingResponse, MatchStatusUpdate
 from app.features.posts.schemas import GuestPostResponse
 from app.agent.services import AgentService
@@ -19,7 +19,7 @@ router = APIRouter(prefix="", tags=["Bookings & Matches"])
 
 @router.get("/bookings/count")
 def get_bookings_count(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.GUEST or not current_user.guest_profile:
@@ -42,7 +42,7 @@ def get_bookings_count(
 @router.get("/bookings/guest-status/{host_id}")
 def check_guest_booking_status(
     host_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.GUEST or not current_user.guest_profile:
@@ -83,7 +83,7 @@ def get_upcoming_friday_datetime() -> datetime:
 @router.post("/bookings/request", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
 async def request_booking(
     req: BookingRequestCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.GUEST or not current_user.guest_profile:
@@ -196,7 +196,7 @@ async def request_booking(
 
 @router.get("/bookings/incoming", response_model=List[GuestPostResponse])
 def get_incoming_bookings(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     if current_user.user_type != UserType.HOST or not current_user.host_profile:
@@ -224,7 +224,7 @@ def get_incoming_bookings(
 async def respond_booking(
     match_id: uuid.UUID,
     data: MatchStatusUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     match = db.query(Match).filter(Match.id == match_id).first()
@@ -321,7 +321,7 @@ async def respond_booking(
 @router.get("/matches/{match_id}/details")
 def get_match_details(
     match_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     match = db.query(Match).filter(Match.id == match_id).first()
@@ -394,7 +394,7 @@ def get_match_details(
 @router.get("/agent/icebreakers")
 def get_quick_icebreakers(
     match_id: Optional[uuid.UUID] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_active_user),
     db: Session = Depends(get_db)
 ):
     user_role = "host" if (current_user and current_user.user_type == UserType.HOST) else "guest"

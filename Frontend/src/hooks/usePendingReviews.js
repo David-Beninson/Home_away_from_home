@@ -7,8 +7,9 @@ export function usePendingReviews() {
   const [pendingReview, setPendingReview] = useState(null);
 
   useEffect(() => {
-    // Only fetch for authenticated non-admin users
-    if (!user || user.user_type === 'admin') return;
+    // Only fetch for authenticated non-admin users, and not suspended
+    const accountStatus = user?.account_status?.toLowerCase();
+    if (!user || user.user_type === 'admin' || accountStatus === 'suspended' || accountStatus === 'banned') return;
 
     const checkPendingReviews = async () => {
       try {
@@ -20,7 +21,9 @@ export function usePendingReviews() {
           setPendingReview(null);
         }
       } catch (error) {
-        console.error("Failed to fetch pending reviews", error);
+        if (!error.isForbidden) {
+          console.error("Failed to fetch pending reviews", error);
+        }
       }
     };
 

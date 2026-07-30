@@ -4,6 +4,7 @@ import { LockIcon, UnlockIcon, CheckCircleIcon, TrashIcon, ChevronLeftIcon } fro
 import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
 import { formatPhoneNumber } from '../../utils/phone';
+import { AdminSupportChatModal } from './AdminSupportChatModal';
 import '../../pages/Admin/Admin.css';
 
 export default function AdminUsers() {
@@ -17,9 +18,13 @@ export default function AdminUsers() {
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // Support Chat State
+  const [supportChatUser, setSupportChatUser] = useState(null);
 
   // Confirmation Modal State
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', user: null });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', user: null, reason: '' });
 
   useEffect(() => {
     async function loadData() {
@@ -41,33 +46,32 @@ export default function AdminUsers() {
     loadData();
   }, []);
 
-  // Update Active/Suspended status
-  const executeToggleStatus = async (userId, targetActiveState) => {
+  const executeUpdateStatus = async (userId, newStatus, reason = null) => {
     try {
       setError('');
       setSuccessMsg('');
-      const response = await adminApi.updateUserStatus(userId, targetActiveState);
+      const response = await adminApi.updateUserStatus(userId, newStatus, reason);
       const updatedUser = response.data;
       
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_active: updatedUser.is_active } : u));
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, account_status: updatedUser.account_status } : u));
       if (selectedUser && selectedUser.id === userId) {
-        setSelectedUser(prev => ({ ...prev, is_active: updatedUser.is_active }));
+        setSelectedUser(prev => ({ ...prev, account_status: updatedUser.account_status }));
       }
 
-      setSuccessMsg(targetActiveState ? 'המשתמש הופעל מחדש בהצלחה.' : 'המשתמש הושעה בהצלחה.');
+      setSuccessMsg(`המשתמש עודכן לסטטוס: ${newStatus === 'active' ? 'פעיל' : newStatus === 'suspended' ? 'מושעה' : 'חסום לצמיתות'}`);
     } catch (err) {
-      console.error('Failed to toggle status:', err);
+      console.error('Failed to update status:', err);
       setError('עדכון סטטוס המשתמש נכשל.');
     } finally {
-      setConfirmModal({ isOpen: false, type: '', user: null });
+      setConfirmModal({ isOpen: false, type: '', user: null, reason: '' });
     }
   };
 
-  const handleToggleStatusClick = (user) => {
-    if (user.is_active) {
-      setConfirmModal({ isOpen: true, type: 'suspend', user });
+  const handleStatusChangeClick = (user, newStatus) => {
+    if (newStatus === 'active') {
+      executeUpdateStatus(user.id, 'active');
     } else {
-      executeToggleStatus(user.id, true);
+      setConfirmModal({ isOpen: true, type: newStatus, user, reason: '' });
     }
   };
 
@@ -121,11 +125,18 @@ export default function AdminUsers() {
       user.phone_number?.includes(searchTerm);
     
     const matchesRole = roleFilter === 'all' || user.user_type === roleFilter;
-    return matchesSearch && matchesRole;
+    
+    // Normalize user account status to handle uppercase "Suspended" from backend just in case
+    const userStatus = user.account_status ? String(user.account_status).toLowerCase() : 'active';
+    const matchesStatus = statusFilter === 'all' || userStatus === statusFilter;
+    
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   const totalHostsCount = users.filter(u => u.user_type === 'host').length;
   const totalGuestsCount = users.filter(u => u.user_type === 'guest').length;
+  const totalSuspendedCount = users.filter(u => u.account_status && String(u.account_status).toLowerCase() === 'suspended').length;
+  const totalBannedCount = users.filter(u => u.account_status && String(u.account_status).toLowerCase() === 'banned').length;
 
   const userPosts = selectedUser 
     ? userBookingsData.posts.filter(p => p.guest_name === selectedUser.full_name || p.guest_profile_id === selectedUser.id)
@@ -153,6 +164,8 @@ export default function AdminUsers() {
               <span className="stat-chip">סה"כ: <strong>{users.length}</strong></span>
               <span className="stat-chip host">מארחים: <strong>{totalHostsCount}</strong></span>
               <span className="stat-chip guest">אורחים: <strong>{totalGuestsCount}</strong></span>
+              <span className="stat-chip suspended" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>מושהים: <strong>{totalSuspendedCount}</strong></span>
+              <span className="stat-chip banned" style={{ backgroundColor: '#f8d7da', color: '#721c24' }}>חסומים: <strong>{totalBannedCount}</strong></span>
             </div>
           </div>
 
@@ -174,6 +187,16 @@ export default function AdminUsers() {
               <option value="host">מארחים (Host)</option>
               <option value="guest">אורחים (Guest)</option>
               <option value="admin">מנהלים (Admin)</option>
+            </select>
+            <select 
+              className="admin-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">כל הסטטוסים</option>
+              <option value="active">פעילים</option>
+              <option value="suspended">מושהים</option>
+              <option value="banned">חסומים לצמיתות</option>
             </select>
           </div>
 
@@ -211,8 +234,8 @@ export default function AdminUsers() {
 
                 {/* Status Column */}
                 <td>
-                  <span className={`badge ${user.is_active ? 'active' : 'suspended'}`}>
-                    {user.is_active ? 'פעיל' : 'מושעה'}
+                  <span className={`badge ${user.account_status === 'active' ? 'active' : user.account_status === 'suspended' ? 'suspended' : 'danger'}`}>
+                    {user.account_status === 'active' ? 'פעיל' : user.account_status === 'suspended' ? 'מושעה' : 'חסום'}
                   </span>
                 </td>
 
@@ -251,8 +274,8 @@ export default function AdminUsers() {
                   <span className={`badge ${selectedUser.user_type}`}>
                     {selectedUser.user_type === 'host' ? 'מארח' : selectedUser.user_type === 'guest' ? 'אורח' : 'מנהל'}
                   </span>
-                  <span className={`badge ${selectedUser.is_active ? 'active' : 'suspended'}`}>
-                    {selectedUser.is_active ? 'פעיל' : 'מושעה'}
+                  <span className={`badge ${selectedUser.account_status === 'active' ? 'active' : selectedUser.account_status === 'suspended' ? 'suspended' : 'danger'}`}>
+                    {selectedUser.account_status === 'active' ? 'פעיל' : selectedUser.account_status === 'suspended' ? 'מושעה' : 'חסום'}
                   </span>
                 </div>
               </div>
@@ -260,14 +283,48 @@ export default function AdminUsers() {
 
             {/* Admin Actions Bar */}
             <div className="admin-detail-actions">
-              {/* Suspend/Activate Button */}
+              {/* Support Chat Button */}
               <button 
-                onClick={() => handleToggleStatusClick(selectedUser)}
-                className={`btn-admin-action ${selectedUser.is_active ? 'btn-suspend' : 'btn-activate'}`}
+                onClick={() => setSupportChatUser(selectedUser)}
+                className="btn-admin-action btn-activate"
+                style={{ backgroundColor: '#17a2b8' }}
               >
-                {selectedUser.is_active ? <UnlockIcon /> : <LockIcon />}
-                <span>{selectedUser.is_active ? 'השעה משתמש' : 'הפעל משתמש'}</span>
+                <span>💬</span>
+                <span>צ'אט תמיכה</span>
               </button>
+
+              {/* Activate Button */}
+              {selectedUser.account_status !== 'active' && (
+                <button 
+                  onClick={() => handleStatusChangeClick(selectedUser, 'active')}
+                  className="btn-admin-action btn-activate"
+                >
+                  <UnlockIcon />
+                  <span>הפעל משתמש</span>
+                </button>
+              )}
+
+              {/* Suspend Button */}
+              {selectedUser.account_status !== 'suspended' && (
+                <button 
+                  onClick={() => handleStatusChangeClick(selectedUser, 'suspended')}
+                  className="btn-admin-action btn-suspend"
+                >
+                  <LockIcon />
+                  <span>השעה משתמש</span>
+                </button>
+              )}
+
+              {/* Ban Button */}
+              {selectedUser.account_status !== 'banned' && (
+                <button 
+                  onClick={() => handleStatusChangeClick(selectedUser, 'banned')}
+                  className="btn-admin-action btn-delete"
+                >
+                  <LockIcon />
+                  <span>חסום לצמיתות</span>
+                </button>
+              )}
 
               {/* Delete User Button */}
               <button 
@@ -383,40 +440,69 @@ export default function AdminUsers() {
       {/* CONFIRMATION MODAL OVERLAY                           */}
       {/* ---------------------------------------------------- */}
       {confirmModal.isOpen && (
-        <div className="modal-backdrop" onClick={() => setConfirmModal({ isOpen: false, type: '', user: null })}>
+        <div className="modal-backdrop" onClick={() => setConfirmModal({ isOpen: false, type: '', user: null, reason: '' })}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">
-              {confirmModal.type === 'suspend' ? 'אישור השעיית משתמש' : 'אישור מחיקת משתמש'}
+              {confirmModal.type === 'suspended' ? 'אישור השעיית משתמש' : 
+               confirmModal.type === 'banned' ? 'אישור חסימת משתמש (Ban)' : 'אישור מחיקת משתמש'}
             </h3>
             <p className="modal-body">
-              {confirmModal.type === 'suspend' ? (
-                `האם אתה בטוח שברצונך להשעות את המשתמש "${confirmModal.user?.full_name}"?`
+              {confirmModal.type === 'suspended' ? (
+                `האם אתה בטוח שברצונך להשעות את המשתמש "${confirmModal.user?.full_name}"? פעולה זו תנעל את המשתמש זמנית מהאפליקציה, אך תשאיר לו גישה לצ'אט תמיכה מול הנהלת המערכת.`
+              ) : confirmModal.type === 'banned' ? (
+                `האם אתה בטוח שברצונך לחסום לצמיתות את המשתמש "${confirmModal.user?.full_name}"? פעולה זו תנעל את המשתמש לחלוטין מכל חלקי האפליקציה והשירותים בה.`
               ) : (
                 `האם אתה בטוח שברצונך למחוק לחלוטין את המשתמש "${confirmModal.user?.full_name}" מהמערכת? פעולה זו אינה ניתנת לביטול.`
               )}
             </p>
-            <div className="modal-actions">
+
+            {(confirmModal.type === 'suspended' || confirmModal.type === 'banned') && (
+              <div style={{ marginTop: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>סיבת הפעולה:</label>
+                <textarea
+                  style={{ width: '100%', padding: '0.8rem', borderRadius: '5px', border: '1px solid #ddd' }}
+                  rows={3}
+                  placeholder="אנא פרט את הסיבה לפעולה זו (תוצג למשתמש)..."
+                  value={confirmModal.reason}
+                  onChange={(e) => setConfirmModal({ ...confirmModal, reason: e.target.value })}
+                />
+              </div>
+            )}
+
+            <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
               <button 
-                className={`btn-modal-confirm ${confirmModal.type === 'delete' ? 'danger' : 'warning'}`}
+                className={`btn-modal-confirm ${confirmModal.type === 'delete' || confirmModal.type === 'banned' ? 'danger' : 'warning'}`}
                 onClick={() => {
-                  if (confirmModal.type === 'suspend') {
-                    executeToggleStatus(confirmModal.user.id, false);
+                  if (confirmModal.type === 'suspended') {
+                    executeUpdateStatus(confirmModal.user.id, 'suspended', confirmModal.reason);
+                  } else if (confirmModal.type === 'banned') {
+                    executeUpdateStatus(confirmModal.user.id, 'banned', confirmModal.reason);
                   } else {
                     executeDeleteUser(confirmModal.user.id);
                   }
                 }}
+                disabled={(confirmModal.type === 'suspended' || confirmModal.type === 'banned') && !confirmModal.reason.trim()}
               >
-                {confirmModal.type === 'suspend' ? 'אישור השעיה' : 'אישור מחיקה'}
+                {confirmModal.type === 'suspended' ? 'אישור השעיה' : confirmModal.type === 'banned' ? 'אישור חסימה' : 'אישור מחיקה'}
               </button>
               <button 
                 className="btn-modal-cancel"
-                onClick={() => setConfirmModal({ isOpen: false, type: '', user: null })}
+                onClick={() => setConfirmModal({ isOpen: false, type: '', user: null, reason: '' })}
               >
                 ביטול
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Support Chat Modal */}
+      {supportChatUser && (
+        <AdminSupportChatModal
+          targetUserId={supportChatUser.id}
+          targetUserName={supportChatUser.full_name}
+          onClose={() => setSupportChatUser(null)}
+        />
       )}
     </PageContainer>
   );

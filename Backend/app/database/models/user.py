@@ -23,6 +23,12 @@ class UserVerificationStatus(str, enum.Enum):
     REJECTED = "rejected"
     SUSPENDED = "suspended"
 
+class AccountStatus(str, enum.Enum):
+    """User account status (ban/suspension system)."""
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+    BANNED = "banned"
+
 class User(Base):
     """Core credentials and identity for every system user."""
     __tablename__ = "users"
@@ -45,6 +51,12 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(
         default=True, server_default=text("true")
     )
+    account_status: Mapped[AccountStatus] = mapped_column(
+        Enum(AccountStatus, native_enum=False, values_callable=lambda obj: [e.value for e in obj]),
+        default=AccountStatus.ACTIVE,
+        server_default=text("'active'"),
+    )
+    status_reason: Mapped[Optional[str]] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=func.now(),

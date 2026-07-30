@@ -72,6 +72,8 @@ class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
     created_at: datetime
+    account_status: Optional[str] = "active"
+    status_reason: Optional[str] = None
 
 class HostProfileBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -145,6 +147,8 @@ class UserMeResponse(BaseModel):
     full_name: str
     user_type: UserType
     verification_status: Optional[str] = "pending_submission"
+    account_status: Optional[str] = "active"
+    status_reason: Optional[str] = None
     biography: Optional[str] = None
     is_email_verified: bool = False
     is_phone_verified: bool = False
@@ -161,6 +165,10 @@ class UserMeResponse(BaseModel):
             data_dict = {k: v for k, v in data.__dict__.items() if not k.startswith('_')}
             v_status = getattr(data, "verification_status", None)
             data_dict["verification_status"] = v_status.value if hasattr(v_status, "value") else str(v_status) if v_status else "pending_submission"
+            
+            a_status = getattr(data, "account_status", None)
+            if a_status:
+                data_dict["account_status"] = a_status.value if hasattr(a_status, "value") else str(a_status)
             
             if p and hasattr(p, "__dict__"):
                 data_dict["profile"] = {k: v for k, v in p.__dict__.items() if not k.startswith('_')}

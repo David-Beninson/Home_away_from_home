@@ -11,7 +11,7 @@ from app.database.models.user import User, UserType
 from app.database.models.match import Match
 from app.database.models.message import Message
 from app.database.models.post import GuestPost
-from app.features.auth.services import get_current_user
+from app.features.auth.services import get_active_user
 from app.features.chat.schemas import MessageResponse, ChatPreviewResponse, ChatReadRequest
 
 router = APIRouter(prefix="", tags=["In-App Chat"])
@@ -73,7 +73,7 @@ def _verify_match_access(user: User, match: Match) -> bool:
 
 
 @router.get("/matches/{match_id}/messages", response_model=List[MessageResponse])
-def get_message_history(match_id: uuid.UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_message_history(match_id: uuid.UUID, current_user: User = Depends(get_active_user), db: Session = Depends(get_db)):
     """Retrieve message history for a specific match, sorted chronologically."""
     match = db.query(Match).options(joinedload(Match.guest_post)).filter(Match.id == match_id).first()
     if not match:
@@ -115,7 +115,7 @@ def _build_chat_preview_item(match: Match, other_name: str, other_phone: Optiona
 
 
 @router.get("/my-chats", response_model=List[ChatPreviewResponse])
-def get_my_chats(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_my_chats(current_user: User = Depends(get_active_user), db: Session = Depends(get_db)):
     """Retrieve all active approved chats for the current user."""
     from app.database.models.match import MatchStatus
     from app.database.models.profile import HostProfile, GuestProfile
@@ -165,7 +165,7 @@ def get_my_chats(current_user: User = Depends(get_current_user), db: Session = D
 
 
 @router.post("/matches/{match_id}/chat/read", status_code=status.HTTP_200_OK)
-def mark_chat_read(match_id: uuid.UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def mark_chat_read(match_id: uuid.UUID, current_user: User = Depends(get_active_user), db: Session = Depends(get_db)):
     """Mark all unread messages in a chat as read by the current user."""
     match = db.query(Match).options(joinedload(Match.guest_post)).filter(Match.id == match_id).first()
     if not match or not _verify_match_access(current_user, match):
