@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '../../api/api';
 import { HomeIcon, UsersIcon, CheckCircleIcon, MyRequestsIcon } from '../Common/Icons';
 import PageContainer from '../Common/PageContainer/PageContainer';
+import { MetricCard } from './MetricCard';
 import { useTranslation } from 'react-i18next';
 import '../../pages/Admin/Admin.css';
+import { useAdminAction } from '../../hooks/useAdminAction';
 
 function DonutChart({ data, title, t }) {
   const total = data.reduce((sum, item) => sum + (item.value || 0), 0);
@@ -149,25 +151,16 @@ function ColumnChart({ data, title, barColor = '#2563eb', emptyText }) {
 export default function AdminDashboard() {
   const { t } = useTranslation(['admin/dashboard']);
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { loading, error, executeAction } = useAdminAction();
 
   useEffect(() => {
-    async function loadStats() {
-      try {
-        setLoading(true);
-        setError('');
-        const response = await adminApi.getStats();
-        setStats(response.data);
-      } catch (err) {
-        console.error('Failed to load admin stats:', err);
-        setError(t('admin/dashboard:error_loading'));
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadStats();
-  }, []);
+    executeAction(
+      () => adminApi.getStats(),
+      (res) => setStats(res.data),
+      null,
+      t('admin/dashboard:error_loading')
+    );
+  }, [executeAction, t]);
 
   // Prepare Donut Chart Datasets
   const userData = [
@@ -200,85 +193,14 @@ export default function AdminDashboard() {
 
       {/* Top Metric Cards */}
       <div className="admin-metrics-grid">
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.registered_hosts')}</h4>
-            <p>{stats?.total_hosts || 0}</p>
-          </div>
-          <div className="admin-metric-icon-wrapper blue">
-            <HomeIcon />
-          </div>
-        </div>
-
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.registered_guests')}</h4>
-            <p>{stats?.total_guests || 0}</p>
-          </div>
-          <div className="admin-metric-icon-wrapper purple">
-            <UsersIcon />
-          </div>
-        </div>
-
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.soldiers')}</h4>
-            <p>{stats?.total_soldiers || 0}</p>
-          </div>
-          <div className="admin-metric-icon-wrapper amber">
-            <UsersIcon />
-          </div>
-        </div>
-
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.active_matches')}</h4>
-            <p>{stats?.active_matches || 0}</p>
-          </div>
-          <div className="admin-metric-icon-wrapper green">
-            <CheckCircleIcon />
-          </div>
-        </div>
-
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.match_rate')}</h4>
-            <p>{stats?.match_rate_percentage || 0}%</p>
-          </div>
-          <div className="admin-metric-icon-wrapper teal">
-            <CheckCircleIcon />
-          </div>
-        </div>
-
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.open_posts')}</h4>
-            <p>{stats?.open_posts || 0}</p>
-          </div>
-          <div className="admin-metric-icon-wrapper orange">
-            <MyRequestsIcon />
-          </div>
-        </div>
-
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.suspended_users')}</h4>
-            <p>{stats?.total_suspended || 0}</p>
-          </div>
-          <div className="admin-metric-icon-wrapper amber">
-            <UsersIcon />
-          </div>
-        </div>
-
-        <div className="admin-metric-card">
-          <div className="admin-metric-card-info">
-            <h4>{t('admin/dashboard:metrics.banned_users')}</h4>
-            <p>{stats?.total_banned || 0}</p>
-          </div>
-          <div className="admin-metric-icon-wrapper red" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
-            <UsersIcon />
-          </div>
-        </div>
+        <MetricCard title={t('admin/dashboard:metrics.registered_hosts')} value={stats?.total_hosts || 0} colorClass="blue" icon={HomeIcon} />
+        <MetricCard title={t('admin/dashboard:metrics.registered_guests')} value={stats?.total_guests || 0} colorClass="purple" icon={UsersIcon} />
+        <MetricCard title={t('admin/dashboard:metrics.soldiers')} value={stats?.total_soldiers || 0} colorClass="amber" icon={UsersIcon} />
+        <MetricCard title={t('admin/dashboard:metrics.active_matches')} value={stats?.active_matches || 0} colorClass="green" icon={CheckCircleIcon} />
+        <MetricCard title={t('admin/dashboard:metrics.match_rate')} value={`${stats?.match_rate_percentage || 0}%`} colorClass="teal" icon={CheckCircleIcon} />
+        <MetricCard title={t('admin/dashboard:metrics.open_posts')} value={stats?.open_posts || 0} colorClass="orange" icon={MyRequestsIcon} />
+        <MetricCard title={t('admin/dashboard:metrics.suspended_users')} value={stats?.total_suspended || 0} colorClass="amber" icon={UsersIcon} />
+        <MetricCard title={t('admin/dashboard:metrics.banned_users')} value={stats?.total_banned || 0} colorClass="red" icon={UsersIcon} />
       </div>
 
       {/* Visual Donut Charts Grid */}

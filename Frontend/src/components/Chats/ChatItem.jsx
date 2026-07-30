@@ -2,19 +2,11 @@
 
 import { getChatDisplayName } from '../../utils/chatUtils';
 import { useTranslation } from 'react-i18next';
+import { formatTime } from '../../utils/date';
 
 export function ChatItem({ chat, isActive, onSelectChat }) {
   const { t } = useTranslation(['chat/chats']);
   const displayName = getChatDisplayName(chat);
-
-  const formatTime = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-      return new Date(dateStr).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  };
 
   return (
     <div

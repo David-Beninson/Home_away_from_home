@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { postsApi } from '../../api/api';
 import DateRangePicker from '../Common/DateRangePicker/DateRangePicker';
+import { SelectFilter } from '../Common/SelectFilter';
 import { useTranslation } from 'react-i18next';
 import './CreatePostModal.css';
 
@@ -160,31 +161,33 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess, initialDat
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 cpm-fields-grid">
           <div>
             <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">{t('guest/requests:create_modal.label_region')}</label>
-            <select
+            <SelectFilter
               dir="rtl"
               className="w-full bg-input-background border border-border rounded-xl px-3 py-2 text-sm focus:outline-none"
               value={region}
-              onChange={(e) => setRegion(e.target.value)}
-            >
-              <option value="מרכז">{t('guest/requests:inline_edit.regions.center')}</option>
-              <option value="ירושלים">{t('guest/requests:inline_edit.regions.jerusalem')}</option>
-              <option value="צפון">{t('guest/requests:inline_edit.regions.north')}</option>
-              <option value="דרום">{t('guest/requests:inline_edit.regions.south')}</option>
-            </select>
+              onChange={setRegion}
+              options={[
+                { value: 'מרכז', label: t('guest/requests:inline_edit.regions.center') },
+                { value: 'ירושלים', label: t('guest/requests:inline_edit.regions.jerusalem') },
+                { value: 'צפון', label: t('guest/requests:inline_edit.regions.north') },
+                { value: 'דרום', label: t('guest/requests:inline_edit.regions.south') }
+              ]}
+            />
           </div>
 
           <div>
             <label className="text-xs font-semibold text-muted-foreground block mb-1 text-right">{t('guest/requests:create_modal.label_kashrut')}</label>
-            <select
+            <SelectFilter
               dir="rtl"
               className="w-full bg-input-background border border-border rounded-xl px-3 py-2 text-sm focus:outline-none"
               value={kashrut}
-              onChange={(e) => setKashrut(e.target.value)}
-            >
-              <option value="כשר">{t('guest/requests:inline_edit.kashrut_options.kosher')}</option>
-              <option value="מהדרין">{t('guest/requests:inline_edit.kashrut_options.mehadrin')}</option>
-              <option value="רגיל">{t('guest/requests:inline_edit.kashrut_options.regular')}</option>
-            </select>
+              onChange={setKashrut}
+              options={[
+                { value: 'כשר', label: t('guest/requests:inline_edit.kashrut.kosher') },
+                { value: 'מהדרין', label: t('guest/requests:inline_edit.kashrut.mehadrin') },
+                { value: 'לא משנה', label: t('guest/requests:inline_edit.kashrut.any') }
+              ]}
+            />
           </div>
 
           <div>

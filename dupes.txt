@@ -1,0 +1,94 @@
+● Duplicates (133 clone groups)
+
+     44 lines  2 instances  dup:3d076e2e
+    Frontend/src/pages/Chats/Chats.css:826-869
+    Frontend/src/pages/Home/HomeGuest/HomeGuest.css:328-371
+
+     37 lines  2 instances  dup:fdddaaf2
+    Frontend/src/components/RequestsList/RequestsList.css:274-306
+    Frontend/src/pages/Home/HomeHost/HomeHost.css:1000-1036
+
+     35 lines  2 instances  dup:e765dcf8
+    Frontend/src/components/Common/HostingDetailsModal.jsx:53-63
+    Frontend/src/components/Reviews/PendingReviewModal.jsx:18-52
+
+     34 lines  2 instances  dup:2bfe820f
+    Frontend/src/components/Admin/AdminBookings.jsx:24-57
+    Frontend/src/components/Admin/AdminDashboard.jsx:160-178
+
+     29 lines  2 instances  dup:54a05aa5
+    Frontend/src/components/HostDashboard/AvailabilityCalendar.jsx:60-88
+    Frontend/src/components/HostDashboard/AvailabilityCalendar.jsx:134-162
+
+     28 lines  2 instances  dup:493d5ea5
+    Frontend/src/pages/Login/Login.jsx:86-113
+    Frontend/src/pages/Register/Register.jsx:157-184
+
+     27 lines  2 instances  dup:a73f1f7e
+    Frontend/src/components/HostDashboard/AvailabilityCalendar.jsx:59-85
+    Frontend/src/components/HostDashboard/AvailabilityCalendar.jsx:100-126
+
+     26 lines  2 instances  dup:d20b21db
+    Frontend/src/components/HostDashboard/DayDetailPanel.jsx:350-375
+    Frontend/src/components/RequestsList/RequestCard.jsx:186-211
+
+     26 lines  2 instances  dup:5689088d
+    Frontend/src/hooks/useChatMessages.js:19-41
+    Frontend/src/hooks/useChatMessages.js:46-71
+
+     25 lines  2 instances  dup:d4a92fc3
+    Frontend/src/components/HostDetails/HostDetailsModal.jsx:94-118
+    Frontend/src/pages/HostDetails/HostDetails.jsx:124-146
+
+  ... and 123 more clone groups
+  Identical code blocks detected via suffix-array analysis — https://docs.fallow.tools/explanations/duplication#clone-groups
+
+● Clone families (29 with multiple groups)
+
+  3 groups, 37 lines across Frontend/src/api/api.js
+    → Extract shared function (11 lines) from api.js, api.js
+    → Extract shared function (5 lines) from api.js, api.js
+    → Extract shared function (21 lines) from api.js, api.js
+
+  4 groups, 45 lines across Frontend/src/components/Admin/AdminBookings.jsx, Frontend/src/components/Admin/AdminUsers.jsx
+    → Extract shared function (9 lines) from AdminBookings.jsx, AdminUsers.jsx
+    → Extract shared function (13 lines) from AdminBookings.jsx, AdminUsers.jsx
+    → Extract shared function (11 lines) from AdminBookings.jsx, AdminUsers.jsx, AdminUsers.jsx
+    → Extract shared function (12 lines) from AdminBookings.jsx, AdminUsers.jsx
+
+  2 groups, 35 lines across Frontend/src/components/Admin/AdminUsers.jsx
+    → Extract shared function (17 lines) from AdminUsers.jsx, AdminUsers.jsx
+    → Extract shared function (18 lines) from AdminUsers.jsx, AdminUsers.jsx
+
+  2 groups, 23 lines across Frontend/src/components/Admin/AdminUsers.jsx, Frontend/src/components/RequestsList/CreatePostModal.jsx
+    → Extract shared function (13 lines) from AdminUsers.jsx, CreatePostModal.jsx
+    → Extract shared function (10 lines) from AdminUsers.jsx, AdminUsers.jsx, CreatePostModal.jsx
+
+  2 groups, 24 lines across Frontend/src/components/Admin/AdminVerificationRequests.jsx
+    → Extract shared function (13 lines) from AdminVerificationRequests.jsx, AdminVerificationRequests.jsx
+    → Extract shared function (11 lines) from AdminVerificationRequests.jsx, AdminVerificationRequests.jsx, AdminVerificationRequests.jsx
+
+  3 groups, 49 lines across Frontend/src/components/Common/HostingDetailsModal.jsx
+    → Extract shared function (19 lines) from HostingDetailsModal.jsx, HostingDetailsModal.jsx
+    → Extract shared function (18 lines) from HostingDetailsModal.jsx, HostingDetailsModal.jsx, HostingDetailsModal.jsx
+    → Extract shared function (12 lines) from HostingDetailsModal.jsx, HostingDetailsModal.jsx
+
+  2 groups, 28 lines across Frontend/src/components/Common/Icons.jsx
+    → Extract shared function (16 lines) from Icons.jsx, Icons.jsx
+    → Extract shared function (12 lines) from Icons.jsx, Icons.jsx
+
+  2 groups, 18 lines across Frontend/src/components/FindHost/SearchFilterPanel.jsx, Frontend/src/components/RequestsList/RequestsList.jsx
+    → Extract shared function (7 lines) from SearchFilterPanel.jsx, RequestsList.jsx
+    → Extract shared function (11 lines) from SearchFilterPanel.jsx, RequestsList.jsx
+
+  5 groups, 87 lines across Frontend/src/components/HostDashboard/AvailabilityCalendar.jsx
+    → Extract 5 shared clone groups (87 lines) from AvailabilityCalendar.jsx into Frontend/src/components/HostDashboard
+
+  2 groups, 34 lines across Frontend/src/components/HostDashboard/DayDetailPanel.jsx, Frontend/src/components/RequestsList/RequestCard.jsx
+    → Extract shared function (26 lines) from DayDetailPanel.jsx, RequestCard.jsx
+    → Extract shared function (8 lines) from DayDetailPanel.jsx, RequestCard.jsx
+
+  ... and 19 more families
+
+  Groups of related clones across the same files — https://docs.fallow.tools/explanations/duplication#clone-families
+

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
+import Modal from '../Common/Modal';
 import { reviewsApi } from '../../api/api';
 import { useTranslation } from 'react-i18next';
 import './Reviews.css';
@@ -44,23 +45,28 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="chat-modal-overlay" onClick={onClose}>
-      <div className="chat-modal-card review-modal-card" onClick={(e) => e.stopPropagation()} dir="rtl">
-        <div className="chat-modal-header">
-          <div className="chat-modal-title">
-            <Star size={20} className="chat-modal-icon text-amber" />
-            <h3>{t('common/reviews:pending.title')}</h3>
-          </div>
-          <button 
-            type="button" 
-            className="chat-modal-close" 
-            onClick={onClose}
-          >
-            <X size={18} />
+    <Modal
+      isOpen={!!pendingReview}
+      onClose={onClose}
+      title={t('common/reviews:pending.title')}
+      icon={Star}
+      iconColorClass="text-amber"
+      className="review-modal-card"
+      footer={
+        <>
+          <button onClick={onClose} className="chat-modal-btn-close" disabled={loading}>
+            {t('common/reviews:pending.btn_later')}
           </button>
-        </div>
-
-        <div className="chat-modal-body">
+          <button 
+            onClick={handleSubmit} 
+            className="review-submit-btn"
+            disabled={loading}
+          >
+            {loading ? t('common/reviews:pending.btn_submitting') : t('common/reviews:pending.btn_submit')}
+          </button>
+        </>
+      }
+    >
           <p className="review-intro">
             {t('common/reviews:pending.intro')}
           </p>
@@ -109,22 +115,7 @@ const PendingReviewModal = ({ pendingReview, onClose, onSuccess }) => {
               <span className="text-red">{t('common/reviews:pending.severe_label')}</span>
             </label>
           </div>
-        </div>
-
-        <div className="chat-modal-footer">
-          <button onClick={onClose} className="chat-modal-btn-close" disabled={loading}>
-            {t('common/reviews:pending.btn_later')}
-          </button>
-          <button 
-            onClick={handleSubmit} 
-            className="review-submit-btn"
-            disabled={loading}
-          >
-            {loading ? t('common/reviews:pending.btn_submitting') : t('common/reviews:pending.btn_submit')}
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

@@ -110,12 +110,8 @@ export default function ProfilePage() {
       ? profileData.unit_name || profileData.guest_address || t('profile/profile:location_unspecified_guest')
       : profileData.residential_address || t('profile/profile:location_unspecified_host');
 
-  // Convert label string to translation key format
-  const getFieldLabel = (labelStr) => {
-    // Basic mapping for profileFieldsConfig labels -> translation keys
-    // E.g., 'Num Beds' -> 'num_beds', 'Food Allergies' -> 'food_allergies'
-    const key = labelStr.toLowerCase().replace(/ /g, '_').replace(/\//g, '');
-    return t(`profile/profile:fields.${key}`, labelStr);
+  const getFieldLabel = (key, fallbackLabel) => {
+    return t(`profile/profile:fields.${key}`, fallbackLabel);
   };
 
   return (
@@ -176,7 +172,7 @@ export default function ProfilePage() {
                   <div className="detail-row" key={key}>
                     <span className="detail-label">
                       {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
-                      {getFieldLabel(fieldDef.label)}
+                      {getFieldLabel(key, fieldDef.label)}
                     </span>
                     <span className="detail-value">{formattedVal}</span>
                   </div>
@@ -224,7 +220,7 @@ export default function ProfilePage() {
                     >
                       <label htmlFor={key}>
   {fieldDef.icon && <span className="field-icon-space">{fieldDef.icon}</span>}
-  {getFieldLabel(fieldDef.label)}
+  {getFieldLabel(key, fieldDef.label)}
                       </label >
 
   {

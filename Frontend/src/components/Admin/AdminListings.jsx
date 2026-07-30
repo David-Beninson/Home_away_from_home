@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { listingsApi } from '../../api/api';
 import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
+import { SelectFilter } from '../Common/SelectFilter';
 import '../../pages/Admin/Admin.css';
 
 import { HostDetailsModal } from '../HostDetails/HostDetailsModal';
@@ -73,18 +74,14 @@ export default function AdminListings() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <select 
-          className="admin-select"
+        <SelectFilter
           value={kashrutFilter}
-          onChange={(e) => setKashrutFilter(e.target.value)}
-        >
-          <option value="all">כל רמות הכשרות</option>
-          {kashrutOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          onChange={setKashrutFilter}
+          options={[
+            { value: 'all', label: 'כל רמות הכשרות' },
+            ...kashrutOptions
+          ]}
+        />
       </div>
 
       {/* Hosts Table */}

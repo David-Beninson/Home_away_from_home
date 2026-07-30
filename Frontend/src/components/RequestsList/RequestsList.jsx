@@ -4,9 +4,12 @@ import RequestCard from './RequestCard';
 import CreatePostModal from './CreatePostModal';
 import { postsApi, bookingsApi } from '../../api/api';
 import { checkPostUrgency } from '../../utils/date';
+import { HistoryToggleSection } from '../Common/HistoryToggleSection';
+import { FilterPillsGroup } from '../Common/FilterPillsGroup';
 import { fetchPosts } from '../../store/requestsSlice';
 import { isUpcomingOrActiveChat } from '../../utils/chatUtils';
 import { useTranslation } from 'react-i18next';
+import { parseApiError } from '../../utils/errorUtils';
 import './RequestsList.css';
 
 
@@ -117,12 +120,7 @@ export default function RequestsList({ userRole: userRoleProp }) {
         dispatch(fetchPosts());
       } catch (err) {
         console.error('Failed to claim/approve post:', err);
-        const detail = err.response?.data?.detail;
-        const errorMsg = typeof detail === 'string'
-          ? detail
-          : Array.isArray(detail)
-          ? detail.map(e => e.msg || e.detail).join(', ')
-          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
+        const errorMsg = parseApiError(err);
         alert(t('guest/requests:list.error_approve', { error: errorMsg }));
       } finally {
         setClaimingPostId(null);
@@ -152,17 +150,15 @@ export default function RequestsList({ userRole: userRoleProp }) {
 
   return (
     <div className="requests-list-container">
-      <div className="requests-filter-nav">
-        {filterTabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`requests-filter-btn ${activeFilter === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveFilter(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <FilterPillsGroup
+        options={filterTabs}
+        activeId={activeFilter}
+        onChange={setActiveFilter}
+        groupClassName=""
+        containerClassName="requests-filter-nav"
+        buttonClassName="requests-filter-btn"
+        activeClassName="active"
+      />
 
       {loading && displayedPosts.length === 0 ? (
         <div className="loading-container">
@@ -190,34 +186,23 @@ export default function RequestsList({ userRole: userRoleProp }) {
       )}
 
       {currentRole === 'guest' && pastRequests.length > 0 && (
-        <div className="requests-history-section">
-          <button
-            type="button"
-            className="requests-history-toggle"
-            onClick={() => setIsHistoryOpen(prev => !prev)}
-          >
-            <span className="requests-history-title">
-              {t('guest/requests:list.history_title', { count: pastRequests.length })}
-            </span>
-            <span className={`requests-history-chevron ${isHistoryOpen ? 'open' : ''}`}>
-              ▼
-            </span>
-          </button>
-          {isHistoryOpen && (
-            <div className="requests-history-list">
-              {pastRequests.map((post) => (
-                <RequestCard
-                  key={post.id}
-                  post={post}
-                  userRole={currentRole}
-                  onAction={handleAction}
-                  isClaiming={claimingPostId === post.id}
-                  onUpdateSuccess={() => dispatch(fetchPosts())}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <HistoryToggleSection
+          title={t('guest/requests:list.history_title', { count: pastRequests.length })}
+          isOpen={isHistoryOpen}
+          onToggle={() => setIsHistoryOpen(prev => !prev)}
+          classNamePrefix="requests-history"
+        >
+          {pastRequests.map((post) => (
+            <RequestCard
+              key={post.id}
+              post={post}
+              userRole={currentRole}
+              onAction={handleAction}
+              isClaiming={claimingPostId === post.id}
+              onUpdateSuccess={() => dispatch(fetchPosts())}
+            />
+          ))}
+        </HistoryToggleSection>
       )}
     </div>
   );

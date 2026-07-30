@@ -40,6 +40,8 @@ const STATUS_META = {
 import { useNavigate } from 'react-router-dom';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 import { formatPhoneNumber } from '../../utils/phone';
+import { useChatNavigation } from '../../hooks/useChatNavigation';
+import { parseApiError } from '../../utils/errorUtils';
 
 export default function DayDetailPanel() {
   const { t } = useTranslation(['host/dashboard']);
@@ -49,6 +51,7 @@ export default function DayDetailPanel() {
   const [submittingId, setSubmittingId] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const navigate = useNavigate();
+  const { navigateToChat } = useChatNavigation();
 
   const handleClose = useCallback(() => dispatch(deselectDate()), [dispatch]);
 
@@ -135,12 +138,7 @@ export default function DayDetailPanel() {
       dispatch(fetchPosts());
     } catch (err) {
       console.error('Failed to approve request:', err);
-      const detail = err.response?.data?.detail;
-      const errorMsg = typeof detail === 'string'
-        ? detail
-        : Array.isArray(detail)
-          ? detail.map(e => e.msg || e.detail).join(', ')
-          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
+      const errorMsg = parseApiError(err);
       alert(t('host/dashboard:day_panel.error_approve', { msg: errorMsg }));
     } finally {
       setSubmittingId(null);
@@ -158,12 +156,7 @@ export default function DayDetailPanel() {
       dispatch(fetchPosts());
     } catch (err) {
       console.error('Failed to reject request:', err);
-      const detail = err.response?.data?.detail;
-      const errorMsg = typeof detail === 'string'
-        ? detail
-        : Array.isArray(detail)
-          ? detail.map(e => e.msg || e.detail).join(', ')
-          : (detail && typeof detail === 'object' ? JSON.stringify(detail) : err.message);
+      const errorMsg = parseApiError(err);
       alert(t('host/dashboard:day_panel.error_reject', { msg: errorMsg }));
     } finally {
       setSubmittingId(null);
@@ -347,19 +340,7 @@ export default function DayDetailPanel() {
                     const matchId = activeBooking.match_id || activeBooking.id;
                     const otherPartyName = activeBooking.guestName || activeBooking.guest_name || 'אורח / חייל';
                     const hostingDate = activeBooking.date || activeBooking.hosting_date || selectedDate;
-                    navigate('/chats', {
-                      state: {
-                        matchId,
-                        chatData: {
-                          match_id: matchId,
-                          other_party_name: otherPartyName,
-                          hosting_date: hostingDate,
-                          last_message: null,
-                          last_message_time: null,
-                          unread_count: 0
-                        }
-                      }
-                    });
+                    navigateToChat(matchId, otherPartyName, hostingDate);
                   }}
                   className="ddp-chat-link"
                 >

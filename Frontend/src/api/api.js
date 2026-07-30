@@ -37,16 +37,27 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+// Generic API endpoint factory to reduce duplication
+export const createEndpoint = {
+  get: (url) => (params) => api.get(url, { params }),
+  post: (url) => (data, config) => api.post(url, data, config),
+  put: (url) => (data, config) => api.put(url, data, config),
+  patch: (url) => (data, config) => api.patch(url, data, config),
+  delete: (url) => (config) => api.delete(url, config),
+  getById: (base) => (id, params) => api.get(`${base}/${id}`, { params }),
+  deleteById: (base) => (id) => api.delete(`${base}/${id}`),
+  patchById: (base) => (id, data) => api.patch(`${base}/${id}`, data),
+  putById: (base) => (id, data) => api.put(`${base}/${id}`, data),
+};
 
 // Authentication Endpoints API
 export const authApi = {
-  register: (userData) => api.post('/auth/register', userData),
+  register: createEndpoint.post('/auth/register'),
   login: async (credentials) => {
-    // credentials format: { username: "email/phone", password: "password" }
     const response = await api.post('/auth/login', credentials);
     if (response.data?.access_token) {
       localStorage.setItem('token', response.data.access_token);
-      localStorage.removeItem('user'); // Clean legacy insecure user cache
+      localStorage.removeItem('user');
     }
     return response.data;
   },
@@ -55,50 +66,50 @@ export const authApi = {
     localStorage.removeItem('user');
     window.dispatchEvent(new Event('auth-logout'));
   },
-  getMe: () => api.get('/auth/me'),
-  verifyEmail: (data) => api.post('/auth/verify/email', data),
-  verifyPhone: (data) => api.post('/auth/verify/phone', data),
-  updateHostProfile: (data) => api.put('/auth/profile/host', data),
-  updateGuestProfile: (data) => api.put('/auth/profile/guest', data),
+  getMe: createEndpoint.get('/auth/me'),
+  verifyEmail: createEndpoint.post('/auth/verify/email'),
+  verifyPhone: createEndpoint.post('/auth/verify/phone'),
+  updateHostProfile: createEndpoint.put('/auth/profile/host'),
+  updateGuestProfile: createEndpoint.put('/auth/profile/guest'),
 };
 
 // Listings (Host profiles search and listing management) API
 export const listingsApi = {
-  create: (listingData) => api.post('/listings', listingData),
-  getMyListings: () => api.get('/listings/my'),
-  deleteListing: (id) => api.delete(`/listings/${id}`),
-  searchHosts: (params) => api.get('/listings/search', { params }), // city, kashrut_level
-  getKashrutOptions: () => api.get('/listings/kashrut-options'),
+  create: createEndpoint.post('/listings'),
+  getMyListings: createEndpoint.get('/listings/my'),
+  deleteListing: createEndpoint.deleteById('/listings'),
+  searchHosts: createEndpoint.get('/listings/search'), // handles params automatically
+  getKashrutOptions: createEndpoint.get('/listings/kashrut-options'),
 };
 
 export const postsApi = {
-  create: (postData) => api.post('/posts', postData),
-  update: (id, postData) => api.put(`/posts/${id}`, postData),
-  getOpenPosts: () => api.get('/posts'),
+  create: createEndpoint.post('/posts'),
+  update: createEndpoint.putById('/posts'),
+  getOpenPosts: createEndpoint.get('/posts'),
   claimPost: (id) => api.post(`/posts/${id}/claim`),
   cancelPost: (id) => api.post(`/posts/${id}/cancel`),
 };
 
 // Bookings / Matches API
 export const bookingsApi = {
-  requestBooking: (data) => api.post('/bookings/request', data),
-  getIncomingBookings: () => api.get('/bookings/incoming'),
-  respondToBooking: (matchId, status) => api.patch(`/bookings/${matchId}/respond`, { status }), // status: "accepted" or "rejected"
+  requestBooking: createEndpoint.post('/bookings/request'),
+  getIncomingBookings: createEndpoint.get('/bookings/incoming'),
+  respondToBooking: (matchId, status) => api.patch(`/bookings/${matchId}/respond`, { status }),
   getMatchDetails: (matchId) => api.get(`/matches/${matchId}/details`),
-  getGuestRequestsCount: () => api.get('/bookings/count'),
+  getGuestRequestsCount: createEndpoint.get('/bookings/count'),
   checkGuestStatus: (hostId) => api.get(`/bookings/guest-status/${hostId}`),
 };
 
 // Admin Management & Moderation API
 export const adminApi = {
-  getStats: () => api.get('/admin/stats'),
-  getUsers: () => api.get('/admin/users'),
+  getStats: createEndpoint.get('/admin/stats'),
+  getUsers: createEndpoint.get('/admin/users'),
   updateUserStatus: (userId, accountStatus, reason = null) => api.patch(`/admin/users/${userId}/status`, { account_status: accountStatus, reason }),
   verifyGuest: (userId, isVerified) => api.patch(`/admin/users/${userId}/verify-guest`, { is_soldier_or_national_service: isVerified }),
-  getBookings: () => api.get('/admin/bookings'),
-  deletePost: (postId) => api.delete(`/admin/posts/${postId}`),
-  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
-  getPendingVerifications: () => api.get('/admin/verifications/pending'),
+  getBookings: createEndpoint.get('/admin/bookings'),
+  deletePost: createEndpoint.deleteById('/admin/posts'),
+  deleteUser: createEndpoint.deleteById('/admin/users'),
+  getPendingVerifications: createEndpoint.get('/admin/verifications/pending'),
   approveVerification: (requestId) => api.post(`/admin/verifications/${requestId}/approve`),
   rejectVerification: (requestId, reason) => api.post(`/admin/verifications/${requestId}/reject`, { rejection_reason: reason }),
   getSupportChatHistory: (targetUserId) => api.get(`/admin/support-chats/${targetUserId}`),
@@ -107,21 +118,11 @@ export const adminApi = {
 
 // Host Availability API
 export const availabilityApi = {
-  // Fetch full state (rule + overrides) on dashboard load
-  getDashboard: () => api.get('/availability'),
-
-  // Upsert recurring rules
-  saveRules: (rulesPayload) => api.put('/availability/rules', rulesPayload),
-
-  // Upsert a single date override (open/closed)
+  getDashboard: createEndpoint.get('/availability'),
+  saveRules: createEndpoint.put('/availability/rules'),
   setOverride: (overrideDate, status, note = null) =>
     api.post('/availability/overrides', { override_date: overrideDate, status, note }),
-
-  // Remove a single date override (revert to rule)
-  deleteOverride: (overrideDate) => api.delete(`/availability/overrides/${overrideDate}`),
-
-  // Bulk-sync the full overrides map to the backend
-  // overridesMap: { 'YYYY-MM-DD': 'open' | 'closed' }
+  deleteOverride: createEndpoint.deleteById('/availability/overrides'),
   syncOverrides: (overridesMap) => {
     const overrides = Object.entries(overridesMap).map(([override_date, status]) => ({
       override_date,
@@ -137,7 +138,7 @@ export const verificationApi = {
     api.post('/verification/submit', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  getStatus: () => api.get('/verification/status'),
+  getStatus: createEndpoint.get('/verification/status'),
   getSupportMessages: (targetUserId = null) =>
     api.get('/verification/support-messages', { params: { target_user_id: targetUserId } }),
   sendSupportMessage: (content, targetUserId = null) =>
@@ -151,21 +152,21 @@ export const agentApi = {
 
 // Reviews & Monitoring API
 export const reviewsApi = {
-  getPending: () => api.get('/reviews/pending'),
-  createReview: (data) => api.post('/reviews', data),
+  getPending: createEndpoint.get('/reviews/pending'),
+  createReview: createEndpoint.post('/reviews'),
   getHostReviews: (hostId) => api.get(`/reviews/host/${hostId}`),
   getGuestReviews: (guestId) => api.get(`/reviews/guest/${guestId}`),
   getMatchReviews: (matchId) => api.get(`/reviews/match/${matchId}`),
-  getAlerts: () => api.get('/reviews/alerts'),
+  getAlerts: createEndpoint.get('/reviews/alerts'),
   updateStatus: (reviewId, status) => api.patch(`/reviews/${reviewId}/status`, { status }),
 };
 
 // Persistent Notifications API
 export const notificationsApi = {
-  getNotifications: () => api.get('/notifications'),
+  getNotifications: createEndpoint.get('/notifications'),
   markAsRead: (id) => api.patch(`/notifications/${id}/read`),
-  markAllAsRead: () => api.patch('/notifications/read-all'),
-  deleteNotification: (id) => api.delete(`/notifications/${id}`),
+  markAllAsRead: createEndpoint.patch('/notifications/read-all'),
+  deleteNotification: createEndpoint.deleteById('/notifications'),
 };
 
 export default api;

@@ -4,34 +4,28 @@ import PageContainer from '../Common/PageContainer/PageContainer';
 import { AdminSupportChatModal } from './AdminSupportChatModal';
 import { AdminRejectModal } from './AdminRejectModal';
 import { useTranslation } from 'react-i18next';
+import { useAdminAction } from '../../hooks/useAdminAction';
 
 export default function AdminVerificationRequests() {
   const { t } = useTranslation(['admin/verifications']);
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const { loading, error, successMsg, executeAction, setError } = useAdminAction();
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [activeChatUser, setActiveChatUser] = useState(null); // { userId, userName }
 
-  const loadRequests = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const res = await adminApi.getPendingVerifications();
-      setRequests(res.data || []);
-    } catch (err) {
-      console.error('Failed to load pending verifications:', err);
-      setError(t('admin/verifications:messages.error_loading'));
-    } finally {
-      setLoading(false);
-    }
+  const loadRequests = () => {
+    executeAction(
+      () => adminApi.getPendingVerifications(),
+      (res) => setRequests(res.data || []),
+      null,
+      t('admin/verifications:messages.error_loading')
+    );
   };
 
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [executeAction, t]);
 
   const [processingId, setProcessingId] = useState(null);
 
@@ -39,44 +33,44 @@ export default function AdminVerificationRequests() {
     setActiveChatUser({ userId, userName });
   };
 
-  const handleApprove = async (id) => {
+  const handleApprove = (id) => {
     if (processingId) return;
-    try {
-      setError('');
-      setSuccessMsg('');
-      setProcessingId(id);
-      await adminApi.approveVerification(id);
-      setSuccessMsg(t('admin/verifications:messages.success_approve'));
-      setRequests((prev) => prev.filter((r) => r.id !== id));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-      console.error('Failed to approve verification:', err);
-      setError(t('admin/verifications:messages.error_approve'));
-    } finally {
-      setProcessingId(null);
-    }
+    setProcessingId(id);
+    
+    executeAction(
+      () => adminApi.approveVerification(id),
+      () => {
+        setRequests((prev) => prev.filter((r) => r.id !== id));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setProcessingId(null);
+      },
+      t('admin/verifications:messages.success_approve'),
+      t('admin/verifications:messages.error_approve')
+    ).then((success) => {
+      if (!success) setProcessingId(null);
+    });
   };
 
-  const handleRejectSubmit = async (e) => {
+  const handleRejectSubmit = (e) => {
     e.preventDefault();
     if (!rejectingId || !rejectionReason.trim() || processingId) return;
 
-    try {
-      setError('');
-      setSuccessMsg('');
-      setProcessingId(rejectingId);
-      await adminApi.rejectVerification(rejectingId, rejectionReason.trim());
-      setSuccessMsg(t('admin/verifications:messages.success_reject'));
-      setRequests((prev) => prev.filter((r) => r.id !== rejectingId));
-      setRejectingId(null);
-      setRejectionReason('');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-      console.error('Failed to reject verification:', err);
-      setError(t('admin/verifications:messages.error_reject'));
-    } finally {
-      setProcessingId(null);
-    }
+    setProcessingId(rejectingId);
+    
+    executeAction(
+      () => adminApi.rejectVerification(rejectingId, rejectionReason.trim()),
+      () => {
+        setRequests((prev) => prev.filter((r) => r.id !== rejectingId));
+        setRejectingId(null);
+        setRejectionReason('');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setProcessingId(null);
+      },
+      t('admin/verifications:messages.success_reject'),
+      t('admin/verifications:messages.error_reject')
+    ).then((success) => {
+      if (!success) setProcessingId(null);
+    });
   };
 
   const getTypeName = (type) => {

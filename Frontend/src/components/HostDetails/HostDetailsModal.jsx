@@ -4,6 +4,7 @@ import BookingRequestModal from './BookingRequestModal';
 import { listingsApi, bookingsApi } from '../../api/api';
 import { getUpcomingFridayDateStr, formatHostOpenDates } from '../../utils/shabbat';
 import { formatPhoneNumber } from '../../utils/phone';
+import { mapHostData } from '../../utils/hostUtils';
 import './BookingRequestModal.css';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&h=400&fit=crop&auto=format';
@@ -38,31 +39,11 @@ export function HostDetailsModal({ isOpen, onClose, host: hostInput, hostId, onB
             (item) => String(item.id) === String(targetId) || String(item.user_id) === String(targetId)
           );
           if (found && isMounted) {
-            setHost({
-              id: found.id,
-              user_id: found.user_id,
-              full_name: found.host_name || found.user?.full_name || '',
-              city: found.city || '',
-              neighborhood: found.neighborhood || '',
-              kashrut_level: found.kashrut_level || '',
-              religious_orientation: found.religious_orientation || '',
-              has_lodging: found.has_lodging !== undefined ? found.has_lodging : Boolean(found.availability_windows?.includes('לינה')),
-              available_spots: found.available_spots !== undefined ? found.available_spots : 0,
-              total_spots: found.total_spots || found.max_guests || 0,
-              match_percentage: found.match_score ?? found.match_percentage ?? 85,
-              biography: found.free_text_notes || found.biography || '',
-              tags: found.vibe_tags?.length ? found.vibe_tags : [
-                found.neighborhood,
-                found.religious_orientation,
-                found.kashrut_level ? (found.kashrut_level === 'MEHADRIN' ? 'מהדרין' : 'כשר') : ''
-              ].filter(Boolean),
-              image_url: found.image_url || null,
-              rating: found.rating || null,
-              reviews_count: found.reviews_count || found.review_count || 0,
-              phone_number: found.phone_number || found.user?.phone_number || '',
-              upcoming_open_dates: found.upcoming_open_dates || [],
-              upcoming_open_days: found.upcoming_open_days || []
-            });
+            setHost(mapHostData(found, (k) => {
+              if (k === 'guest/host_details:page.kashrut.mehadrin') return 'מהדרין';
+              if (k === 'guest/host_details:page.kashrut.kosher') return 'כשר';
+              return k;
+            }));
           }
         } catch (e) {
           console.error('Error fetching host modal details:', e);

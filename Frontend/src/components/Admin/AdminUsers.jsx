@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'react';
-import { adminApi } from '../../api/api';
-import { LockIcon, UnlockIcon, CheckCircleIcon, TrashIcon, ChevronLeftIcon } from '../Common/Icons';
+import { adminApi, agentApi } from '../../api/api';
+import { ShieldIcon, SearchIcon, AlertTriangleIcon, CheckCircleIcon, UnlockIcon, LockIcon, TrashIcon, ChevronLeftIcon } from '../Common/Icons';
 import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
+import { SelectFilter } from '../Common/SelectFilter';
+import { StatusBadge } from './StatusBadge';
 import { formatPhoneNumber } from '../../utils/phone';
 import { AdminSupportChatModal } from './AdminSupportChatModal';
 import { useTranslation } from 'react-i18next';
 import '../../pages/Admin/Admin.css';
+import { useAdminAction } from '../../hooks/useAdminAction';
 
 export default function AdminUsers() {
   const { t } = useTranslation(['admin/users']);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userBookingsData, setUserBookingsData] = useState({ matches: [], posts: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const { loading, error, successMsg, executeAction, setError } = useAdminAction();
   
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,47 +30,39 @@ export default function AdminUsers() {
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', user: null, reason: '' });
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
+    executeAction(
+      async () => {
         const [usersRes, bookingsRes] = await Promise.all([
           adminApi.getUsers(),
           adminApi.getBookings()
         ]);
-        setUsers(usersRes.data);
-        setUserBookingsData(bookingsRes.data || { matches: [], posts: [] });
-      } catch (err) {
-        console.error('Failed to fetch admin users data:', err);
-        setError(t('admin/users:messages.error_loading'));
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+        return { usersRes, bookingsRes };
+      },
+      (data) => {
+        setUsers(data.usersRes.data);
+        setUserBookingsData(data.bookingsRes.data || { matches: [], posts: [] });
+      },
+      null,
+      t('admin/users:messages.error_loading')
+    );
+  }, [executeAction, t]);
 
-  const executeUpdateStatus = async (userId, newStatus, reason = null) => {
-    try {
-      setError('');
-      setSuccessMsg('');
-      const response = await adminApi.updateUserStatus(userId, newStatus, reason);
-      const updatedUser = response.data;
-      
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, account_status: updatedUser.account_status } : u));
-      if (selectedUser && selectedUser.id === userId) {
-        setSelectedUser(prev => ({ ...prev, account_status: updatedUser.account_status }));
-      }
-
-      const successStatus = newStatus === 'active' ? t('admin/users:messages.success_active') 
-                          : newStatus === 'suspended' ? t('admin/users:messages.success_suspended') 
-                          : t('admin/users:messages.success_banned');
-      setSuccessMsg(successStatus);
-    } catch (err) {
-      console.error('Failed to update status:', err);
-      setError(t('admin/users:messages.error_status_update'));
-    } finally {
-      setConfirmModal({ isOpen: false, type: '', user: null, reason: '' });
-    }
+  const executeUpdateStatus = (userId, newStatus, reason = null) => {
+    executeAction(
+      () => adminApi.updateUserStatus(userId, newStatus, reason),
+      (response) => {
+        const updatedUser = response.data;
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, account_status: updatedUser.account_status } : u));
+        if (selectedUser && selectedUser.id === userId) {
+          setSelectedUser(prev => ({ ...prev, account_status: updatedUser.account_status }));
+        }
+        setConfirmModal({ isOpen: false, type: '', user: null, reason: '' });
+      },
+      newStatus === 'active' ? t('admin/users:messages.success_active') 
+        : newStatus === 'suspended' ? t('admin/users:messages.success_suspended') 
+        : t('admin/users:messages.success_banned'),
+      t('admin/users:messages.error_status_update')
+    );
   };
 
   const handleStatusChangeClick = (user, newStatus) => {
@@ -80,40 +73,34 @@ export default function AdminUsers() {
     }
   };
 
-  const executeDeleteUser = async (userId) => {
-    try {
-      setError('');
-      setSuccessMsg('');
-      await adminApi.deleteUser(userId);
-      setUsers(prev => prev.filter(u => u.id !== userId));
-      if (selectedUser && selectedUser.id === userId) {
-        setSelectedUser(null);
-      }
-      setSuccessMsg(t('admin/users:messages.success_delete'));
-    } catch (err) {
-      console.error('Failed to delete user:', err);
-      setError(t('admin/users:messages.error_delete'));
-    } finally {
-      setConfirmModal({ isOpen: false, type: '', user: null });
-    }
+  const executeDeleteUser = (userId) => {
+    executeAction(
+      () => adminApi.deleteUser(userId),
+      () => {
+        setUsers(prev => prev.filter(u => u.id !== userId));
+        if (selectedUser && selectedUser.id === userId) {
+          setSelectedUser(null);
+        }
+        setConfirmModal({ isOpen: false, type: '', user: null });
+      },
+      t('admin/users:messages.success_delete'),
+      t('admin/users:messages.error_delete')
+    );
   };
 
-  const handleVerifySoldier = async (userId, currentStatus) => {
-    try {
-      setError('');
-      setSuccessMsg('');
-      const targetState = !currentStatus;
-      const response = await adminApi.verifyGuest(userId, targetState);
-      
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_soldier_or_national_service: response.data.is_soldier_or_national_service } : u));
-      if (selectedUser && selectedUser.id === userId) {
-        setSelectedUser(prev => ({ ...prev, is_soldier_or_national_service: response.data.is_soldier_or_national_service }));
-      }
-      setSuccessMsg(targetState ? t('admin/users:messages.success_verify') : t('admin/users:messages.success_unverify'));
-    } catch (err) {
-      console.error('Failed to verify guest:', err);
-      setError(t('admin/users:messages.error_verify'));
-    }
+  const handleVerifySoldier = (userId, currentStatus) => {
+    const targetState = !currentStatus;
+    executeAction(
+      () => adminApi.verifyGuest(userId, targetState),
+      (response) => {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_soldier_or_national_service: response.data.is_soldier_or_national_service } : u));
+        if (selectedUser && selectedUser.id === userId) {
+          setSelectedUser(prev => ({ ...prev, is_soldier_or_national_service: response.data.is_soldier_or_national_service }));
+        }
+      },
+      targetState ? t('admin/users:messages.success_verify') : t('admin/users:messages.success_unverify'),
+      t('admin/users:messages.error_verify')
+    );
   };
 
   // Helper for initial circle avatar
@@ -183,26 +170,26 @@ export default function AdminUsers() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <select 
-              className="admin-select"
+            <SelectFilter
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-            >
-              <option value="all">{t('admin/users:filters.all_roles')}</option>
-              <option value="host">{t('admin/users:filters.role_host')}</option>
-              <option value="guest">{t('admin/users:filters.role_guest')}</option>
-              <option value="admin">{t('admin/users:filters.role_admin')}</option>
-            </select>
-            <select 
-              className="admin-select"
+              onChange={setRoleFilter}
+              options={[
+                { value: 'all', label: t('admin/users:filters.all_roles') },
+                { value: 'host', label: t('admin/users:filters.role_host') },
+                { value: 'guest', label: t('admin/users:filters.role_guest') },
+                { value: 'admin', label: t('admin/users:filters.role_admin') }
+              ]}
+            />
+            <SelectFilter
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">{t('admin/users:filters.all_statuses')}</option>
-              <option value="active">{t('admin/users:filters.status_active')}</option>
-              <option value="suspended">{t('admin/users:filters.status_suspended')}</option>
-              <option value="banned">{t('admin/users:filters.status_banned')}</option>
-            </select>
+              onChange={setStatusFilter}
+              options={[
+                { value: 'all', label: t('admin/users:filters.all_statuses') },
+                { value: 'active', label: t('admin/users:filters.status_active') },
+                { value: 'suspended', label: t('admin/users:filters.status_suspended') },
+                { value: 'banned', label: t('admin/users:filters.status_banned') }
+              ]}
+            />
           </div>
 
           {/* Interactive Modern Table */}
@@ -232,16 +219,18 @@ export default function AdminUsers() {
 
                 {/* Role Column */}
                 <td>
-                  <span className={`badge ${user.user_type}`}>
-                    {user.user_type === 'host' ? t('admin/users:roles.host') : user.user_type === 'guest' ? t('admin/users:roles.guest') : t('admin/users:roles.admin')}
-                  </span>
+                  <StatusBadge 
+                    colorClass={user.user_type}
+                    label={user.user_type === 'host' ? t('admin/users:filters.role_host') : user.user_type === 'guest' ? t('admin/users:filters.role_guest') : t('admin/users:filters.role_admin')}
+                  />
                 </td>
 
                 {/* Status Column */}
                 <td>
-                  <span className={`badge ${user.account_status === 'active' ? 'active' : user.account_status === 'suspended' ? 'suspended' : 'danger'}`}>
-                    {user.account_status === 'active' ? t('admin/users:statuses.active') : user.account_status === 'suspended' ? t('admin/users:statuses.suspended') : t('admin/users:statuses.banned')}
-                  </span>
+                  <StatusBadge 
+                    colorClass={user.account_status === 'active' ? 'active' : user.account_status === 'suspended' ? 'suspended' : 'danger'}
+                    label={user.account_status === 'active' ? t('admin/users:statuses.active') : user.account_status === 'suspended' ? t('admin/users:statuses.suspended') : t('admin/users:statuses.banned')}
+                  />
                 </td>
 
                 {/* Action Column with Hover Button & Arrow */}
@@ -276,12 +265,14 @@ export default function AdminUsers() {
               <div>
                 <h2 className="admin-user-name">{selectedUser.full_name}</h2>
                 <div className="flex-align-center gap-8 margin-top-4">
-                  <span className={`badge ${selectedUser.user_type}`}>
-                    {selectedUser.user_type === 'host' ? t('admin/users:roles.host') : selectedUser.user_type === 'guest' ? t('admin/users:roles.guest') : t('admin/users:roles.admin')}
-                  </span>
-                  <span className={`badge ${selectedUser.account_status === 'active' ? 'active' : selectedUser.account_status === 'suspended' ? 'suspended' : 'danger'}`}>
-                    {selectedUser.account_status === 'active' ? t('admin/users:statuses.active') : selectedUser.account_status === 'suspended' ? t('admin/users:statuses.suspended') : t('admin/users:statuses.banned')}
-                  </span>
+                  <StatusBadge 
+                    colorClass={selectedUser.user_type}
+                    label={selectedUser.user_type === 'host' ? t('admin/users:filters.role_host') : selectedUser.user_type === 'guest' ? t('admin/users:filters.role_guest') : t('admin/users:filters.role_admin')}
+                  />
+                  <StatusBadge 
+                    colorClass={selectedUser.account_status === 'active' ? 'active' : selectedUser.account_status === 'suspended' ? 'suspended' : 'danger'}
+                    label={selectedUser.account_status === 'active' ? t('admin/users:statuses.active') : selectedUser.account_status === 'suspended' ? t('admin/users:statuses.suspended') : t('admin/users:statuses.banned')}
+                  />
                 </div>
               </div>
             </div>
@@ -362,9 +353,10 @@ export default function AdminUsers() {
                 <div className="info-item">
                   <span className="info-label">{t('admin/users:details.info.soldier_verification')}</span>
                   <div className="flex-align-center">
-                    <span className={`badge ${selectedUser.is_soldier_or_national_service ? 'verified' : 'pending'}`}>
-                      {selectedUser.is_soldier_or_national_service ? t('admin/users:details.info.verified_soldier') : t('admin/users:details.info.not_verified')}
-                    </span>
+                    <StatusBadge 
+                      colorClass={selectedUser.is_soldier_or_national_service ? 'verified' : 'pending'}
+                      label={selectedUser.is_soldier_or_national_service ? t('admin/users:details.info.verified_service') : t('admin/users:details.info.unverified_service')}
+                    />
                     <button 
                       onClick={() => handleVerifySoldier(selectedUser.id, selectedUser.is_soldier_or_national_service)}
                       className="btn-action verify-soldier margin-right-8"
@@ -400,9 +392,10 @@ export default function AdminUsers() {
                     <td className="truncate-cell">{post.description}</td>
                     <td>{post.guests_count}</td>
                     <td>
-                      <span className={`badge ${post.status === 'open' ? 'active' : 'verified'}`}>
-                        {post.status === 'open' ? t('admin/users:details.posts.status_open') : t('admin/users:details.posts.status_matched')}
-                      </span>
+                      <StatusBadge 
+                        colorClass={post.status === 'open' ? 'active' : 'verified'}
+                        label={post.status === 'open' ? t('admin/users:details.posts.status_open') : t('admin/users:details.posts.status_matched')}
+                      />
                     </td>
                   </tr>
                 ))}

@@ -3,6 +3,7 @@ import { Edit3, Clock, X, Check, Loader2 } from 'lucide-react';
 import DateRangePicker from '../Common/DateRangePicker/DateRangePicker';
 import { postsApi } from '../../api/api';
 import { useTranslation } from 'react-i18next';
+import { SelectFilter } from '../Common/SelectFilter';
 
 export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
   const { t } = useTranslation(['guest/requests']);
@@ -122,31 +123,33 @@ export default function RequestInlineEdit({ post, onCancel, onSuccess }) {
           <div className="inline-edit-fields-grid">
             <div className="inline-field-group">
               <label>{t('guest/requests:inline_edit.label_region')}</label>
-              <select
+              <SelectFilter
                 dir="rtl"
                 value={region}
-                onChange={(e) => setRegion(e.target.value)}
+                onChange={setRegion}
                 className="inline-edit-select"
-              >
-                <option value="מרכז">{t('guest/requests:inline_edit.regions.center')}</option>
-                <option value="ירושלים">{t('guest/requests:inline_edit.regions.jerusalem')}</option>
-                <option value="צפון">{t('guest/requests:inline_edit.regions.north')}</option>
-                <option value="דרום">{t('guest/requests:inline_edit.regions.south')}</option>
-              </select>
+                options={[
+                  { value: 'מרכז', label: t('guest/requests:inline_edit.regions.center') },
+                  { value: 'ירושלים', label: t('guest/requests:inline_edit.regions.jerusalem') },
+                  { value: 'צפון', label: t('guest/requests:inline_edit.regions.north') },
+                  { value: 'דרום', label: t('guest/requests:inline_edit.regions.south') }
+                ]}
+              />
             </div>
 
             <div className="inline-field-group">
               <label>{t('guest/requests:inline_edit.label_kashrut')}</label>
-              <select
+              <SelectFilter
                 dir="rtl"
                 value={kashrut}
-                onChange={(e) => setKashrut(e.target.value)}
+                onChange={setKashrut}
                 className="inline-edit-select"
-              >
-                <option value="כשר">{t('guest/requests:inline_edit.kashrut_options.kosher')}</option>
-                <option value="מהדרין">{t('guest/requests:inline_edit.kashrut_options.mehadrin')}</option>
-                <option value="רגיל">{t('guest/requests:inline_edit.kashrut_options.regular')}</option>
-              </select>
+                options={[
+                  { value: 'כשר', label: t('guest/requests:inline_edit.kashrut_options.kosher') },
+                  { value: 'מהדרין', label: t('guest/requests:inline_edit.kashrut_options.mehadrin') },
+                  { value: 'רגיל', label: t('guest/requests:inline_edit.kashrut_options.regular') }
+                ]}
+              />
             </div>
 
             <div className="inline-field-group">

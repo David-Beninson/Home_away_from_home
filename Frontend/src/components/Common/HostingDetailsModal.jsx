@@ -1,8 +1,10 @@
 import { useSelector } from 'react-redux';
 import { WhatsAppIcon } from './Icons';
-import { X, Calendar, User, Phone, MapPin, Shield, Users, Home, Info, Gift, Utensils, Moon } from 'lucide-react';
+import { Calendar, User, Phone, MapPin, Shield, Users, Home, Info, Gift, Utensils, Moon } from 'lucide-react';
+import Modal from './Modal';
 import { formatPhoneNumber } from '../../utils/phone';
 import { useTranslation } from 'react-i18next';
+import { formatHebrewDate, formatShortDate } from '../../utils/date';
 
 export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, userRole }) {
   const { t } = useTranslation(['common/hosting_details_modal']);
@@ -16,23 +18,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
 
   const modalTitle = isHost ? t('common/hosting_details_modal:title_guest') : t('common/hosting_details_modal:title_hosting');
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-      return new Date(dateStr).toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    } catch {
-      return String(dateStr);
-    }
-  };
 
-  const formatShortDate = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-      return new Date(dateStr).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' });
-    } catch {
-      return String(dateStr);
-    }
-  };
 
   // Strict Phone Visibility Rule:
   // - Guest ALWAYS sees the host's phone number.
@@ -70,24 +56,34 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
     : (data.availability_windows ? data.availability_windows.includes('לינה') : true);
 
   return (
-    <div className="chat-modal-overlay" onClick={onClose}>
-      <div className="chat-modal-card" onClick={(e) => e.stopPropagation()} dir="rtl">
-        <div className="chat-modal-header">
-          <div className="chat-modal-title">
-            <User size={20} className="chat-modal-icon" />
-            <h3>{modalTitle}</h3>
-          </div>
-          <button 
-            type="button" 
-            className="chat-modal-close" 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={modalTitle}
+      icon={User}
+      footer={
+        <>
+          <button
+            type="button"
+            className="chat-modal-btn-close"
             onClick={onClose}
-            aria-label={t('common/hosting_details_modal:btn_close')}
           >
-            <X size={18} />
+            {t('common/hosting_details_modal:btn_close')}
           </button>
-        </div>
-
-        <div className="chat-modal-body">
+          {phone && (
+            <a
+              href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t('common/hosting_details_modal:whatsapp_message', { date: formatShortDate(hostingDate) || formatHebrewDate(hostingDate) || '' }))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="chat-modal-btn-wa"
+            >
+              <WhatsAppIcon size={16} />
+              {t('common/hosting_details_modal:btn_whatsapp')}
+            </a>
+          )}
+        </>
+      }
+    >
           {/* Full Name */}
           <div className="chat-modal-row">
             <User size={18} className="chat-modal-row-icon" />
@@ -114,7 +110,7 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
             <div>
               <span className="chat-modal-label">{t('common/hosting_details_modal:label_date')}</span>
               <p className="chat-modal-value">
-                {hostingDate ? formatDate(hostingDate) : t('common/hosting_details_modal:default_date')}
+                {hostingDate ? formatHebrewDate(hostingDate) : t('common/hosting_details_modal:default_date')}
               </p>
             </div>
           </div>
@@ -260,29 +256,6 @@ export function HostingDetailsModal({ isOpen, onClose, data, isHostOverride, use
               )}
             </>
           )}
-        </div>
-
-        <div className="chat-modal-footer">
-          <button
-            type="button"
-            className="chat-modal-btn-close"
-            onClick={onClose}
-          >
-            {t('common/hosting_details_modal:btn_close')}
-          </button>
-          {phone && (
-            <a
-              href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t('common/hosting_details_modal:whatsapp_message', { date: formatShortDate(hostingDate) || formatDate(hostingDate) || '' }))}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="chat-modal-btn-wa"
-            >
-              <WhatsAppIcon size={16} />
-              {t('common/hosting_details_modal:btn_whatsapp')}
-            </a>
-          )}
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

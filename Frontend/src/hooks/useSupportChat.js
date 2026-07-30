@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { verificationApi, adminApi } from '../api/api';
+import { useWebSocket } from './useWebSocket';
 
 export function useSupportChat(targetUserId = null) {
   const user = useSelector((state) => state.auth.user);
@@ -44,96 +45,18 @@ export function useSupportChat(targetUserId = null) {
   }, [messages, scrollToBottom]);
 
   // 2. Real-time WebSocket connection
-  useEffect(() => {
-    if (!effectiveUserId) return;
+  const handleMessage = useCallback((data) => {
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === data.id)) return prev;
+      return [...prev, data];
+    });
+  }, []);
 
-    let socket = null;
-    let pingInterval = null;
-    let reconnectTimeout = null;
-    let isMounted = true;
-    let reconnectAttempt = 0;
-    const MAX_RECONNECT_DELAY_MS = 30000;
-
-    const connectWebSocket = () => {
-      let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      baseUrl = baseUrl.replace(/\/+$/, '').replace(/\/api$/, '');
-
-      if (baseUrl.startsWith('https://')) {
-        baseUrl = baseUrl.replace(/^https:\/\//, 'wss://');
-      } else if (baseUrl.startsWith('http://')) {
-        baseUrl = baseUrl.replace(/^http:\/\//, 'ws://');
-      } else if (!baseUrl.startsWith('ws://') && !baseUrl.startsWith('wss://')) {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        baseUrl = `${protocol}//${window.location.host}`;
-      }
-      baseUrl = baseUrl.replace(/\/+$/, '');
-
-      const token = localStorage.getItem('token') || '';
-      const wsUrl = `${baseUrl}/api/verification/ws/support/${effectiveUserId}?token=${token}`;
-
-      socket = new WebSocket(wsUrl);
-
-      socket.onopen = () => {
-        reconnectAttempt = 0;
-        console.log('🟢 Connected to Support Chat WebSocket');
-        if (pingInterval) clearInterval(pingInterval);
-        pingInterval = setInterval(() => {
-          if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ type: 'ping' }));
-          }
-        }, 25000);
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data?.type === 'pong') return;
-
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === data.id)) return prev;
-            return [...prev, data];
-          });
-        } catch (err) {
-          console.error('Error parsing support WS message:', err);
-        }
-      };
-
-      socket.onclose = () => {
-        if (pingInterval) clearInterval(pingInterval);
-        if (isMounted) {
-          const delay = Math.min(1000 * 2 ** reconnectAttempt, MAX_RECONNECT_DELAY_MS);
-          reconnectAttempt += 1;
-          reconnectTimeout = setTimeout(() => {
-            connectWebSocket();
-          }, delay);
-        }
-      };
-
-      socket.onerror = (err) => {
-        console.error('Support WebSocket error:', err);
-        socket?.close();
-      };
-    };
-
-    connectWebSocket();
-
-    return () => {
-      isMounted = false;
-      if (pingInterval) clearInterval(pingInterval);
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      if (socket) {
-        socket.onclose = null;
-        socket.onerror = null;
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close();
-        } else if (socket.readyState === WebSocket.CONNECTING) {
-          socket.onopen = () => {
-            try { socket.close(); } catch {}
-          };
-        }
-      }
-    };
-  }, [effectiveUserId]);
+  useWebSocket({
+    url: `/api/verification/ws/support/${effectiveUserId}`,
+    onMessage: handleMessage,
+    enabled: Boolean(effectiveUserId)
+  });
 
   // 3. Send Message Handler with Instant Optimistic UI Update
   const sendMessage = async (e) => {

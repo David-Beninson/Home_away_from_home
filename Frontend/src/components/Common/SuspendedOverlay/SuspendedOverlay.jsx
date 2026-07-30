@@ -4,6 +4,7 @@ import { logout, fetchCurrentUser } from '../../../store/authSlice';
 import { verificationApi } from '../../../api/api';
 import { useSupportChat } from '../../../hooks/useSupportChat';
 import { useTranslation } from 'react-i18next';
+import { MessageInput } from '../MessageInput';
 import './SuspendedOverlay.css';
 
 export default function SuspendedOverlay() {
@@ -288,21 +289,17 @@ export default function SuspendedOverlay() {
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={sendMessage} className="support-input-row">
-            <input
-              type="text"
-              placeholder={t('common/suspended:chat.placeholder')}
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-            />
-            <button type="submit" disabled={!messageText.trim()}>{t('common/suspended:chat.send')}</button>
-          </form>
+          <MessageInput
+            value={messageText}
+            onChange={setMessageText}
+            onSendMessage={sendMessage}
+            placeholder={t('common/suspended:chat.placeholder')}
+            buttonText={t('common/suspended:chat.send')}
+            className="support-input-row"
+            formClassName=""
+            inputClassName=""
+            buttonClassName=""
+          />
         </div>
       </div>
     </div>

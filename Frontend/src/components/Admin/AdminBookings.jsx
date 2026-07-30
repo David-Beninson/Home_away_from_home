@@ -4,55 +4,44 @@ import { formatDate } from '../../utils/date';
 import { TrashIcon } from '../Common/Icons';
 import PageContainer from '../Common/PageContainer/PageContainer';
 import Table from '../Common/Table/Table';
+import { StatusBadge } from './StatusBadge';
 import '../../pages/Admin/Admin.css';
 import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 import { useTranslation } from 'react-i18next';
+import { useAdminAction } from '../../hooks/useAdminAction';
 
 export default function AdminBookings() {
   const { t } = useTranslation(['admin/bookings']);
   const [data, setData] = useState({ matches: [], posts: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const { loading, error, successMsg, executeAction, setError } = useAdminAction();
   const [activeTab, setActiveTab] = useState('posts'); // posts, matches
   const [selectedMatch, setSelectedMatch] = useState(null);
 
   useEffect(() => {
-    async function loadBookings() {
-      try {
-        setLoading(true);
-        const response = await adminApi.getBookings();
-        setData(response.data);
-      } catch (err) {
-        console.error('Failed to load bookings:', err);
-        setError(t('admin/bookings:messages.error_loading'));
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadBookings();
-  }, []);
+    executeAction(
+      () => adminApi.getBookings(),
+      (res) => setData(res.data),
+      null,
+      t('admin/bookings:messages.error_loading')
+    );
+  }, [executeAction, t]);
 
-  const handleDeletePost = async (postId) => {
+  const handleDeletePost = (postId) => {
     if (!window.confirm(t('admin/bookings:posts.confirm_delete'))) {
       return;
     }
 
-    try {
-      setError('');
-      setSuccessMsg('');
-      await adminApi.deletePost(postId);
-
-      // Update local state cleanly
-      setData(prevData => ({
-        ...prevData,
-        posts: prevData.posts.filter(p => p.id !== postId)
-      }));
-      setSuccessMsg(t('admin/bookings:posts.success_delete'));
-    } catch (err) {
-      console.error('Failed to delete post:', err);
-      setError(t('admin/bookings:posts.error_delete'));
-    }
+    executeAction(
+      () => adminApi.deletePost(postId),
+      () => {
+        setData(prevData => ({
+          ...prevData,
+          posts: prevData.posts.filter(p => p.id !== postId)
+        }));
+      },
+      t('admin/bookings:posts.success_delete'),
+      t('admin/bookings:posts.error_delete')
+    );
   };
 
   return (
@@ -99,9 +88,10 @@ export default function AdminBookings() {
                 {post.description}
               </td>
               <td>
-                <span className={`badge ${post.status === 'open' ? 'active' : 'host'}`}>
-                  {post.status === 'open' ? t('admin/bookings:posts.status_open') : t('admin/bookings:posts.status_matched')}
-                </span>
+                <StatusBadge 
+                  colorClass={post.status === 'open' ? 'active' : 'host'}
+                  label={post.status === 'open' ? t('admin/bookings:posts.status_open') : t('admin/bookings:posts.status_matched')}
+                />
               </td>
               <td>{formatDate(post.created_at)}</td>
               <td>
@@ -132,9 +122,10 @@ export default function AdminBookings() {
               <td>{formatDate(match.requested_date)}</td>
               <td>{formatDate(match.created_at)}</td>
               <td>
-                <span className={`badge ${match.status === 'matched' ? 'active' : match.status === 'pending' ? 'pending' : 'suspended'}`}>
-                  {match.status === 'matched' ? t('admin/bookings:matches.status_matched') : match.status === 'pending' ? t('admin/bookings:matches.status_pending') : t('admin/bookings:matches.status_suspended')}
-                </span>
+                <StatusBadge 
+                  colorClass={match.status === 'matched' ? 'active' : match.status === 'pending' ? 'pending' : 'suspended'}
+                  label={match.status === 'matched' ? t('admin/bookings:matches.status_matched') : match.status === 'pending' ? t('admin/bookings:matches.status_pending') : t('admin/bookings:matches.status_suspended')}
+                />
               </td>
               <td>
                 <button

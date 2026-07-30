@@ -4,9 +4,8 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { loginUser } from '../../store/authSlice';
 import { Shield, Eye, EyeOff } from 'lucide-react';
+import { AuthHeader } from '../../components/Common/AuthHeader';
 import './Login.css';
-import { BRAND_TITLE, BRAND_SUBTITLE } from '../../config/brand';
-
 export default function Login() {
   const { t } = useTranslation(['common/auth']);
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -86,33 +85,7 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        {/* Navigation Switcher Pill (Without Arrows) */}
-        <div className="auth-toggle-wrapper">
-          <div className="auth-toggle-pill">
-            <div className="toggle-options-container">
-              <button
-                type="button"
-                className={`toggle-btn-option ${!isLoginActive ? 'active' : ''}`}
-                onClick={() => navigate('/register')}
-              >
-                {t('common/auth:tabs.register')}
-              </button>
-              <button
-                type="button"
-                className={`toggle-btn-option ${isLoginActive ? 'active' : ''}`}
-                onClick={() => navigate('/login')}
-              >
-                {t('common/auth:tabs.login')}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="login-header">
-          <Shield size={48} color="#2563eb" className="login-shield-icon" fill="#2563eb" />
-          <h2>{BRAND_TITLE}</h2>
-          <p>{BRAND_SUBTITLE}</p>
-        </div>
+        <AuthHeader />
 
         {error && <div className="login-error">{error}</div>}
 

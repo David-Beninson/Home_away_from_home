@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ChatItem } from './ChatItem';
 import { isUpcomingOrActiveChat } from '../../utils/chatUtils';
 import { useTranslation } from 'react-i18next';
+import { HistoryToggleSection } from '../Common/HistoryToggleSection';
 
 export function ChatSidebar({ chats = [], loading, activeChat, onSelectChat }) {
   const { t } = useTranslation(['chat/chats']);
@@ -41,32 +42,21 @@ export function ChatSidebar({ chats = [], loading, activeChat, onSelectChat }) {
             )}
 
             {pastChats.length > 0 && (
-              <div className="chats-history-section">
-                <button
-                  type="button"
-                  className="chats-history-toggle"
-                  onClick={() => setIsHistoryOpen(prev => !prev)}
-                >
-                  <span className="chats-history-title">
-                    {t('chat/chats:sidebar.history_title', { count: pastChats.length })}
-                  </span>
-                  <span className={`chats-history-chevron ${isHistoryOpen ? 'open' : ''}`}>
-                    ▼
-                  </span>
-                </button>
-                {isHistoryOpen && (
-                  <div className="chats-history-list">
-                    {pastChats.map(chat => (
-                      <ChatItem
-                        key={chat.match_id}
-                        chat={chat}
-                        isActive={activeChat?.match_id === chat.match_id}
-                        onSelectChat={onSelectChat}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <HistoryToggleSection
+                title={t('chat/chats:sidebar.history_title', { count: pastChats.length })}
+                isOpen={isHistoryOpen}
+                onToggle={() => setIsHistoryOpen(prev => !prev)}
+                classNamePrefix="chats-history"
+              >
+                {pastChats.map(chat => (
+                  <ChatItem
+                    key={chat.match_id}
+                    chat={chat}
+                    isActive={activeChat?.match_id === chat.match_id}
+                    onSelectChat={onSelectChat}
+                  />
+                ))}
+              </HistoryToggleSection>
             )}
           </>
         )}

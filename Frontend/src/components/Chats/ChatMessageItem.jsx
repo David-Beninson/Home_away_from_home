@@ -1,16 +1,7 @@
-
+import { formatTime } from '../../utils/date';
 
 export function ChatMessageItem({ msg, activeChat, currentUserId }) {
   const isMine = msg.sender_id === currentUserId;
-
-  const formatTime = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-      return new Date(dateStr).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  };
 
   return (
     <div className={`message-row ${isMine ? 'mine' : 'other'}`}>

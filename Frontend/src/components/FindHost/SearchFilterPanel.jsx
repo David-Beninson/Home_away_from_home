@@ -1,6 +1,7 @@
 
 import { Search, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { FilterPillsGroup } from '../Common/FilterPillsGroup';
 
 export default function SearchFilterPanel({
   searchTerm = '',
@@ -55,48 +56,24 @@ export default function SearchFilterPanel({
 
       {/* Filter Row: Region, Kashrut, Lodging */}
       <div className="search-filter-row">
-        {/* Region Filter */}
-        <div className="filter-item-group">
-          <span className="filter-group-label">{t('guest/find_host:filters.labels.region')}</span>
-          <div className="filter-pills-container">
-            {regions.map((reg) => {
-              const isActive = regionFilter === reg.id;
-              return (
-                <button
-                  key={reg.id}
-                  type="button"
-                  className={`pill-btn ${isActive ? 'active-pill' : ''}`}
-                  onClick={() => onRegionChange && onRegionChange(reg.id)}
-                >
-                  {reg.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterPillsGroup
+          label={t('guest/find_host:filters.labels.region')}
+          options={regions}
+          activeId={regionFilter}
+          onChange={onRegionChange}
+        />
 
-        {/* Kashrut Filter */}
-        <div className="filter-item-group">
-          <span className="filter-group-label">{t('guest/find_host:filters.labels.kashrut')}</span>
-          <div className="filter-pills-container">
-            {kashrutOptions.map((k) => {
-              const isActive =
-                (k.id === 'ALL' && (kashrutFilter === 'ALL' || !kashrutFilter)) ||
-                (k.id === 'kosher' && (kashrutFilter === 'kosher' || kashrutFilter === 'KOSHER' || kashrutFilter === 'basic')) ||
-                (k.id === 'mehadrin' && (kashrutFilter === 'mehadrin' || kashrutFilter === 'MEHADRIN' || kashrutFilter === 'glatt_mehadrin'));
-              return (
-                <button
-                  key={k.id}
-                  type="button"
-                  className={`pill-btn ${isActive ? 'active-pill' : ''}`}
-                  onClick={() => onKashrutChange && onKashrutChange(k.id)}
-                >
-                  {k.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterPillsGroup
+          label={t('guest/find_host:filters.labels.kashrut')}
+          options={kashrutOptions}
+          activeId={(id) => {
+            if (id === 'ALL') return kashrutFilter === 'ALL' || !kashrutFilter;
+            if (id === 'kosher') return kashrutFilter === 'kosher' || kashrutFilter === 'KOSHER' || kashrutFilter === 'basic';
+            if (id === 'mehadrin') return kashrutFilter === 'mehadrin' || kashrutFilter === 'MEHADRIN' || kashrutFilter === 'glatt_mehadrin';
+            return false;
+          }}
+          onChange={onKashrutChange}
+        />
 
         {/* Lodging Toggle */}
         <div className="filter-item-group">
@@ -133,24 +110,17 @@ export default function SearchFilterPanel({
 
       {/* Sorting & Results Count Footer */}
       <div className="search-card-footer-row">
-        <div className="sort-controls-group">
-          <span className="sort-group-label">{t('guest/find_host:filters.labels.sort')}</span>
-          <div className="sort-chips-container">
-            {sortOptions.map((opt) => {
-              const isActive = sortBy === opt.id || (opt.id === 'AI' && sortBy === 'DESC');
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  className={`sort-chip-btn ${isActive ? 'active-chip' : ''}`}
-                  onClick={() => onSortChange && onSortChange(opt.id)}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterPillsGroup
+          label={t('guest/find_host:filters.labels.sort')}
+          options={sortOptions}
+          activeId={(id) => sortBy === id || (id === 'AI' && sortBy === 'DESC')}
+          onChange={onSortChange}
+          groupClassName="sort-controls-group"
+          labelClassName="sort-group-label"
+          containerClassName="sort-chips-container"
+          buttonClassName="sort-chip-btn"
+          activeClassName="active-chip"
+        />
 
         <p className="results-count-text">
           <span className="results-count-number">{count}</span> {t('guest/find_host:filters.results_count')}

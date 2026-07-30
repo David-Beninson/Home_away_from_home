@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Send, Sparkles, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/api';
+import { MessageInput } from '../Common/MessageInput';
 
 export function ChatInput({ messageText, setMessageText, sendMessage, activeChat, messages = [] }) {
   const { t } = useTranslation(['chat/chats']);
@@ -99,28 +100,12 @@ export function ChatInput({ messageText, setMessageText, sendMessage, activeChat
           </div>
         </div>
       )}
-      <form onSubmit={sendMessage} className="chat-input-form">
-        <input
-          type="text"
-          placeholder={t('chat/chats:input.placeholder')}
-          className="chat-input"
-          value={messageText}
-          onChange={e => setMessageText(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              sendMessage();
-            }
-          }}
-        />
-        <button
-          type="submit"
-          disabled={!messageText.trim()}
-          className="chat-send-btn"
-        >
-          <Send className="w-4 h-4 rotate-180" />
-        </button>
-      </form>
+      <MessageInput
+        value={messageText}
+        onChange={setMessageText}
+        onSendMessage={sendMessage}
+        placeholder={t('chat/chats:input.placeholder')}
+      />
     </div>
   );
 }

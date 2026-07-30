@@ -8,6 +8,7 @@ import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 import ReviewsListModal from '../Reviews/ReviewsListModal';
 import { postsApi } from '../../api/api';
 import { useTranslation } from 'react-i18next';
+import { useChatNavigation } from '../../hooks/useChatNavigation';
 
 export default function RequestCard({ post, userRole, onAction, isClaiming, onUpdateSuccess }) {
   const { t } = useTranslation(['guest/requests']);
@@ -16,6 +17,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const { navigateToChat } = useChatNavigation();
 
   const handleCancel = async () => {
     if (post.status === 'matched' || post.status === 'approved') {
@@ -183,19 +185,7 @@ export default function RequestCard({ post, userRole, onAction, isClaiming, onUp
               <div className="card-matched-links">
                 <button 
                   onClick={() => {
-                    navigate('/chats', {
-                      state: {
-                        matchId,
-                        chatData: {
-                          match_id: matchId,
-                          other_party_name: otherPartyName,
-                          hosting_date: hostingDate,
-                          last_message: null,
-                          last_message_time: null,
-                          unread_count: 0
-                        }
-                      }
-                    });
+                    navigateToChat(matchId, otherPartyName, hostingDate);
                   }} 
                   className="card-matched-btn"
                 >

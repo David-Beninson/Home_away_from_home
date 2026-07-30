@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import useHostSearch from '../../hooks/useHostSearch';
 import FindHostHeader from '../../components/FindHost/FindHostHeader';
 import SearchFilterPanel from '../../components/FindHost/SearchFilterPanel';
-import { Sparkles, Star, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { HostCard } from '../../components/Common/HostCard';
 import './FindHost.css';
 
 export default function FindHost() {
@@ -71,65 +71,9 @@ export default function FindHost() {
         <div className="gh-hosts-loading">{t('guest/find_host:loading')}</div>
       ) : (
         <div className="gh-hosts-grid">
-          {topHosts.map((host) => {
-            const imageUrl = host.image_url || host.image || DEFAULT_IMAGE;
-            const matchScore = host.match_percentage || host.match || 85;
-            const isKosher = host.kashrut_level === 'MEHADRIN' || host.kosher;
-
-            return (
-              <div
-                className="gh-host-card"
-                key={host.id}
-                onClick={() => navigate(`/host/${host.id}`)}
-              >
-                <div className="gh-card-image-wrapper">
-                  <img
-                    src={imageUrl}
-                    alt={host.full_name || host.name}
-                    className="gh-card-image"
-                    onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
-                  />
-                  <div className="gh-card-badges">
-                    {host.has_lodging && <span className="gh-badge-night">🌙 {t('guest/find_host:badges.sleepover')}</span>}
-                    <div className="gh-badge-right-group">
-                      {isKosher && <span className="gh-badge-kosher">🛡️ {t('guest/find_host:badges.mehadrin')}</span>}
-                      <span className="gh-badge-match">
-                        <Sparkles size={12} /> {matchScore}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="gh-card-content">
-                  <div className="gh-card-title-row">
-                    <h4>{host.full_name || host.name}</h4>
-                    <div className="gh-rating">
-                      <Star size={14} fill="#eab308" color="#eab308" />
-                      <span>{(host.rating || 5.0).toFixed(1)}</span>
-                      {host.reviews !== undefined && (
-                        <span className="gh-reviews">({host.reviews})</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="gh-location">
-                    <MapPin size={14} /> {host.city || host.location}
-                  </div>
-
-                  <div className="gh-card-footer">
-                    <div className="gh-tags">
-                      {(host.tags || []).slice(0, 2).map((tag) => (
-                        <span key={tag} className="gh-tag">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="gh-spots-text">{host.available_spots || host.spots || 0} {t('guest/find_host:spots')}</div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {topHosts.map((host) => (
+            <HostCard key={host.id} host={host} t={t} />
+          ))}
         </div>
       )}
 

@@ -85,5 +85,30 @@ export const checkPostUrgency = (requestedDateStr) => {
   }
 };
 
+/**
+ * Formats a date string into a time string (HH:MM)
+ * @param {string} dateString 
+ * @returns {string}
+ */
+export const formatTime = (dateString) => {
+  if (!dateString) return '';
+  try {
+    return new Date(dateString).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+};
 
-
+/**
+ * Formats a date string into a short date string (DD/MM)
+ * @param {string} dateString 
+ * @returns {string}
+ */
+export const formatShortDate = (dateString) => {
+  if (!dateString) return '';
+  try {
+    return new Date(dateString).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' });
+  } catch {
+    return '';
+  }
+};

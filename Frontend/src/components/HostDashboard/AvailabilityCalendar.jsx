@@ -24,6 +24,48 @@ function getFirstDayOfWeek(year, month) {
   return new Date(year, month, 1).getDay();
 }
 
+function addDateRangeToSet(post, set) {
+  const startDateVal = post.start_date || post.requested_date || post.shabbat_date;
+  const endDateVal = post.end_date;
+
+  if (startDateVal) {
+    const startD = new Date(startDateVal);
+    if (!isNaN(startD.getTime())) {
+      const startStr = toDateStr(startD.getFullYear(), startD.getMonth(), startD.getDate());
+      set.add(startStr);
+
+      if (endDateVal) {
+        const endD = new Date(endDateVal);
+        if (!isNaN(endD.getTime()) && endD >= startD) {
+          const curr = new Date(startD);
+          while (curr <= endD) {
+            const cStr = toDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
+            set.add(cStr);
+            curr.setDate(curr.getDate() + 1);
+          }
+        }
+      }
+    }
+  }
+}
+
+function getDayAttributes(dateStr, dateObj, rules, overrides, bookings, bookedDatesSet, pendingDatesSet, waitingGuestDatesSet) {
+  const dayOfWeek = dateObj.getDay();
+  const isWeekend = rules.weekendDays.includes(dayOfWeek);
+  let status = computeDayStatus(dateStr, rules, overrides, bookings);
+  if (bookedDatesSet.has(dateStr) && status !== 'past') {
+    status = 'booked';
+  }
+  return {
+    dayOfWeek,
+    isWeekend,
+    status,
+    hasOverride: !!overrides[dateStr],
+    hasPendingRequest: pendingDatesSet.has(dateStr),
+    hasWaitingGuest: waitingGuestDatesSet.has(dateStr),
+  };
+}
+
 const STATUS_CLASS = {
   open: 'day--open',
   closed: 'day--closed',
@@ -58,28 +100,7 @@ export default function AvailabilityCalendar() {
       posts.forEach((p) => {
         const needsHostAction = p.status === 'open' || (p.status === 'pending' && Boolean(p.is_direct_request));
         if (needsHostAction) {
-          const startDateVal = p.start_date || p.requested_date || p.shabbat_date;
-          const endDateVal = p.end_date;
-
-          if (startDateVal) {
-            const startD = new Date(startDateVal);
-            if (!isNaN(startD.getTime())) {
-              const startStr = toDateStr(startD.getFullYear(), startD.getMonth(), startD.getDate());
-              set.add(startStr);
-
-              if (endDateVal) {
-                const endD = new Date(endDateVal);
-                if (!isNaN(endD.getTime()) && endD >= startD) {
-                  const curr = new Date(startD);
-                  while (curr <= endD) {
-                    const cStr = toDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
-                    set.add(cStr);
-                    curr.setDate(curr.getDate() + 1);
-                  }
-                }
-              }
-            }
-          }
+          addDateRangeToSet(p, set);
         }
       });
     }
@@ -99,28 +120,7 @@ export default function AvailabilityCalendar() {
       posts.forEach((p) => {
         const isWaitingGuest = p.status === 'pending' && !p.is_direct_request;
         if (isWaitingGuest) {
-          const startDateVal = p.start_date || p.requested_date || p.shabbat_date;
-          const endDateVal = p.end_date;
-
-          if (startDateVal) {
-            const startD = new Date(startDateVal);
-            if (!isNaN(startD.getTime())) {
-              const startStr = toDateStr(startD.getFullYear(), startD.getMonth(), startD.getDate());
-              set.add(startStr);
-
-              if (endDateVal) {
-                const endD = new Date(endDateVal);
-                if (!isNaN(endD.getTime()) && endD >= startD) {
-                  const curr = new Date(startD);
-                  while (curr <= endD) {
-                    const cStr = toDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
-                    set.add(cStr);
-                    curr.setDate(curr.getDate() + 1);
-                  }
-                }
-              }
-            }
-          }
+          addDateRangeToSet(p, set);
         }
       });
     }
@@ -132,28 +132,7 @@ export default function AvailabilityCalendar() {
     if (Array.isArray(posts)) {
       posts.forEach((p) => {
         if (p.status === 'matched') {
-          const startDateVal = p.start_date || p.requested_date || p.shabbat_date;
-          const endDateVal = p.end_date;
-
-          if (startDateVal) {
-            const startD = new Date(startDateVal);
-            if (!isNaN(startD.getTime())) {
-              const startStr = toDateStr(startD.getFullYear(), startD.getMonth(), startD.getDate());
-              set.add(startStr);
-
-              if (endDateVal) {
-                const endD = new Date(endDateVal);
-                if (!isNaN(endD.getTime()) && endD >= startD) {
-                  const curr = new Date(startD);
-                  while (curr <= endD) {
-                    const cStr = toDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
-                    set.add(cStr);
-                    curr.setDate(curr.getDate() + 1);
-                  }
-                }
-              }
-            }
-          }
+          addDateRangeToSet(p, set);
         }
       });
     }
@@ -179,16 +158,8 @@ export default function AvailabilityCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = toDateStr(currentYear, currentMonth, d);
       const date = new Date(currentYear, currentMonth, d);
-      const dayOfWeek = date.getDay();
-      const isWeekend = rules.weekendDays.includes(dayOfWeek);
-      let status = computeDayStatus(dateStr, rules, overrides, bookings);
-      if (bookedDatesSet.has(dateStr) && status !== 'past') {
-        status = 'booked';
-      }
-      const hasOverride = !!overrides[dateStr];
-      const hasPendingRequest = pendingDatesSet.has(dateStr);
-      const hasWaitingGuest = waitingGuestDatesSet.has(dateStr);
-      cells.push({ empty: false, day: d, dateStr, dayOfWeek, isWeekend, status, hasOverride, hasPendingRequest, hasWaitingGuest, key: dateStr });
+      const attrs = getDayAttributes(dateStr, date, rules, overrides, bookings, bookedDatesSet, pendingDatesSet, waitingGuestDatesSet);
+      cells.push({ empty: false, day: d, dateStr, key: dateStr, ...attrs });
     }
 
     return cells;
@@ -205,28 +176,16 @@ export default function AvailabilityCalendar() {
       const curr = new Date(sunday);
       curr.setDate(sunday.getDate() + i);
       const dateStr = toDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
-      const dow = curr.getDay();
-      const isWeekend = rules.weekendDays.includes(dow);
-      let status = computeDayStatus(dateStr, rules, overrides, bookings);
-      if (bookedDatesSet.has(dateStr) && status !== 'past') {
-        status = 'booked';
-      }
-      const hasOverride = !!overrides[dateStr];
-      const hasPendingRequest = pendingDatesSet.has(dateStr);
-      const hasWaitingGuest = waitingGuestDatesSet.has(dateStr);
+      const attrs = getDayAttributes(dateStr, curr, rules, overrides, bookings, bookedDatesSet, pendingDatesSet, waitingGuestDatesSet);
+      
       days.push({
         empty: false,
         day: curr.getDate(),
         month: curr.getMonth(),
         year: curr.getFullYear(),
         dateStr,
-        dayOfWeek: dow,
-        isWeekend,
-        status,
-        hasOverride,
-        hasPendingRequest,
-        hasWaitingGuest,
         key: dateStr,
+        ...attrs
       });
     }
     return days;

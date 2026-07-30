@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setAuthCredentials, fetchCurrentUser } from '../../store/authSlice';
-import { Shield, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import { AuthHeader } from '../../components/Common/AuthHeader';
 import { useTranslation } from 'react-i18next';
 import './Register.css';
 
@@ -157,33 +158,7 @@ export default function Register() {
   return (
     <div className="login-container">
       <div className="login-card">
-        {/* Navigation Switcher Pill */}
-        <div className="auth-toggle-wrapper">
-          <div className="auth-toggle-pill">
-            <div className="toggle-options-container">
-              <button
-                type="button"
-                className={`toggle-btn-option ${!isLoginActive ? 'active' : ''}`}
-                onClick={() => navigate('/register')}
-              >
-                {t('common/auth:tabs.register')}
-              </button>
-              <button
-                type="button"
-                className={`toggle-btn-option ${isLoginActive ? 'active' : ''}`}
-                onClick={() => navigate('/login')}
-              >
-                {t('common/auth:tabs.login')}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="login-header">
-          <Shield size={48} color="#2563eb" className="login-shield-icon" fill="#2563eb" />
-          <h2>{t('common/auth:register_header.title')}</h2>
-          <p>{t('common/auth:register_header.subtitle')}</p>
-        </div>
+        <AuthHeader />
 
         {error && <div className="login-error">{error}</div>}
         {success && <div className="auth-success">{success}</div>}

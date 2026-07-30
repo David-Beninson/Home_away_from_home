@@ -5,6 +5,7 @@ import { HostingDetailsModal } from '../Common/HostingDetailsModal';
 import { User, AlertCircle, Info } from 'lucide-react';
 import { getChatDisplayName } from '../../utils/chatUtils';
 import { useTranslation } from 'react-i18next';
+import { formatHebrewDate, formatShortDate } from '../../utils/date';
 
 export function ChatHeader({ activeChat, initialOpenDetailsModal = false }) {
   const { t } = useTranslation(['chat/chats']);
@@ -18,23 +19,7 @@ export function ChatHeader({ activeChat, initialOpenDetailsModal = false }) {
     ? t('chat/chats:header.anonymous_guest')
     : getChatDisplayName(activeChat) || (isHostView ? t('chat/chats:header.anonymous_guest') : t('chat/chats:header.host'));
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-      return new Date(dateStr).toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    } catch {
-      return '';
-    }
-  };
 
-  const formatShortDate = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-      return new Date(dateStr).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' });
-    } catch {
-      return '';
-    }
-  };
 
   return (
     <>
@@ -66,7 +51,7 @@ export function ChatHeader({ activeChat, initialOpenDetailsModal = false }) {
         <div className="chat-header-actions">
           {activeChat.hosting_date && (
             <div className="chat-header-date">
-              {formatDate(activeChat.hosting_date)}
+              {formatHebrewDate(activeChat.hosting_date)}
             </div>
           )}
 
@@ -80,7 +65,7 @@ export function ChatHeader({ activeChat, initialOpenDetailsModal = false }) {
           </button>
 
           <a
-            href={`https://wa.me/${activeChat.other_party_phone ? activeChat.other_party_phone.replace(/[^0-9]/g, '') : ''}?text=${encodeURIComponent(`${t('chat/chats:header.wa_message_prefix')} ${formatShortDate(activeChat.hosting_date) || formatDate(activeChat.hosting_date) || ''}`)}`}
+            href={`https://wa.me/${activeChat.other_party_phone ? activeChat.other_party_phone.replace(/[^0-9]/g, '') : ''}?text=${encodeURIComponent(`${t('chat/chats:header.wa_message_prefix')} ${formatShortDate(activeChat.hosting_date) || formatHebrewDate(activeChat.hosting_date) || ''}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="chat-header-wa-btn"

@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bell, CheckCircle2, MessageSquare, AlertCircle, Check, Trash2, Filter } from 'lucide-react';
 import { translateNotificationTitle, translateNotificationMessage } from '../../../utils/notificationTranslator';
+import { useWebSocket } from '../../../hooks/useWebSocket';
 import './NotificationBell.css';
 
 export default function NotificationBell() {
@@ -40,118 +41,32 @@ export default function NotificationBell() {
   }, [userId, accountStatus, dispatch]);
 
   // 3. WebSocket Connection Hook with Auto-Reconnect and Heartbeat
-  useEffect(() => {
-    if (!userId || accountStatus === 'suspended' || accountStatus === 'banned') return;
+  const handleMessage = React.useCallback((incomingData) => {
+    dispatch(receiveNotification(incomingData));
 
-    let socket = null;
-    let pingInterval = null;
-    let reconnectTimeout = null;
-    let isComponentMounted = true;
-    let reconnectAttempt = 0;
-    const MAX_RECONNECT_DELAY_MS = 30000;
+    if (
+      incomingData?.verification_status ||
+      incomingData?.id?.startsWith('approved_') ||
+      incomingData?.id?.startsWith('rejected_')
+    ) {
+      console.log('⚡ Real-time verification status change received via WS!');
+      dispatch(fetchCurrentUser());
+      window.dispatchEvent(new CustomEvent('verification_status_changed', { detail: incomingData }));
+    }
 
-    const connectWebSocket = () => {
-      let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      baseUrl = baseUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+    if (incomingData?.popup) {
+      setTimeout(() => {
+        const translatedMsg = translateNotificationMessage(incomingData.message, t);
+        window.alert(t('common/notifications:alert_message', { message: translatedMsg }));
+      }, 100);
+    }
+  }, [dispatch, t]);
 
-      if (baseUrl.startsWith('https://')) {
-        baseUrl = baseUrl.replace(/^https:\/\//, 'wss://');
-      } else if (baseUrl.startsWith('http://')) {
-        baseUrl = baseUrl.replace(/^http:\/\//, 'ws://');
-      } else if (!baseUrl.startsWith('ws://') && !baseUrl.startsWith('wss://')) {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        baseUrl = `${protocol}//${window.location.host}`;
-      }
-      baseUrl = baseUrl.replace(/\/+$/, '');
-      const wsUrl = `${baseUrl}/api/ws/notifications/${userId}`;
-
-      socket = new WebSocket(wsUrl);
-
-      socket.onopen = () => {
-        reconnectAttempt = 0;
-        console.log('🟢 Connected to live notifications WS');
-
-        if (pingInterval) clearInterval(pingInterval);
-        pingInterval = setInterval(() => {
-          if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ type: 'ping' }));
-          }
-        }, 25000);
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const incomingData = JSON.parse(event.data);
-          if (incomingData?.type === 'pong') return;
-
-          dispatch(receiveNotification(incomingData));
-
-          if (
-            incomingData?.verification_status ||
-            incomingData?.id?.startsWith('approved_') ||
-            incomingData?.id?.startsWith('rejected_')
-          ) {
-            console.log('⚡ Real-time verification status change received via WS!');
-            dispatch(fetchCurrentUser());
-            window.dispatchEvent(new CustomEvent('verification_status_changed', { detail: incomingData }));
-          }
-
-          if (incomingData?.popup) {
-            setTimeout(() => {
-              const translatedMsg = translateNotificationMessage(incomingData.message, t);
-              window.alert(t('common/notifications:alert_message', { message: translatedMsg }));
-            }, 100);
-          }
-        } catch (err) {
-          console.error('Error parsing WS notification:', err);
-        }
-      };
-
-      socket.onclose = () => {
-        console.log('🔴 Disconnected from live notifications WS');
-        if (pingInterval) clearInterval(pingInterval);
-
-        if (isComponentMounted) {
-          const delay = Math.min(1000 * 2 ** reconnectAttempt, MAX_RECONNECT_DELAY_MS);
-          reconnectAttempt += 1;
-          reconnectTimeout = setTimeout(() => {
-            console.log('🔄 Attempting to reconnect to live notifications WS...');
-            connectWebSocket();
-          }, delay);
-        }
-      };
-
-      socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        socket?.close();
-      };
-    };
-
-    connectWebSocket();
-
-    return () => {
-      isComponentMounted = false;
-      if (pingInterval) clearInterval(pingInterval);
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      if (socket) {
-        socket.onopen = null;
-        socket.onmessage = null;
-        socket.onclose = null;
-        socket.onerror = null;
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close(1000, 'Component unmounted');
-        } else if (socket.readyState === WebSocket.CONNECTING) {
-          socket.onopen = () => {
-            try {
-              socket.close(1000, 'Component unmounted');
-            } catch {
-              // ignore race
-            }
-          };
-        }
-      }
-    };
-  }, [userId, dispatch]);
+  useWebSocket({
+    url: `/api/ws/notifications/${userId}`,
+    onMessage: handleMessage,
+    enabled: Boolean(userId && accountStatus !== 'suspended' && accountStatus !== 'banned')
+  });
 
   // Handle clicking outside dropdown
   useEffect(() => {
